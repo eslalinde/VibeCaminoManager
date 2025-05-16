@@ -99,8 +99,37 @@ CaminoManager es una aplicación web que permite a los responsables de la ciudad
 ## Plan de implementación
 
 ### Fase 1: Estructura básica y autenticación 
-1.1 Configuración del proyecto Next.js/Supabase 
-1.2 Diseño de la base de datos 
-1.3 Implementación del sistema de autenticación 
-1.4 Creación de layout básico y navegación
+1. Configuración del proyecto Next.js/Supabase 
+2. Diseño de la base de datos en supabase 
+   - Base de datos en postgresql
+   - La siguiente es el schema de la base de datos que se espera
+     - Countries -> Name (texto(256))  y Codigo (texto(2))
+     - States -> Name (texto(256)), CountryId (referencia a la tabla country)
+     - Cities -> Name (texto(256)), CountryId (referencia a la tabla country), StateId (referencia a la tabla State) 
+     - People -> PersonName (texto(256)), Phone (texto(50)), Mobile (texto(50)), Email (texto(256)), PersonTypeId (smallint), GenderId (small int), SpouseId (referencia a la misma tabla People para enlazar los esposos)
+     - Parishes -> Name (texto(256)), Diocese (texto(256)), Address (texto(256)), Phone (texto(50)), Email (texto(256)), CityId (referencia a la tabla City)
+     - TeamTypes -> Name (texto(256)), Order (smallint)
+     - StepWays -> Name (texto(256)), Order (smallint)
+     - Teams -> Name (texto(256)), TeamTypeId (referencia a la tabla TeamTypes), CommunityId (referencia a la tabla Communities)        
+     - Communities -> Number (texto(50)), BornDate (Date), ParishId (referencia a tabla Parish), BornBrothers (smallint), ActualBrothers (smallint), StepWayId (referencia a la tabla StepWay), LastStepWayDate (Date), CathechistTeamId (integer)
+     - ParishTeams -> ParishId (referencia a tabla Parishes), TeamId (referencia a tabla Teams)
+     - Priests -> PersonId (referencia a tabla People), IsParishPriest (bool), ParishId (referencia a tabla Parish)
+     - Brothers -> PersonId (referencia a tabla People), CommunityId (referencia a tabla Communities) 
+     - Belongs -> PersonId (referencia a tabla People), CommunityId (referencia a tabla Communities) , TeamId (referencia a tabla Teams), IsResponsibleForTheTeam (bool)
+     - CommunityStepLog -> CommunityId (referencia a tabla Communities), StepWayId (referencia a la tabla StepWay), DateOfStep (Date), PrincipalCatechistName (texto(256)), Outcome (bool), Notes (text)
+   - Todas las tablas deben contar con una clave principal con nombre Id de tipo entero y secuencial
+   - Quiero implementar busqueda de full text search para la tabla People (PersonName), Parhises (Name)
+3. Implementación del sistema de autenticación 
+4. Creación de layout básico y navegación
+
+
+## Estándares técnicos de base de datos
+- Mantener un esquema de migraciones para la base de datos
+
+## Estándares técnicos 
+- Componentes en React con Shadcn UI
+- Esquema de colores: #3498db (primario), #2ecc71 (éxito), #e74c3c (error) 
+- Responsive design (mobile-first)
+- Quiero que se pueda cambiar entre oscuro y claro
+
 
