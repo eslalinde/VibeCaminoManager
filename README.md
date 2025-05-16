@@ -119,12 +119,14 @@ CaminoManager es una aplicación web que permite a los responsables de la ciudad
      - CommunityStepLog -> CommunityId (referencia a tabla Communities), StepWayId (referencia a la tabla StepWay), DateOfStep (Date), PrincipalCatechistName (texto(256)), Outcome (bool), Notes (text)
    - Todas las tablas deben contar con una clave principal con nombre Id de tipo entero y secuencial
    - Quiero implementar busqueda de full text search para la tabla People (PersonName), Parhises (Name)
-3. Implementación del sistema de autenticación 
-4. Creación de layout básico y navegación
+3. Crear archivo seed para optimizar el desarrollo y las vistas sin agregar datos
+4. Implementación del sistema de autenticación 
+5. Creación de layout básico y navegación
 
 
 ## Estándares técnicos de base de datos
 - Mantener un esquema de migraciones para la base de datos
+- Tener en cuenta el RLS de PostgREST para las tablas 
 
 ## Estándares técnicos 
 - Componentes en React con Shadcn UI
@@ -132,4 +134,12 @@ CaminoManager es una aplicación web que permite a los responsables de la ciudad
 - Responsive design (mobile-first)
 - Quiero que se pueda cambiar entre oscuro y claro
 
+## Supabase
+### Inicializacion
+- npx supabase init
+- npx supabase login
 
+### Documentacion manejo de base de datos supabase
+- Desde un terminal ejecutar para crear migracion: npx supabase migration new init-schema
+- Luego ejecutar npx supabase db push
+- Si se requiere algun revert eliminar el archivo de migracion y ejecutar lo siguiente: npx supabase migration repair --status reverted 20250516211117
