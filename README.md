@@ -119,7 +119,7 @@ CaminoManager es una aplicación web que permite a los responsables de la ciudad
      - CommunityStepLog -> CommunityId (referencia a tabla Communities), StepWayId (referencia a la tabla StepWay), DateOfStep (Date), PrincipalCatechistName (texto(256)), Outcome (bool), Notes (text)
    - Todas las tablas deben contar con una clave principal con nombre Id de tipo entero y secuencial
    - Quiero implementar busqueda de full text search para la tabla People (PersonName), Parhises (Name)
-3. Crear archivo seed para optimizar el desarrollo y las vistas sin agregar datos
+3. Crear archivo seed para la base de datos de supabase con la informacion semilla
 4. Implementación del sistema de autenticación 
 5. Creación de layout básico y navegación
 
@@ -130,9 +130,35 @@ CaminoManager es una aplicación web que permite a los responsables de la ciudad
 
 ## Estándares técnicos 
 - Componentes en React con Shadcn UI
-- Esquema de colores: #3498db (primario), #2ecc71 (éxito), #e74c3c (error) 
+- Esquema de colores: por definir
 - Responsive design (mobile-first)
 - Quiero que se pueda cambiar entre oscuro y claro
+
+## Informacion semilla
+NOTAS: Requiere de una supervision especial, es necesario hacerlo paso a paso por cada tabla.
+Ten en cuenta la siguiente informacion al momento de generar la semilla:
+- Countries: Quiero que crees un solo pais Colombia y codigo CO
+- States: Se puede crear basado en el archivo states.json de la carpeta seeds.
+- Cities: se puede crear con en el archivo states.json de la carpeta seeds, todos los departamentos son de Colombia.
+- People: Por favor crea 200 personas en la tabla con la siguientes caracteristicas
+  - Todos los nombres en español, ojala nombre y apellido colombiano
+  - Que sean 45% hombres y 55% mujeres
+  - De los hombres saca un presbitero para cada parroquia + otros 10
+  - Crea 30 matrimonios
+  - El resto de las personas que sean solteros o solteras, seminaristas, monjas, viudas y viudos
+- Parishes: se puede crear con el archivo de parishes.json
+- TeamTypes: se puede crear con el archivo de teamtypes.json
+- StepWays: se puede crear con el archivo de stepways.json
+- Communities: Quiero que crees 4 communidades en la parroquia de la Visitacion de la siguiente manera:
+  - Primera comunidad: 50 hermanos de los cuales 10 matrimonios, 7 presbiteros, otros.
+    - Equipos: 
+      - Equipo de responsables: 3 matrimonios y una soltera
+      - 1 Equipo de catequistas: 3 matrimonios y una soltera (uno de los matrimonios tiene que ser el responsable del equipo de responsables)
+      - 2 Equipo de catequistas: 2 matrimonios y 3 solteros o solteras
+  - Segunda comunidad: 42 hermanos de los cuales 7 matrimonios, 2 presbiteros, otros
+  - Tercera comunidad: 30 hermanos de los cuales 5 matrimonios, otros
+  - Cuarta comunidad: 46 hermandos de los cuales 8 matrimonios, 1 presbitero, otros
+  
 
 ## Supabase
 ### Inicializacion
@@ -143,3 +169,7 @@ CaminoManager es una aplicación web que permite a los responsables de la ciudad
 - Desde un terminal ejecutar para crear migracion: npx supabase migration new init-schema
 - Luego ejecutar npx supabase db push
 - Si se requiere algun revert eliminar el archivo de migracion y ejecutar lo siguiente: npx supabase migration repair --status reverted 20250516211117
+
+
+## Prompts
+Estoy construyendo una aplicación para el manejo de las comunidades neocatecumenales. Para empezar, implementa la Fase 1.1 de mi PRD: configuración del proyecto Next.js con Supabase y diseño inicial de la base de datos para gestionar usuarios y listados de libros."
