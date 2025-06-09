@@ -120,8 +120,10 @@ CaminoManager es una aplicación web que permite a los responsables de la ciudad
    - Todas las tablas deben contar con una clave principal con nombre Id de tipo entero y secuencial
    - Quiero implementar busqueda de full text search para la tabla People (PersonName), Parhises (Name)
 3. Crear archivo seed para la base de datos de supabase con la informacion semilla
-4. Implementación del sistema de autenticación 
-5. Creación de layout básico y navegación
+4. Crear la migracion de las tablas de autenticacion de supabase https://supabase.com/docs/guides/getting-started/tutorials/with-nextjs?queryGroups=database-method&database-method=sql&queryGroups=language&language=ts
+5. Creacion de la pagina de login: https://supabase.com/docs/guides/getting-started/tutorials/with-nextjs?queryGroups=database-method&database-method=sql&queryGroups=language&language=ts#set-up-a-login-page
+6. Creacion de la pagina de registro
+7. Creación de layout básico y navegación y error general
 
 
 ## Estándares técnicos de base de datos
@@ -132,7 +134,6 @@ CaminoManager es una aplicación web que permite a los responsables de la ciudad
 - Componentes en React con Shadcn UI
 - Esquema de colores: por definir
 - Responsive design (mobile-first)
-- Quiero que se pueda cambiar entre oscuro y claro
 
 ## Informacion semilla
 NOTAS: Requiere de una supervision especial, es necesario hacerlo paso a paso por cada tabla.
@@ -161,15 +162,27 @@ Ten en cuenta la siguiente informacion al momento de generar la semilla:
   
 
 ## Supabase
-### Inicializacion
+Para iniciar el ambiente local, cd a la carpeta supabase y ejecutar npx supabase start.
+
+### Inicializacion del proyecto local
 - npx supabase init
 - npx supabase login
+
+### Configurar Supabase server side auth
+Ejecutar npm install @supabase/ssr
+Tomar los archivos client.ts y server.ts desde la pagina: https://supabase.com/docs/guides/getting-started/tutorials/with-nextjs?queryGroups=database-method&database-method=sql&queryGroups=language&language=ts#supabase-utilities
+
+
 
 ### Documentacion manejo de base de datos supabase
 - Desde un terminal ejecutar para crear migracion: npx supabase migration new init-schema
 - Luego ejecutar npx supabase db push
 - Si se requiere algun revert eliminar el archivo de migracion y ejecutar lo siguiente: npx supabase migration repair --status reverted 20250516211117
 
-
 ## Prompts
 Estoy construyendo una aplicación para el manejo de las comunidades neocatecumenales. Para empezar, implementa la Fase 1.1 de mi PRD: configuración del proyecto Next.js con Supabase y diseño inicial de la base de datos para gestionar usuarios y listados de libros."
+
+## Troubleshoot
+Desde una maquina que no tenga Docker Desktop es necesario modificar el etc/host manualmente para incluir una entrada como la siguiente:
+IP de windows host.docker.internal
+
