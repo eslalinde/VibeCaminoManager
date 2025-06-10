@@ -19,8 +19,9 @@ export default function AccountPage() {
     async function fetchUser() {
       const { data } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (!data.user) {
         redirect('/login');
+        return;
       }
       
       setUser(data.user);
@@ -134,13 +135,6 @@ export default function AccountPage() {
         >
           {loading ? "Cargando ..." : "Actualizar"}
         </Button>
-      </div>
-      <div>
-        <form action="/auth/signout" method="post">
-          <Button className="w-full" type="submit" variant="outline">
-            Cerrar sesión
-          </Button>
-        </form>
       </div>
     </div>
   );
