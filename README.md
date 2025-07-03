@@ -125,6 +125,12 @@ CaminoManager es una aplicación web que permite a los responsables de la ciudad
 6. Creacion de la pagina de registro
 7. Creación de layout básico y navegación y error general
 
+## Fase 2: Datos maestros 
+### 1. Maestro Pais
+1. Realizar el CRUD de pais segun los requisitos de la pantalla principal
+2. Agregar las politicas de los permisos que se requieren en supabase para acceder al API de paises
+3. Debe estar ubicado en la carpeta protected sobre una carpeta country
+4. Tener una pagina principal con una tabla
 
 ## Estándares técnicos de base de datos
 - Mantener un esquema de migraciones para la base de datos
@@ -162,7 +168,7 @@ Ten en cuenta la siguiente informacion al momento de generar la semilla:
   
 
 ## Supabase
-Para iniciar el ambiente local, cd a la carpeta supabase y ejecutar npx supabase start.
+Para iniciar el ambiente local, cd a la carpeta supabase y ejecutar npx supabase start. Para actualizar supabase corra el siguiente comando: npm update supabase --save-dev
 
 ### Inicializacion del proyecto local
 - npx supabase init
@@ -171,7 +177,6 @@ Para iniciar el ambiente local, cd a la carpeta supabase y ejecutar npx supabase
 ### Configurar Supabase server side auth
 Ejecutar npm install @supabase/ssr
 Tomar los archivos client.ts y server.ts desde la pagina: https://supabase.com/docs/guides/getting-started/tutorials/with-nextjs?queryGroups=database-method&database-method=sql&queryGroups=language&language=ts#supabase-utilities
-
 
 
 ### Documentacion manejo de base de datos supabase
