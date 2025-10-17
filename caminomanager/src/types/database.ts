@@ -75,6 +75,13 @@ export interface FormField {
   validation?: (value: any) => string | null;
 }
 
+export interface ForeignKeyConfig {
+  foreignKey: string;
+  tableName: string;
+  displayField: string;
+  alias?: string;
+}
+
 export interface EntityConfig<T> {
   tableName: string;
   displayName: string;
@@ -82,4 +89,5 @@ export interface EntityConfig<T> {
   searchFields: (keyof T)[];
   sortableFields: (keyof T)[];
   defaultSort: { field: keyof T; asc: boolean };
+  foreignKeys?: ForeignKeyConfig[];
 } 

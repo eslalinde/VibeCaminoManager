@@ -59,7 +59,15 @@ export const stateConfig: EntityConfig<State> = {
   ],
   searchFields: ['name'],
   sortableFields: ['name'],
-  defaultSort: { field: 'name', asc: true }
+  defaultSort: { field: 'name', asc: true },
+  foreignKeys: [
+    {
+      foreignKey: 'country_id',
+      tableName: 'countries',
+      displayField: 'name',
+      alias: 'country'
+    }
+  ]
 };
 
 // Configuración para Ciudades
@@ -94,7 +102,21 @@ export const cityConfig: EntityConfig<City> = {
   ],
   searchFields: ['name'],
   sortableFields: ['name'],
-  defaultSort: { field: 'name', asc: true }
+  defaultSort: { field: 'name', asc: true },
+  foreignKeys: [
+    {
+      foreignKey: 'country_id',
+      tableName: 'countries',
+      displayField: 'name',
+      alias: 'country'
+    },
+    {
+      foreignKey: 'state_id',
+      tableName: 'states',
+      displayField: 'name',
+      alias: 'state'
+    }
+  ]
 };
 
 // Configuración para Parroquias
@@ -153,7 +175,15 @@ export const parishConfig: EntityConfig<Parish> = {
   ],
   searchFields: ['name', 'diocese'],
   sortableFields: ['name', 'diocese'],
-  defaultSort: { field: 'name', asc: true }
+  defaultSort: { field: 'name', asc: true },
+  foreignKeys: [
+    {
+      foreignKey: 'city_id',
+      tableName: 'cities',
+      displayField: 'name',
+      alias: 'city'
+    }
+  ]
 };
 
 // Configuración para Caminos de Formación

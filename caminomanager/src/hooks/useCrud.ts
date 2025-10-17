@@ -2,11 +2,19 @@ import { useState, useCallback, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { CrudOperation, QueryParams, BaseEntity } from '@/types/database';
 
+export interface ForeignKeyRelation {
+  foreignKey: string;
+  tableName: string;
+  displayField: string;
+  alias?: string;
+}
+
 export interface UseCrudOptions<T extends BaseEntity> {
   tableName: string;
   searchFields?: (keyof T)[];
   defaultSort?: { field: keyof T; asc: boolean };
   pageSize?: number;
+  foreignKeys?: ForeignKeyRelation[];
 }
 
 export interface UseCrudReturn<T extends BaseEntity> {
@@ -36,7 +44,8 @@ export function useCrud<T extends BaseEntity>({
   tableName,
   searchFields = [],
   defaultSort = { field: 'id' as keyof T, asc: true },
-  pageSize = 10
+  pageSize = 10,
+  foreignKeys = []
 }: UseCrudOptions<T>): UseCrudReturn<T> {
   const supabase = useMemo(() => createClient(), []);
   
@@ -57,7 +66,16 @@ export function useCrud<T extends BaseEntity>({
     setError(null);
     
     try {
-      let query = supabase.from(tableName).select('*', { count: 'exact' });
+      // Build select statement with foreign key joins
+      let selectFields = '*';
+      if (foreignKeys.length > 0) {
+        const foreignKeySelects = foreignKeys.map(fk => {
+          return `${fk.tableName}:${fk.foreignKey}(${fk.displayField})`;
+        });
+        selectFields = `*, ${foreignKeySelects.join(', ')}`;
+      }
+      
+      let query = supabase.from(tableName).select(selectFields, { count: 'exact' });
       
       // Apply search
       const searchTerm = params?.search || search;
@@ -82,7 +100,7 @@ export function useCrud<T extends BaseEntity>({
       
       if (queryError) throw queryError;
       
-      setData(result || []);
+      setData((result as unknown as T[]) || []);
       setCount(totalCount || 0);
     } catch (err: any) {
       setError(err.message || 'Error al cargar los datos');
@@ -90,7 +108,7 @@ export function useCrud<T extends BaseEntity>({
     } finally {
       setLoading(false);
     }
-  }, [supabase, tableName, searchFields, search, sort, page, pageSize]);
+  }, [supabase, tableName, searchFields, pageSize, foreignKeys]);
 
   const create = useCallback(async (newData: Omit<T, 'id' | 'created_at' | 'updated_at'>) => {
     setLoading(true);

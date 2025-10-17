@@ -7,6 +7,10 @@ interface Column<T> {
   label: string;
   sortable?: boolean;
   render?: (value: any, item: T) => React.ReactNode;
+  foreignKey?: {
+    tableName: string;
+    displayField: string;
+  };
 }
 
 interface EntityTableProps<T extends BaseEntity> {
@@ -18,6 +22,25 @@ interface EntityTableProps<T extends BaseEntity> {
   onEdit: (item: T) => void;
   onDelete: (id: number) => void;
   emptyMessage?: string;
+}
+
+// Helper function to render foreign key values
+function renderForeignKeyValue<T extends BaseEntity>(
+  item: T, 
+  key: keyof T, 
+  foreignKey: { tableName: string; displayField: string }
+): string {
+  // Access the related data using the table name as property
+  const relatedData = (item as any)[foreignKey.tableName];
+  
+  // Check if the related data exists and has the display field
+  if (relatedData && typeof relatedData === 'object') {
+    return String(relatedData[foreignKey.displayField] || '');
+  }
+  
+  // Fallback to showing the ID if no JOIN data is available
+  const foreignKeyData = item[key] as any;
+  return String(foreignKeyData || '');
 }
 
 export function EntityTable<T extends BaseEntity>({
@@ -80,7 +103,9 @@ export function EntityTable<T extends BaseEntity>({
                   <TableCell key={String(column.key)}>
                     {column.render 
                       ? column.render(item[column.key], item)
-                      : String(item[column.key] || '')
+                      : column.foreignKey 
+                        ? renderForeignKeyValue(item, column.key, column.foreignKey)
+                        : String(item[column.key] || '')
                     }
                   </TableCell>
                 ))}

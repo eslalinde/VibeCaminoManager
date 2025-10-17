@@ -40,18 +40,19 @@ export function EntityPage<T extends BaseEntity>({
     tableName: config.tableName,
     searchFields: config.searchFields,
     defaultSort: config.defaultSort,
-    pageSize
+    pageSize,
+    foreignKeys: config.foreignKeys
   });
 
   // Fetch data when search, sort, or page changes
   useEffect(() => {
-    fetchData({ search, sort, page });
-  }, [search, sort, page, fetchData]);
+    fetchData({ search, sort: { field: sort.field as string, asc: sort.asc }, page });
+  }, [search, sort, page]);
 
   const handleSave = async (formData: Omit<T, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       if (editing) {
-        await update(editing.id!, formData);
+        await update(editing.id!, formData as Partial<T>);
       } else {
         await create(formData);
       }
@@ -92,11 +93,19 @@ export function EntityPage<T extends BaseEntity>({
   };
 
   // Create table columns from config
-  const columns = config.fields.map(field => ({
-    key: field.name as keyof T,
-    label: field.label,
-    sortable: config.sortableFields.includes(field.name as keyof T),
-  }));
+  const columns = config.fields.map(field => {
+    const foreignKeyConfig = config.foreignKeys?.find(fk => fk.foreignKey === field.name);
+    
+    return {
+      key: field.name as keyof T,
+      label: field.label,
+      sortable: config.sortableFields.includes(field.name as keyof T),
+      foreignKey: foreignKeyConfig ? {
+        tableName: foreignKeyConfig.tableName,
+        displayField: foreignKeyConfig.displayField
+      } : undefined
+    };
+  });
 
   // Determine if we need dynamic modal (has foreign keys that need dynamic options)
   const needsDynamicModal = config.fields.some(field => 
@@ -160,14 +169,14 @@ export function EntityPage<T extends BaseEntity>({
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
-                onClick={() => setPage(p => Math.max(1, p - 1))} 
+                onClick={() => setPage(Math.max(1, page - 1))} 
                 disabled={page === 1}
               >
                 Anterior
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+                onClick={() => setPage(Math.min(totalPages, page + 1))} 
                 disabled={page === totalPages}
               >
                 Siguiente
