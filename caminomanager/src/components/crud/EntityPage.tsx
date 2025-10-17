@@ -102,7 +102,12 @@ export function EntityPage<T extends BaseEntity>({
       sortable: config.sortableFields.includes(field.name as keyof T),
       foreignKey: foreignKeyConfig ? {
         tableName: foreignKeyConfig.tableName,
-        displayField: foreignKeyConfig.displayField
+        displayField: foreignKeyConfig.displayField,
+        alias: foreignKeyConfig.alias
+      } : undefined,
+      // Solo usar renderValue si no hay foreignKey configurado
+      render: (!foreignKeyConfig && config.renderValue) ? (value: any, item: T) => {
+        return config.renderValue!(field.name, value);
       } : undefined
     };
   });
@@ -110,7 +115,7 @@ export function EntityPage<T extends BaseEntity>({
   // Determine if we need dynamic modal (has foreign keys that need dynamic options)
   const needsDynamicModal = config.fields.some(field => 
     field.name.includes('_id') && field.type === 'select' && 
-    (field.name === 'country_id' || field.name === 'state_id' || field.name === 'city_id' || field.name === 'parish_id')
+    (field.name === 'country_id' || field.name === 'state_id' || field.name === 'city_id' || field.name === 'parish_id' || field.name === 'spouse_id')
   );
 
   return (

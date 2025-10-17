@@ -70,7 +70,8 @@ export function useCrud<T extends BaseEntity>({
       let selectFields = '*';
       if (foreignKeys.length > 0) {
         const foreignKeySelects = foreignKeys.map(fk => {
-          return `${fk.tableName}:${fk.foreignKey}(${fk.displayField})`;
+          const alias = fk.alias || fk.tableName;
+          return `${alias}:${fk.foreignKey}(${fk.displayField})`;
         });
         selectFields = `*, ${foreignKeySelects.join(', ')}`;
       }

@@ -23,6 +23,7 @@ import {
   useStateOptions,
   useCityOptions,
   useParishOptions,
+  usePeopleOptions,
 } from "@/hooks/useEntityOptions";
 
 interface DynamicEntityModalProps<T extends BaseEntity> {
@@ -57,6 +58,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
     formData.state_id
   );
   const { options: parishOptions } = useParishOptions(formData.city_id);
+  const { options: peopleOptions } = usePeopleOptions(initial?.id);
 
   useEffect(() => {
     if (open) {
@@ -204,6 +206,12 @@ export function DynamicEntityModal<T extends BaseEntity>({
       return undefined;
     }
     
+    // Buscar el campo en la configuración para obtener sus opciones
+    const fieldConfig = fields.find(f => f.name === fieldName);
+    if (fieldConfig && fieldConfig.options) {
+      return fieldConfig.options;
+    }
+    
     switch (fieldName) {
       case "country_id":
         return countryOptions;
@@ -213,6 +221,8 @@ export function DynamicEntityModal<T extends BaseEntity>({
         return cityOptions;
       case "parish_id":
         return parishOptions;
+      case "spouse_id":
+        return peopleOptions;
       default:
         return fieldName.includes("_id") ? [] : undefined;
     }

@@ -1,5 +1,5 @@
 import { EntityConfig, FormField } from '@/types/database';
-import { Country, State, City, Parish, StepWay, TeamType } from '@/types/database';
+import { Country, State, City, Parish, StepWay, TeamType, Person } from '@/types/database';
 
 // Configuración para Países
 export const countryConfig: EntityConfig<Country> = {
@@ -238,6 +238,119 @@ export const teamTypeConfig: EntityConfig<TeamType> = {
   defaultSort: { field: 'order_num', asc: true }
 };
 
+// Configuración para Personas
+export const personConfig: EntityConfig<Person> = {
+  tableName: 'people',
+  displayName: 'Persona',
+  fields: [
+    {
+      name: 'person_name',
+      label: 'Nombre',
+      type: 'text',
+      required: true,
+      maxLength: 256,
+      placeholder: 'Ingrese el nombre completo'
+    },
+    {
+      name: 'phone',
+      label: 'Teléfono',
+      type: 'text',
+      required: false,
+      maxLength: 50,
+      placeholder: 'Ingrese el número de teléfono'
+    },
+    {
+      name: 'mobile',
+      label: 'Celular',
+      type: 'text',
+      required: false,
+      maxLength: 50,
+      placeholder: 'Ingrese el número de celular'
+    },
+    {
+      name: 'email',
+      label: 'Correo electrónico',
+      type: 'email',
+      required: false,
+      maxLength: 256,
+      placeholder: 'Ingrese el correo electrónico'
+    },
+    {
+      name: 'person_type_id',
+      label: 'Carisma',
+      type: 'select',
+      required: false,
+      options: [
+        { value: 1, label: 'Casado' },
+        { value: 2, label: 'Soltero' },
+        { value: 3, label: 'Presbítero' },
+        { value: 4, label: 'Seminarista' },
+        { value: 5, label: 'Diácono' },
+        { value: 6, label: 'Monja' },
+        { value: 7, label: 'Viudo' }
+      ],
+      placeholder: 'Seleccione el carisma'
+    },
+    {
+      name: 'gender_id',
+      label: 'Género',
+      type: 'select',
+      required: false,
+      options: [
+        { value: 1, label: 'Masculino' },
+        { value: 2, label: 'Femenino' }
+      ],
+      placeholder: 'Seleccione el género'
+    },
+    {
+      name: 'spouse_id',
+      label: 'Cónyuge',
+      type: 'select',
+      required: false,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione el cónyuge (opcional)'
+    }
+  ],
+  searchFields: ['person_name', 'email'],
+  sortableFields: ['person_name', 'email'],
+  defaultSort: { field: 'person_name', asc: true },
+  foreignKeys: [
+    {
+      foreignKey: 'spouse_id',
+      tableName: 'people',
+      displayField: 'person_name',
+      alias: 'spouse'
+    }
+  ],
+  // Función para renderizar valores personalizados en la tabla
+  renderValue: (fieldName: string, value: any) => {
+    if (fieldName === 'person_type_id') {
+      const personTypeOptions = [
+        { value: 1, label: 'Casado' },
+        { value: 2, label: 'Soltero' },
+        { value: 3, label: 'Presbítero' },
+        { value: 4, label: 'Seminarista' },
+        { value: 5, label: 'Diácono' },
+        { value: 6, label: 'Monja' },
+        { value: 7, label: 'Viudo' }
+      ];
+      const option = personTypeOptions.find(opt => opt.value === value);
+      return option ? option.label : String(value || '');
+    }
+    
+    if (fieldName === 'gender_id') {
+      const genderOptions = [
+        { value: 1, label: 'Masculino' },
+        { value: 2, label: 'Femenino' }
+      ];
+      const option = genderOptions.find(opt => opt.value === value);
+      return option ? option.label : String(value || '');
+    }
+    
+    return String(value || '');
+  }
+};
+
 // Exportar todas las configuraciones
 export const entityConfigs = {
   countries: countryConfig,
@@ -245,5 +358,6 @@ export const entityConfigs = {
   cities: cityConfig,
   parishes: parishConfig,
   stepWays: stepWayConfig,
-  teamTypes: teamTypeConfig
+  teamTypes: teamTypeConfig,
+  people: personConfig
 }; 

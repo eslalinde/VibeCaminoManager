@@ -45,6 +45,17 @@ export interface TeamType extends BaseEntity {
   order_num?: number;
 }
 
+export interface Person extends BaseEntity {
+  person_name: string;
+  phone?: string;
+  mobile?: string;
+  email?: string;
+  person_type_id?: number;
+  gender_id?: number;
+  spouse_id?: number;
+  spouse?: Person;
+}
+
 // Tipos para operaciones CRUD
 export interface CrudOperation<T> {
   create: (data: Omit<T, 'id' | 'created_at' | 'updated_at'>) => Promise<T>;
@@ -90,4 +101,5 @@ export interface EntityConfig<T> {
   sortableFields: (keyof T)[];
   defaultSort: { field: keyof T; asc: boolean };
   foreignKeys?: ForeignKeyConfig[];
+  renderValue?: (fieldName: string, value: any) => string;
 } 

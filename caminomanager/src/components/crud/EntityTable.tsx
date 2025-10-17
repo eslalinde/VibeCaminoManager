@@ -10,6 +10,7 @@ interface Column<T> {
   foreignKey?: {
     tableName: string;
     displayField: string;
+    alias?: string;
   };
 }
 
@@ -28,10 +29,11 @@ interface EntityTableProps<T extends BaseEntity> {
 function renderForeignKeyValue<T extends BaseEntity>(
   item: T, 
   key: keyof T, 
-  foreignKey: { tableName: string; displayField: string }
+  foreignKey: { tableName: string; displayField: string; alias?: string }
 ): string {
-  // Access the related data using the table name as property
-  const relatedData = (item as any)[foreignKey.tableName];
+  // Use alias if available, otherwise use table name
+  const propertyName = foreignKey.alias || foreignKey.tableName;
+  const relatedData = (item as any)[propertyName];
   
   // Check if the related data exists and has the display field
   if (relatedData && typeof relatedData === 'object') {

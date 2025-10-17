@@ -3,6 +3,7 @@ export { EntityPage } from './EntityPage';
 export { EntityTable } from './EntityTable';
 export { EntityModal } from './EntityModal';
 export { DynamicEntityModal } from './DynamicEntityModal';
+export { MarriageModal } from './MarriageModal';
 
 // UI Components
 export { Textarea, TextareaPrimitive } from '@/components/ui/textarea';
@@ -27,6 +28,7 @@ export type {
   Parish, 
   StepWay, 
   TeamType,
+  Person,
   FormField,
   EntityConfig,
   CrudOperation,
@@ -41,5 +43,6 @@ export {
   parishConfig,
   stepWayConfig,
   teamTypeConfig,
+  personConfig,
   entityConfigs
 } from '@/config/entities'; 

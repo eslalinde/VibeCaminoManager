@@ -32,7 +32,12 @@ export function useEntityOptions<T extends BaseEntity>({
       // Apply filters
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
-          query = query.eq(key, value);
+          if (typeof value === 'object' && value.not !== undefined) {
+            // Handle "not" filters
+            query = query.neq(key, value.not);
+          } else {
+            query = query.eq(key, value);
+          }
         }
       });
       
@@ -105,5 +110,22 @@ export function useParishOptions(cityId?: number) {
     tableName: 'parishes',
     filters: cityId ? { city_id: cityId } : {},
     orderBy: { field: 'name', asc: true }
+  });
+}
+
+// Hook específico para personas (para cónyuges)
+export function usePeopleOptions(excludeId?: number) {
+  const filters: Record<string, any> = {};
+  if (excludeId) {
+    // Exclude the current person from spouse options
+    filters.id = { not: excludeId };
+  }
+  
+  return useEntityOptions({
+    tableName: 'people',
+    valueField: 'id',
+    labelField: 'person_name',
+    filters,
+    orderBy: { field: 'person_name', asc: true }
   });
 } 
