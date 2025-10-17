@@ -9,7 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@babel/runtime": "^7.27.6",
+    "@radix-ui/react-form": "^0.1.7",
+    "@radix-ui/react-navigation-menu": "^1.2.13",
+    "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/themes": "^3.2.1",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.4",
     "class-variance-authority": "^0.7.1",

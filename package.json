@@ -1,5 +1,14 @@
 {
+  "scripts": {
+    "dev:full": "concurrently \"cd supabase && npx supabase start\" \"cd caminomanager && npm run dev\" \"wait-on http://localhost:54321 http://localhost:3000 && start chrome http://localhost:54323 http://localhost:3000\"",
+    "dev:chrome": "start chrome http://localhost:54323 http://localhost:3000",
+    "dev:supabase": "cd supabase && npx supabase start",
+    "dev:react": "cd caminomanager && npm run dev",
+    "stop": "cd supabase && npx supabase stop"
+  },
   "devDependencies": {
-    "supabase": "^2.22.12"
+    "concurrently": "^8.2.2",
+    "supabase": "^2.22.12",
+    "wait-on": "^7.2.0"
   }
 }

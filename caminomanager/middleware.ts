@@ -14,13 +14,19 @@ export async function middleware(request: NextRequest) {
     return pathname === path || pathname.startsWith(`${path}/`)
   });
 
-  // 3. Skip auth check for public routes
+  // 3. Skip auth check for public routes and auth actions
   const publicRoutes = ['/login', '/signup', '/auth', '/'];
+  const authActionRoutes = ['/auth/signout', '/auth/confirm'];
   const isPublicRoute = publicRoutes.some((route) =>
     pathname === route || pathname.startsWith(`${route}/`)
-  );
+  ) || authActionRoutes.some((route) => pathname === route);
 
-  // 4. Always update the session first (refresh tokens if needed)
+  // 4. Skip session update for auth action routes to avoid interference
+  if (authActionRoutes.some((route) => pathname === route)) {
+    return NextResponse.next();
+  }
+
+  // 5. Always update the session first (refresh tokens if needed)
   let response = await updateSession(request);
 
   if (isProtected && !isPublicRoute) {

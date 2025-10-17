@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { loginAction } from "./actions";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +58,17 @@ export default function LoginPage() {
             <Button type="submit" className="w-full">
               Ingresar
             </Button>
+            
+            <div className="text-center text-sm text-gray-600">
+              ¿No tienes una cuenta?{" "}
+              <Link href="/signup" className="text-blue-600 hover:text-blue-800 underline">
+                Crear cuenta
+              </Link>
+              {" "}o{" "}
+              <Link href="/test-signup" className="text-green-600 hover:text-green-800 underline">
+                Probar registro
+              </Link>
+            </div>
           </form>
         </CardContent>
       </Card>

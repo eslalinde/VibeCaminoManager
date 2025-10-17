@@ -1,10 +1,12 @@
 import { createClient } from "@/utils/supabase/server";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Sidebar from "@/components/ui/Sidebar";
-import Header from "@/components/ui/Header";
+import Sidebar from "@/components/ui/sidebar";
+import Header from "@/components/ui/header";
 import "./globals.css";
 import React, { ReactElement } from "react";
+import { Theme } from "@radix-ui/themes";
+import "@radix-ui/themes/styles.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,19 +34,21 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {user ? (
-          <div className="flex h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 flex flex-col h-screen">
-              <Header userEmail={user.email} title="Caminos Manager" />
-              <main className="flex-1 overflow-y-auto p-6">
-                {children}
-              </main>
+        <Theme accentColor="amber" grayColor="mauve" panelBackground="solid">        
+          {user ? (
+            <div className="flex h-screen bg-gray-50">
+              <Sidebar />
+              <div className="flex-1 flex flex-col h-screen">
+                <Header userEmail={user.email} title="Caminos Manager" />
+                <main className="flex-1 overflow-y-auto p-6">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
-        ) : (
-          children
-        )}
+          ) : (
+            children
+          )}
+        </Theme>
       </body>
     </html>
   );

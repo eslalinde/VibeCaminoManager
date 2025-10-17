@@ -445,4 +445,138 @@ INSERT INTO community_step_log (id, community_id, step_way_id, date_of_step, pri
 -- NOTA: Los datos aquí son de ejemplo. Para el archivo final, se debe expandir cada sección con los 200 personas, matrimonios, equipos y relaciones según las reglas del README.
 
 -- El resto de los inserts (People, Communities, Teams, ParishTeams, Priests, Brothers, Belongs, CommunityStepLog) se generarán sintéticamente siguiendo las reglas del README y se agregarán aquí.
--- ... 
+-- ...
+
+-- ==============================================
+-- FIX SEQUENCES AFTER MANUAL ID INSERTS
+-- ==============================================
+-- This section updates all sequences to match the actual maximum ID values in each table
+-- This is necessary because when inserting with explicit IDs, PostgreSQL doesn't automatically update sequences
+
+-- Countries sequence (max ID: 1)
+SELECT setval('public.countries_id_seq', (SELECT MAX(id) FROM countries));
+
+-- States sequence (max ID: 32)
+SELECT setval('public.states_id_seq', (SELECT MAX(id) FROM states));
+
+-- Cities sequence (max ID: 32)
+SELECT setval('public.cities_id_seq', (SELECT MAX(id) FROM cities));
+
+-- People sequence (max ID: 200)
+SELECT setval('public.people_id_seq', (SELECT MAX(id) FROM people));
+
+-- Parishes sequence (max ID: 20)
+SELECT setval('public.parishes_id_seq', (SELECT MAX(id) FROM parishes));
+
+-- StepWays sequence (max ID: 10)
+SELECT setval('public.step_ways_id_seq', (SELECT MAX(id) FROM step_ways));
+
+-- TeamTypes sequence (max ID: 4)
+SELECT setval('public.team_types_id_seq', (SELECT MAX(id) FROM team_types));
+
+-- Communities sequence (max ID: 4)
+SELECT setval('public.communities_id_seq', (SELECT MAX(id) FROM communities));
+
+-- Teams sequence (max ID: 9)
+SELECT setval('public.teams_id_seq', (SELECT MAX(id) FROM teams));
+
+-- ParishTeams sequence (max ID: 9)
+SELECT setval('public.parish_teams_id_seq', (SELECT MAX(id) FROM parish_teams));
+
+-- Priests sequence (max ID: 14)
+SELECT setval('public.priests_id_seq', (SELECT MAX(id) FROM priests));
+
+-- Brothers sequence (max ID: 200)
+SELECT setval('public.brothers_id_seq', (SELECT MAX(id) FROM brothers));
+
+-- Belongs sequence (max ID: 35)
+SELECT setval('public.belongs_id_seq', (SELECT MAX(id) FROM belongs));
+
+-- CommunityStepLog sequence (max ID: 4)
+SELECT setval('public.community_step_log_id_seq', (SELECT MAX(id) FROM community_step_log));
+
+-- Verify the sequences are updated correctly
+SELECT 
+    'countries' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM countries) as max_id
+FROM countries_id_seq
+UNION ALL
+SELECT 
+    'states' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM states) as max_id
+FROM states_id_seq
+UNION ALL
+SELECT 
+    'cities' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM cities) as max_id
+FROM cities_id_seq
+UNION ALL
+SELECT 
+    'people' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM people) as max_id
+FROM people_id_seq
+UNION ALL
+SELECT 
+    'parishes' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM parishes) as max_id
+FROM parishes_id_seq
+UNION ALL
+SELECT 
+    'step_ways' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM step_ways) as max_id
+FROM step_ways_id_seq
+UNION ALL
+SELECT 
+    'team_types' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM team_types) as max_id
+FROM team_types_id_seq
+UNION ALL
+SELECT 
+    'communities' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM communities) as max_id
+FROM communities_id_seq
+UNION ALL
+SELECT 
+    'teams' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM teams) as max_id
+FROM teams_id_seq
+UNION ALL
+SELECT 
+    'parish_teams' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM parish_teams) as max_id
+FROM parish_teams_id_seq
+UNION ALL
+SELECT 
+    'priests' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM priests) as max_id
+FROM priests_id_seq
+UNION ALL
+SELECT 
+    'brothers' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM brothers) as max_id
+FROM brothers_id_seq
+UNION ALL
+SELECT 
+    'belongs' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM belongs) as max_id
+FROM belongs_id_seq
+UNION ALL
+SELECT 
+    'community_step_log' as table_name, 
+    last_value as sequence_value, 
+    (SELECT MAX(id) FROM community_step_log) as max_id
+FROM community_step_log_id_seq
+ORDER BY table_name; 
