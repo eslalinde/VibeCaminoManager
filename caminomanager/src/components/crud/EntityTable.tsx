@@ -22,6 +22,7 @@ interface EntityTableProps<T extends BaseEntity> {
   onSort: (field: keyof T) => void;
   onEdit: (item: T) => void;
   onDelete: (id: number) => void;
+  onRowClick?: (item: T) => void;
   emptyMessage?: string;
 }
 
@@ -53,6 +54,7 @@ export function EntityTable<T extends BaseEntity>({
   onSort,
   onEdit,
   onDelete,
+  onRowClick,
   emptyMessage = "No hay datos"
 }: EntityTableProps<T>) {
   const handleDelete = (id: number | undefined) => {
@@ -100,7 +102,11 @@ export function EntityTable<T extends BaseEntity>({
             </TableRow>
           ) : (
             data.map((item, index) => (
-              <TableRow key={item.id || index}>
+              <TableRow 
+                key={item.id || index}
+                className={onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}
+                onClick={() => onRowClick?.(item)}
+              >
                 {columns.map(column => (
                   <TableCell key={String(column.key)}>
                     {column.render 

@@ -1,5 +1,5 @@
 import { EntityConfig, FormField } from '@/types/database';
-import { Country, State, City, Parish, StepWay, TeamType, Person } from '@/types/database';
+import { Country, State, City, Parish, StepWay, TeamType, Person, Community } from '@/types/database';
 
 // Configuración para Países
 export const countryConfig: EntityConfig<Country> = {
@@ -351,6 +351,83 @@ export const personConfig: EntityConfig<Person> = {
   }
 };
 
+// Configuración para Comunidades
+export const communityConfig: EntityConfig<Community> = {
+  tableName: 'communities',
+  displayName: 'Comunidad',
+  fields: [
+    {
+      name: 'number',
+      label: 'Número',
+      type: 'text',
+      required: true,
+      maxLength: 50,
+      placeholder: 'Ingrese el número de la comunidad'
+    },
+    {
+      name: 'born_date',
+      label: 'Fecha de Nacimiento',
+      type: 'text',
+      required: false,
+      placeholder: 'YYYY-MM-DD'
+    },
+    {
+      name: 'parish_id',
+      label: 'Parroquia',
+      type: 'select',
+      required: false,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione una parroquia'
+    },
+    {
+      name: 'born_brothers',
+      label: 'Hermanos Iniciales',
+      type: 'number',
+      required: false,
+      placeholder: 'Ingrese el número de hermanos iniciales'
+    },
+    {
+      name: 'actual_brothers',
+      label: 'Hermanos Actuales',
+      type: 'number',
+      required: false,
+      placeholder: 'Ingrese el número de hermanos actuales'
+    },
+    {
+      name: 'step_way_id',
+      label: 'Etapa Actual',
+      type: 'select',
+      required: false,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione la etapa actual'
+    },
+    {
+      name: 'last_step_way_date',
+      label: 'Fecha Última Etapa',
+      type: 'text',
+      required: false,
+      placeholder: 'YYYY-MM-DD'
+    }
+  ],
+  searchFields: ['number'],
+  sortableFields: ['number', 'born_date', 'actual_brothers'],
+  defaultSort: { field: 'number', asc: true },
+  foreignKeys: [
+    {
+      foreignKey: 'parish_id',
+      tableName: 'parishes',
+      displayField: 'name',
+      alias: 'parish'
+    },
+    {
+      foreignKey: 'step_way_id',
+      tableName: 'step_ways',
+      displayField: 'name',
+      alias: 'step_way'
+    }
+  ]
+};
+
 // Exportar todas las configuraciones
 export const entityConfigs = {
   countries: countryConfig,
@@ -359,5 +436,6 @@ export const entityConfigs = {
   parishes: parishConfig,
   stepWays: stepWayConfig,
   teamTypes: teamTypeConfig,
-  people: personConfig
+  people: personConfig,
+  communities: communityConfig
 }; 

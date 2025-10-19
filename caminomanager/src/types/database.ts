@@ -56,6 +56,42 @@ export interface Person extends BaseEntity {
   spouse?: Person;
 }
 
+export interface Community extends BaseEntity {
+  number: string;
+  born_date?: string;
+  parish_id?: number;
+  born_brothers?: number;
+  actual_brothers?: number;
+  step_way_id?: number;
+  last_step_way_date?: string;
+  cathechist_team_id?: number;
+  // Relations
+  parish?: Parish;
+  step_way?: StepWay;
+}
+
+export interface Brother extends BaseEntity {
+  person_id: number;
+  community_id: number;
+  person?: Person;
+}
+
+export interface Team extends BaseEntity {
+  name: string;
+  team_type_id: number;
+  community_id: number;
+  team_type?: TeamType;
+}
+
+export interface Belongs extends BaseEntity {
+  person_id: number;
+  community_id: number;
+  team_id: number;
+  is_responsible_for_the_team: boolean;
+  person?: Person;
+  team?: Team;
+}
+
 // Tipos para operaciones CRUD
 export interface CrudOperation<T> {
   create: (data: Omit<T, 'id' | 'created_at' | 'updated_at'>) => Promise<T>;

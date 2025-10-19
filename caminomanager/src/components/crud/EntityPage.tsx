@@ -11,11 +11,13 @@ import { BaseEntity, FormField, EntityConfig } from '@/types/database';
 interface EntityPageProps<T extends BaseEntity> {
   config: EntityConfig<T>;
   pageSize?: number;
+  onRowClick?: (item: T) => void;
 }
 
 export function EntityPage<T extends BaseEntity>({ 
   config, 
-  pageSize = 10 
+  pageSize = 10,
+  onRowClick
 }: EntityPageProps<T>) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<T | null>(null);
@@ -162,6 +164,7 @@ export function EntityPage<T extends BaseEntity>({
             onSort={handleSort}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onRowClick={onRowClick}
             emptyMessage={`No hay ${config.displayName.toLowerCase()}s`}
           />
 
