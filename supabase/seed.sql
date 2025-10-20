@@ -93,27 +93,27 @@ INSERT INTO step_ways (id, name, order_num) VALUES
   (10, 'Renovación Promesas Bautismales', 10);
 
 -- Parishes
-INSERT INTO parishes (id, name, diocese, address, phone, email, city_id) VALUES
-  (1, 'Parroquia La Visitación', 'Diócesis de Medellín', 'Calle 12 #35-21, Medellín', '3065874400', 'pquia.visitacion@iglesia.org', 2),
-  (2, 'Parroquia Santa María de los Ángeles', 'Diócesis de Medellín', 'Carrera 43A #18-60, Medellín', '3065874401', 'sma.angeles@iglesia.org', 2),
-  (3, 'Parroquia La Balbanera', 'Diócesis de Medellín', 'Calle 30 #65-50, Medellín', '3065874402', 'balbanera@iglesia.org', 2),
-  (4, 'Parroquia Santuario Niño Jesús de Praga', 'Diócesis de Medellín', 'Carrera 50 #49-30, Medellín', '3065874403', 'ninojesus.praga@iglesia.org', 2),
-  (5, 'Parroquia Nuestra Señora del Sagrado Corazón', 'Diócesis de Medellín', 'Calle 45 #80-20, Medellín', '3065874404', 'ns.sagradocorazon@iglesia.org', 2),
-  (6, 'Parroquia María Madre Admirable', 'Diócesis de Medellín', 'Carrera 70 #32-15, Medellín', '3065874405', 'madre.admirable@iglesia.org', 2),
-  (7, 'Parroquia El Señor de las Misericordias', 'Diócesis de Medellín', 'Calle 50 #40-10, Medellín', '3065874406', 'senor.misericordias@iglesia.org', 2),
-  (8, 'Parroquia San José de El Poblado', 'Diócesis de Medellín', 'Carrera 43A #9-50, Medellín', '3065874407', 'san.jose.poblado@iglesia.org', 2),
-  (9, 'Parroquia San Joaquín', 'Diócesis de Medellín', 'Calle 42 #68-20, Medellín', '3065874408', 'san.joaquin@iglesia.org', 2),
-  (10, 'Parroquia San Cayetano', 'Diócesis de Medellín', 'Carrera 65 #48-30, Medellín', '3065874409', 'san.cayetano@iglesia.org', 2),
-  (11, 'Parroquia San Juan Bosco', 'Diócesis de Medellín', 'Calle 44 #80-15, Medellín', '3065874410', 'san.juanbosco@iglesia.org', 2),
-  (12, 'Parroquia San Antonio de Padua', 'Diócesis de Medellín', 'Carrera 52 #49-20, Medellín', '3065874411', 'san.antonio.padua@iglesia.org', 2),
-  (13, 'Parroquia Nuestra Señora de Chiquinquirá', 'Diócesis de Medellín', 'Calle 54 #80-30, Medellín', '3065874412', 'ns.chiquinquira@iglesia.org', 2),
-  (14, 'Parroquia Nuestra Señora de Belén', 'Diócesis de Medellín', 'Carrera 76 #32-20, Medellín', '3065874413', 'ns.belen@iglesia.org', 2),
-  (15, 'Parroquia Nuestra Señora del Rosario', 'Diócesis de Medellín', 'Calle 51 #50-10, Medellín', '3065874414', 'ns.rosario@iglesia.org', 2),
-  (16, 'Parroquia Nuestra Señora de la Candelaria', 'Diócesis de Medellín', 'Carrera 50 #51-30, Medellín', '3065874415', 'ns.candelaria@iglesia.org', 2),
-  (17, 'Parroquia Nuestra Señora de Fátima', 'Diócesis de Medellín', 'Calle 60 #80-40, Medellín', '3065874416', 'ns.fatima@iglesia.org', 2),
-  (18, 'Parroquia Nuestra Señora de Guadalupe', 'Diócesis de Medellín', 'Carrera 65 #30-50, Medellín', '3065874417', 'ns.guadalupe@iglesia.org', 2),
-  (19, 'Parroquia Nuestra Señora de las Lajas', 'Diócesis de Medellín', 'Calle 70 #80-50, Medellín', '3065874418', 'ns.lajas@iglesia.org', 2),
-  (20, 'Parroquia Nuestra Señora de Lourdes', 'Diócesis de Medellín', 'Carrera 80 #32-60, Medellín', '3065874419', 'ns.lourdes@iglesia.org', 2);
+INSERT INTO parishes (id, name, diocese, address, phone, email, country_id, state_id, city_id) VALUES
+  (1, 'Parroquia La Visitación', 'Diócesis de Medellín', 'Calle 12 #35-21, Medellín', '3065874400', 'pquia.visitacion@iglesia.org', 1, 2, 2),
+  (2, 'Parroquia Santa María de los Ángeles', 'Diócesis de Medellín', 'Carrera 43A #18-60, Medellín', '3065874401', 'sma.angeles@iglesia.org', 1, 2, 2),
+  (3, 'Parroquia La Balbanera', 'Diócesis de Medellín', 'Calle 30 #65-50, Medellín', '3065874402', 'balbanera@iglesia.org', 1, 2, 2),
+  (4, 'Parroquia Santuario Niño Jesús de Praga', 'Diócesis de Medellín', 'Carrera 50 #49-30, Medellín', '3065874403', 'ninojesus.praga@iglesia.org', 1, 2, 2),
+  (5, 'Parroquia Nuestra Señora del Sagrado Corazón', 'Diócesis de Medellín', 'Calle 45 #80-20, Medellín', '3065874404', 'ns.sagradocorazon@iglesia.org', 1, 2, 2),
+  (6, 'Parroquia María Madre Admirable', 'Diócesis de Medellín', 'Carrera 70 #32-15, Medellín', '3065874405', 'madre.admirable@iglesia.org', 1, 2, 2),
+  (7, 'Parroquia El Señor de las Misericordias', 'Diócesis de Medellín', 'Calle 50 #40-10, Medellín', '3065874406', 'senor.misericordias@iglesia.org', 1, 2, 2),
+  (8, 'Parroquia San José de El Poblado', 'Diócesis de Medellín', 'Carrera 43A #9-50, Medellín', '3065874407', 'san.jose.poblado@iglesia.org', 1, 2, 2),
+  (9, 'Parroquia San Joaquín', 'Diócesis de Medellín', 'Calle 42 #68-20, Medellín', '3065874408', 'san.joaquin@iglesia.org', 1, 2, 2),
+  (10, 'Parroquia San Cayetano', 'Diócesis de Medellín', 'Carrera 65 #48-30, Medellín', '3065874409', 'san.cayetano@iglesia.org', 1, 2, 2),
+  (11, 'Parroquia San Juan Bosco', 'Diócesis de Medellín', 'Calle 44 #80-15, Medellín', '3065874410', 'san.juanbosco@iglesia.org', 1, 2, 2),
+  (12, 'Parroquia San Antonio de Padua', 'Diócesis de Medellín', 'Carrera 52 #49-20, Medellín', '3065874411', 'san.antonio.padua@iglesia.org', 1, 2, 2),
+  (13, 'Parroquia Nuestra Señora de Chiquinquirá', 'Diócesis de Medellín', 'Calle 54 #80-30, Medellín', '3065874412', 'ns.chiquinquira@iglesia.org', 1, 2, 2),
+  (14, 'Parroquia Nuestra Señora de Belén', 'Diócesis de Medellín', 'Carrera 76 #32-20, Medellín', '3065874413', 'ns.belen@iglesia.org', 1, 2, 2),
+  (15, 'Parroquia Nuestra Señora del Rosario', 'Diócesis de Medellín', 'Calle 51 #50-10, Medellín', '3065874414', 'ns.rosario@iglesia.org', 1, 2, 2),
+  (16, 'Parroquia Nuestra Señora de la Candelaria', 'Diócesis de Medellín', 'Carrera 50 #51-30, Medellín', '3065874415', 'ns.candelaria@iglesia.org', 1, 2, 2),
+  (17, 'Parroquia Nuestra Señora de Fátima', 'Diócesis de Medellín', 'Calle 60 #80-40, Medellín', '3065874416', 'ns.fatima@iglesia.org', 1, 2, 2),
+  (18, 'Parroquia Nuestra Señora de Guadalupe', 'Diócesis de Medellín', 'Carrera 65 #30-50, Medellín', '3065874417', 'ns.guadalupe@iglesia.org', 1, 2, 2),
+  (19, 'Parroquia Nuestra Señora de las Lajas', 'Diócesis de Medellín', 'Calle 70 #80-50, Medellín', '3065874418', 'ns.lajas@iglesia.org', 1, 2, 2),
+  (20, 'Parroquia Nuestra Señora de Lourdes', 'Diócesis de Medellín', 'Carrera 80 #32-60, Medellín', '3065874419', 'ns.lourdes@iglesia.org', 1, 2, 2);
 
 -- People
 -- 200 personas: 90 hombres, 110 mujeres, 30 matrimonios, presbíteros, solteros, seminaristas, monjas, viudos

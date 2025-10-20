@@ -27,6 +27,7 @@ export function useEntityOptions<T extends BaseEntity>({
     setError(null);
     
     try {
+      console.log(`Fetching options for table: ${tableName}`);
       let query = supabase.from(tableName).select('*');
       
       // Apply filters
@@ -46,13 +47,19 @@ export function useEntityOptions<T extends BaseEntity>({
       
       const { data, error: queryError } = await query;
       
-      if (queryError) throw queryError;
+      if (queryError) {
+        console.error(`Query error for ${tableName}:`, queryError);
+        throw queryError;
+      }
+      
+      console.log(`Raw data for ${tableName}:`, data);
       
       const formattedOptions = (data || []).map(item => ({
         value: item[valueField],
         label: item[labelField]
       }));
       
+      console.log(`Formatted options for ${tableName}:`, formattedOptions);
       setOptions(formattedOptions);
     } catch (err: any) {
       setError(err.message || 'Error al cargar las opciones');
@@ -100,6 +107,14 @@ export function useCityOptions(countryId?: number, stateId?: number) {
   return useEntityOptions({
     tableName: 'cities',
     filters,
+    orderBy: { field: 'name', asc: true }
+  });
+}
+
+// Hook específico para todas las ciudades (sin filtros)
+export function useAllCityOptions() {
+  return useEntityOptions({
+    tableName: 'cities',
     orderBy: { field: 'name', asc: true }
   });
 }

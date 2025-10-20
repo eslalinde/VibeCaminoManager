@@ -22,6 +22,7 @@ import {
   useCountryOptions,
   useStateOptions,
   useCityOptions,
+  useAllCityOptions,
   useParishOptions,
   usePeopleOptions,
 } from "@/hooks/useEntityOptions";
@@ -51,14 +52,32 @@ export function DynamicEntityModal<T extends BaseEntity>({
   const previousValues = useRef<Record<string, any>>({});
 
   // Hooks para opciones dependientes
-  const { options: countryOptions } = useCountryOptions();
+  const { options: countryOptions, loading: countryLoading, error: countryError } = useCountryOptions();
   const { options: stateOptions } = useStateOptions(formData.country_id);
-  const { options: cityOptions } = useCityOptions(
-    formData.country_id,
-    formData.state_id
-  );
+  
+  // Determinar si el formulario tiene campos de país y estado
+  const hasCountryField = fields.some(f => f.name === 'country_id');
+  const hasStateField = fields.some(f => f.name === 'state_id');
+  
+  // Usar el hook apropiado para ciudades
+  const { options: cityOptions } = hasCountryField || hasStateField 
+    ? useCityOptions(formData.country_id, formData.state_id)
+    : useAllCityOptions();
+    
   const { options: parishOptions } = useParishOptions(formData.city_id);
   const { options: peopleOptions } = usePeopleOptions(initial?.id);
+
+  // Debug logging para países
+  useEffect(() => {
+    if (hasCountryField) {
+      console.log('DynamicEntityModal - Country options:', {
+        countryOptions,
+        countryLoading,
+        countryError,
+        hasCountryField
+      });
+    }
+  }, [countryOptions, countryLoading, countryError, hasCountryField]);
 
   useEffect(() => {
     if (open) {
@@ -208,21 +227,21 @@ export function DynamicEntityModal<T extends BaseEntity>({
     
     // Buscar el campo en la configuración para obtener sus opciones
     const fieldConfig = fields.find(f => f.name === fieldName);
-    if (fieldConfig && fieldConfig.options) {
+    if (fieldConfig && fieldConfig.options && fieldConfig.options.length > 0) {
       return fieldConfig.options;
     }
     
     switch (fieldName) {
       case "country_id":
-        return countryOptions;
+        return countryOptions && countryOptions.length > 0 ? countryOptions : [];
       case "state_id":
-        return stateOptions;
+        return stateOptions && stateOptions.length > 0 ? stateOptions : [];
       case "city_id":
-        return cityOptions;
+        return cityOptions && cityOptions.length > 0 ? cityOptions : [];
       case "parish_id":
-        return parishOptions;
+        return parishOptions && parishOptions.length > 0 ? parishOptions : [];
       case "spouse_id":
-        return peopleOptions;
+        return peopleOptions && peopleOptions.length > 0 ? peopleOptions : [];
       default:
         return fieldName.includes("_id") ? [] : undefined;
     }

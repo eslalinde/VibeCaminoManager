@@ -165,10 +165,26 @@ export const parishConfig: EntityConfig<Parish> = {
       placeholder: 'Ingrese el email'
     },
     {
+      name: 'country_id',
+      label: 'País',
+      type: 'select',
+      required: true,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione un país'
+    },
+    {
+      name: 'state_id',
+      label: 'Estado',
+      type: 'select',
+      required: false,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione un estado (opcional)'
+    },
+    {
       name: 'city_id',
       label: 'Ciudad',
       type: 'select',
-      required: false,
+      required: true,
       options: [], // Se llenará dinámicamente
       placeholder: 'Seleccione una ciudad'
     }
@@ -177,6 +193,18 @@ export const parishConfig: EntityConfig<Parish> = {
   sortableFields: ['name', 'diocese'],
   defaultSort: { field: 'name', asc: true },
   foreignKeys: [
+    {
+      foreignKey: 'country_id',
+      tableName: 'countries',
+      displayField: 'name',
+      alias: 'country'
+    },
+    {
+      foreignKey: 'state_id',
+      tableName: 'states',
+      displayField: 'name',
+      alias: 'state'
+    },
     {
       foreignKey: 'city_id',
       tableName: 'cities',

@@ -31,7 +31,11 @@ export interface Parish extends BaseEntity {
   address?: string;
   phone?: string;
   email?: string;
-  city_id?: number;
+  country_id: number;
+  state_id?: number;
+  city_id: number;
+  country?: Country;
+  state?: State;
   city?: City;
 }
 
