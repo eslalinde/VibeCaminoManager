@@ -437,10 +437,16 @@ INSERT INTO belongs (id, person_id, community_id, team_id, is_responsible_for_th
 
 -- CommunityStepLog (registro de etapas)
 INSERT INTO community_step_log (id, community_id, step_way_id, date_of_step, principal_catechist_name, outcome, notes) VALUES
-  (1, 1, 1, '2024-01-01', 'Juan Pérez', TRUE, 'Inicio de comunidad'),
-  (2, 2, 2, '2024-01-01', 'Carlos Rodríguez', TRUE, 'Inicio de comunidad'),
-  (3, 3, 3, '2024-01-01', 'Pedro López', TRUE, 'Inicio de comunidad'),
-  (4, 4, 4, '2024-01-01', 'Miguel Herrera', TRUE, 'Inicio de comunidad');
+  (1, 1, 1, '2024-01-15', 'Juan Pérez', TRUE, 'Catequesis iniciales: nacieron 15 hermanos, convivencia seminario. Faltan 3 por hacer convivencia.'),
+  (2, 1, 2, '2024-02-20', 'María González', TRUE, 'Primer escrutinio: asistieron 12 hermanos, 3 no asistieron.'),
+  (3, 2, 1, '2024-01-20', 'Carlos Rodríguez', TRUE, 'Catequesis iniciales: nacieron 18 hermanos, convivencia seminario. Faltan 2 por hacer convivencia.'),
+  (4, 2, 2, '2024-02-25', 'Ana Martínez', TRUE, 'Primer escrutinio: asistieron 16 hermanos, 2 no asistieron.'),
+  (5, 3, 1, '2024-01-25', 'Pedro López', TRUE, 'Catequesis iniciales: nacieron 12 hermanos, convivencia seminario. Faltan 4 por hacer convivencia.'),
+  (6, 3, 3, '2024-03-10', 'Laura Sánchez', TRUE, 'Shemá Israel: 8 hermanos participaron, 4 ausentes.'),
+  (7, 4, 1, '2024-02-01', 'Miguel Herrera', TRUE, 'Catequesis iniciales: nacieron 20 hermanos, convivencia seminario. Faltan 1 por hacer convivencia.'),
+  (8, 4, 2, '2024-03-05', 'Carmen Ruiz', TRUE, 'Primer escrutinio: asistieron 19 hermanos, 1 no asistió.'),
+  (9, 1, 3, '2024-03-15', 'Roberto Díaz', TRUE, 'Shemá Israel: 10 hermanos participaron, 2 ausentes.'),
+  (10, 2, 3, '2024-03-20', 'Isabel Morales', TRUE, 'Shemá Israel: 14 hermanos participaron, 2 ausentes.');
 
 -- NOTA: Los datos aquí son de ejemplo. Para el archivo final, se debe expandir cada sección con los 200 personas, matrimonios, equipos y relaciones según las reglas del README.
 

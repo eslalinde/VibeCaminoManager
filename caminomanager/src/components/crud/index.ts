@@ -4,6 +4,8 @@ export { EntityTable } from './EntityTable';
 export { EntityModal } from './EntityModal';
 export { DynamicEntityModal } from './DynamicEntityModal';
 export { MarriageModal } from './MarriageModal';
+export { CommunityStepLog } from './CommunityStepLog';
+export { CommunityStepLogCompact } from './CommunityStepLogCompact';
 
 // UI Components
 export { Textarea, TextareaPrimitive } from '@/components/ui/textarea';

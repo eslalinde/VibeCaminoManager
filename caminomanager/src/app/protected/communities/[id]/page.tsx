@@ -5,6 +5,7 @@ import { useCommunityData } from '@/hooks/useCommunityData';
 import { CommunityInfo } from '@/components/crud/CommunityInfo';
 import { BrothersList } from '@/components/crud/BrothersList';
 import { TeamSection } from '@/components/crud/TeamSection';
+import { CommunityStepLogCompact } from '@/components/crud/CommunityStepLogCompact';
 
 export default function CommunityDetailPage() {
   const params = useParams();
@@ -55,9 +56,9 @@ export default function CommunityDetailPage() {
             {teams.responsables.length > 0 ? (
               teams.responsables.map((team) => (
                 <TeamSection
-                  key={team.id}
+                  key={team.id || `responsable-${Math.random()}`}
                   team={team}
-                  members={teamMembers[team.id] || []}
+                  members={team.id ? teamMembers[team.id] || [] : []}
                   loading={loading}
                 />
               ))
@@ -75,10 +76,10 @@ export default function CommunityDetailPage() {
           <div className="space-y-4">
             {teams.catequistas.length > 0 ? (
               teams.catequistas.map((team, index) => (
-                <div key={team.id}>
+                <div key={team.id || `catequista-${index}`}>
                   <TeamSection
                     team={team}
-                    members={teamMembers[team.id] || []}
+                    members={team.id ? teamMembers[team.id] || [] : []}
                     loading={loading}
                     teamNumber={index + 1}
                   />
@@ -95,9 +96,20 @@ export default function CommunityDetailPage() {
           </div>
         </div>
         
-        {/* Right: Brothers List - Full Height */}
-        <div className="h-full">
-          <BrothersList brothers={mergedBrothers} loading={loading} />
+        {/* Right: Step Log + Brothers List */}
+        <div className="space-y-4">
+          {/* Step Log */}
+          <div>
+            <CommunityStepLogCompact 
+              communityId={communityId} 
+              communityNumber={community?.number || ''} 
+            />
+          </div>
+          
+          {/* Brothers List */}
+          <div className="flex-1">
+            <BrothersList brothers={mergedBrothers} loading={loading} />
+          </div>
         </div>
       </div>
     </div>

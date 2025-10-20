@@ -96,6 +96,18 @@ export interface Belongs extends BaseEntity {
   team?: Team;
 }
 
+export interface CommunityStepLog extends BaseEntity {
+  community_id: number;
+  step_way_id?: number;
+  date_of_step?: string;
+  principal_catechist_name?: string;
+  outcome?: boolean;
+  notes?: string;
+  // Relations
+  community?: Community;
+  step_way?: StepWay;
+}
+
 // Tipos para operaciones CRUD
 export interface CrudOperation<T> {
   create: (data: Omit<T, 'id' | 'created_at' | 'updated_at'>) => Promise<T>;

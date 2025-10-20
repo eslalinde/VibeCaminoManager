@@ -1,5 +1,5 @@
 import { EntityConfig, FormField } from '@/types/database';
-import { Country, State, City, Parish, StepWay, TeamType, Person, Community } from '@/types/database';
+import { Country, State, City, Parish, StepWay, TeamType, Person, Community, CommunityStepLog } from '@/types/database';
 
 // Configuración para Países
 export const countryConfig: EntityConfig<Country> = {
@@ -456,6 +456,86 @@ export const communityConfig: EntityConfig<Community> = {
   ]
 };
 
+// Configuración para CommunityStepLog
+export const communityStepLogConfig: EntityConfig<CommunityStepLog> = {
+  tableName: 'community_step_log',
+  displayName: 'Log de Pasos de Comunidad',
+  fields: [
+    {
+      name: 'community_id',
+      label: 'Comunidad',
+      type: 'select',
+      required: true,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione una comunidad'
+    },
+    {
+      name: 'step_way_id',
+      label: 'Paso/Etapa',
+      type: 'select',
+      required: false,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione el paso realizado'
+    },
+    {
+      name: 'date_of_step',
+      label: 'Fecha del Paso',
+      type: 'text',
+      required: false,
+      placeholder: 'YYYY-MM-DD'
+    },
+    {
+      name: 'principal_catechist_name',
+      label: 'Catequista Principal',
+      type: 'text',
+      required: false,
+      maxLength: 256,
+      placeholder: 'Ingrese el nombre del catequista'
+    },
+    {
+      name: 'outcome',
+      label: 'Resultado',
+      type: 'select',
+      required: false,
+      options: [
+        { value: 'true', label: 'Exitoso' },
+        { value: 'false', label: 'No exitoso' }
+      ],
+      placeholder: 'Seleccione el resultado'
+    },
+    {
+      name: 'notes',
+      label: 'Notas',
+      type: 'textarea',
+      required: false,
+      placeholder: 'Ingrese las notas del paso realizado'
+    }
+  ],
+  searchFields: ['principal_catechist_name', 'notes'],
+  sortableFields: ['date_of_step', 'principal_catechist_name'],
+  defaultSort: { field: 'date_of_step', asc: false },
+  foreignKeys: [
+    {
+      foreignKey: 'community_id',
+      tableName: 'communities',
+      displayField: 'number',
+      alias: 'community'
+    },
+    {
+      foreignKey: 'step_way_id',
+      tableName: 'step_ways',
+      displayField: 'name',
+      alias: 'step_way'
+    }
+  ],
+  renderValue: (fieldName: string, value: any) => {
+    if (fieldName === 'outcome') {
+      return value === true ? 'Exitoso' : value === false ? 'No exitoso' : '';
+    }
+    return String(value || '');
+  }
+};
+
 // Exportar todas las configuraciones
 export const entityConfigs = {
   countries: countryConfig,
@@ -465,5 +545,6 @@ export const entityConfigs = {
   stepWays: stepWayConfig,
   teamTypes: teamTypeConfig,
   people: personConfig,
-  communities: communityConfig
+  communities: communityConfig,
+  communityStepLog: communityStepLogConfig
 }; 
