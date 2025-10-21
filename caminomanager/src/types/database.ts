@@ -136,6 +136,7 @@ export interface FormField {
   placeholder?: string;
   options?: { value: string | number; label: string }[];
   validation?: (value: any) => string | null;
+  hiddenInTable?: boolean; // Nueva propiedad para ocultar en la tabla
 }
 
 export interface ForeignKeyConfig {

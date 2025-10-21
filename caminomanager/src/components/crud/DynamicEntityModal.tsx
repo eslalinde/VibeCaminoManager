@@ -55,7 +55,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
   const { options: countryOptions, loading: countryLoading, error: countryError } = useCountryOptions();
   const { options: stateOptions } = useStateOptions(formData.country_id);
   
-  // Determinar si el formulario tiene campos de país y estado
+  // Determinar si el formulario tiene campos de país y departamento
   const hasCountryField = fields.some(f => f.name === 'country_id');
   const hasStateField = fields.some(f => f.name === 'state_id');
   

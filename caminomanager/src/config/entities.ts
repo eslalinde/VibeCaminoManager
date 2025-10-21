@@ -35,10 +35,10 @@ export const countryConfig: EntityConfig<Country> = {
   defaultSort: { field: 'name', asc: true }
 };
 
-// Configuración para Estados/Provincias
+// Configuración para Departamentos/Provincias
 export const stateConfig: EntityConfig<State> = {
   tableName: 'states',
-  displayName: 'Estado',
+  displayName: 'Departamento',
   fields: [
     {
       name: 'name',
@@ -46,7 +46,7 @@ export const stateConfig: EntityConfig<State> = {
       type: 'text',
       required: true,
       maxLength: 256,
-      placeholder: 'Ingrese el nombre del estado'
+      placeholder: 'Ingrese el nombre del departamento'
     },
     {
       name: 'country_id',
@@ -93,11 +93,11 @@ export const cityConfig: EntityConfig<City> = {
     },
     {
       name: 'state_id',
-      label: 'Estado',
+      label: 'Departamento',
       type: 'select',
       required: false,
       options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione un estado (opcional)'
+      placeholder: 'Seleccione un departamento (opcional)'
     }
   ],
   searchFields: ['name'],
@@ -170,15 +170,17 @@ export const parishConfig: EntityConfig<Parish> = {
       type: 'select',
       required: true,
       options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione un país'
+      placeholder: 'Seleccione un país',
+      hiddenInTable: true // Ocultar en la tabla
     },
     {
       name: 'state_id',
-      label: 'Estado',
+      label: 'Departamento',
       type: 'select',
       required: false,
       options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione un estado (opcional)'
+      placeholder: 'Seleccione un departamento (opcional)',
+      hiddenInTable: true // Ocultar en la tabla
     },
     {
       name: 'city_id',
@@ -214,10 +216,10 @@ export const parishConfig: EntityConfig<Parish> = {
   ]
 };
 
-// Configuración para Caminos de Formación
+// Configuración para Etapas del Camino Neocatecumenal
 export const stepWayConfig: EntityConfig<StepWay> = {
   tableName: 'step_ways',
-  displayName: 'Camino de Formación',
+  displayName: 'Etapa del Camino Neocatecumenal',
   fields: [
     {
       name: 'name',
@@ -225,7 +227,7 @@ export const stepWayConfig: EntityConfig<StepWay> = {
       type: 'text',
       required: true,
       maxLength: 256,
-      placeholder: 'Ingrese el nombre del camino'
+      placeholder: 'Ingrese el nombre de la etapa'
     },
     {
       name: 'order_num',

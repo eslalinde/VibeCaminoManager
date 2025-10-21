@@ -2,6 +2,6 @@
 import { EntityPage } from '@/components/crud/EntityPage';
 import { stateConfig } from '@/config/entities';
 
-export default function StatesPage() {
+export default function DepartamentosPage() {
   return <EntityPage config={stateConfig} />;
 } 

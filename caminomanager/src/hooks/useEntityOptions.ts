@@ -89,7 +89,7 @@ export function useCountryOptions() {
   });
 }
 
-// Hook específico para estados
+// Hook específico para departamentos
 export function useStateOptions(countryId?: number) {
   return useEntityOptions({
     tableName: 'states',

@@ -214,21 +214,21 @@ function handleSupabaseError(error: any): string {
     if (constraintName.includes('countries_name_unique')) {
       return 'Ya existe un país con ese nombre.';
     } else if (constraintName.includes('states_name_country_unique')) {
-      return 'Ya existe un estado con ese nombre en el país seleccionado.';
+      return 'Ya existe un departamento con ese nombre en el país seleccionado.';
     } else if (constraintName.includes('cities_name_country_state_unique')) {
-      return 'Ya existe una ciudad con ese nombre en el país y estado seleccionados.';
+      return 'Ya existe una ciudad con ese nombre en el país y departamento seleccionados.';
     } else if (constraintName.includes('parishes_name_city_unique')) {
       return 'Ya existe una parroquia con ese nombre en la ciudad seleccionada.';
     } else if (constraintName.includes('team_types_name_unique')) {
       return 'Ya existe un tipo de equipo con ese nombre.';
     } else if (constraintName.includes('step_ways_name_unique')) {
-      return 'Ya existe un camino con ese nombre.';
+      return 'Ya existe una etapa con ese nombre.';
     } else if (constraintName.includes('communities_number_parish_unique')) {
       return 'Ya existe una comunidad con ese número en la parroquia seleccionada.';
     } else if (detail.includes('name') && detail.includes('country_id') && detail.includes('state_id')) {
-      return 'Ya existe una ciudad con ese nombre en el país y estado seleccionados.';
+      return 'Ya existe una ciudad con ese nombre en el país y departamento seleccionados.';
     } else if (detail.includes('name') && detail.includes('country_id')) {
-      return 'Ya existe un estado con ese nombre en el país seleccionado.';
+      return 'Ya existe un departamento con ese nombre en el país seleccionado.';
     } else if (detail.includes('name')) {
       return 'Ya existe un registro con ese nombre.';
     } else {

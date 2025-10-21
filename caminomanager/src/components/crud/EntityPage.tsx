@@ -95,24 +95,26 @@ export function EntityPage<T extends BaseEntity>({
   };
 
   // Create table columns from config
-  const columns = config.fields.map(field => {
-    const foreignKeyConfig = config.foreignKeys?.find(fk => fk.foreignKey === field.name);
-    
-    return {
-      key: field.name as keyof T,
-      label: field.label,
-      sortable: config.sortableFields.includes(field.name as keyof T),
-      foreignKey: foreignKeyConfig ? {
-        tableName: foreignKeyConfig.tableName,
-        displayField: foreignKeyConfig.displayField,
-        alias: foreignKeyConfig.alias
-      } : undefined,
-      // Solo usar renderValue si no hay foreignKey configurado
-      render: (!foreignKeyConfig && config.renderValue) ? (value: any, item: T) => {
-        return config.renderValue!(field.name, value);
-      } : undefined
-    };
-  });
+  const columns = config.fields
+    .filter(field => !field.hiddenInTable) // Filtrar campos ocultos en la tabla
+    .map(field => {
+      const foreignKeyConfig = config.foreignKeys?.find(fk => fk.foreignKey === field.name);
+      
+      return {
+        key: field.name as keyof T,
+        label: field.label,
+        sortable: config.sortableFields.includes(field.name as keyof T),
+        foreignKey: foreignKeyConfig ? {
+          tableName: foreignKeyConfig.tableName,
+          displayField: foreignKeyConfig.displayField,
+          alias: foreignKeyConfig.alias
+        } : undefined,
+        // Solo usar renderValue si no hay foreignKey configurado
+        render: (!foreignKeyConfig && config.renderValue) ? (value: any, item: T) => {
+          return config.renderValue!(field.name, value);
+        } : undefined
+      };
+    });
 
   // Determine if we need dynamic modal (has foreign keys that need dynamic options)
   const needsDynamicModal = config.fields.some(field => 
