@@ -1,14 +1,17 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCommunityData } from '@/hooks/useCommunityData';
 import { CommunityInfo } from '@/components/crud/CommunityInfo';
 import { BrothersList } from '@/components/crud/BrothersList';
 import { TeamSection } from '@/components/crud/TeamSection';
 import { CommunityStepLogCompact } from '@/components/crud/CommunityStepLogCompact';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default function CommunityDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const communityId = parseInt(params.id as string);
   
   const {
@@ -19,6 +22,12 @@ export default function CommunityDetailPage() {
     loading,
     error
   } = useCommunityData(communityId);
+
+  const handleEdit = () => {
+    // Por ahora, simplemente navegamos de vuelta a la tabla
+    // En el futuro, esto podría abrir un modal de edición o navegar a una página de edición
+    router.push('/protected/communities');
+  };
 
   if (error) {
     return (
@@ -34,6 +43,17 @@ export default function CommunityDetailPage() {
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="mb-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/protected/communities')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Regresar a Comunidades
+          </Button>
+        </div>
         <h1 className="text-3xl font-bold text-gray-900">
           Comunidad {community?.number || 'Cargando...'}
         </h1>
@@ -48,7 +68,7 @@ export default function CommunityDetailPage() {
         <div className="space-y-6">
           {/* Community Info */}
           <div>
-            <CommunityInfo community={community} loading={loading} />
+            <CommunityInfo community={community} loading={loading} onEdit={handleEdit} />
           </div>
 
           {/* Responsables Team */}
