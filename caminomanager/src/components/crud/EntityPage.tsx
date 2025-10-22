@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { EntityTable } from './EntityTable';
 import { EntityModal } from './EntityModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
@@ -12,12 +11,14 @@ interface EntityPageProps<T extends BaseEntity> {
   config: EntityConfig<T>;
   pageSize?: number;
   onRowClick?: (item: T) => void;
+  hideDefaultAddButton?: boolean;
 }
 
 export function EntityPage<T extends BaseEntity>({ 
   config, 
   pageSize = 10,
-  onRowClick
+  onRowClick,
+  hideDefaultAddButton = false
 }: EntityPageProps<T>) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<T | null>(null);
@@ -119,14 +120,35 @@ export function EntityPage<T extends BaseEntity>({
   // Determine if we need dynamic modal (has foreign keys that need dynamic options)
   const needsDynamicModal = config.fields.some(field => 
     field.name.includes('_id') && field.type === 'select' && 
-    (field.name === 'country_id' || field.name === 'state_id' || field.name === 'city_id' || field.name === 'parish_id' || field.name === 'spouse_id')
+    (field.name === 'country_id' || field.name === 'state_id' || field.name === 'city_id' || field.name === 'parish_id' || field.name === 'spouse_id' || field.name === 'step_way_id')
   );
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <Card className="flex-1 w-full h-full">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>{config.displayName}</CardTitle>
+    <div className="w-full bg-white rounded-lg border shadow-sm p-6">
+      {/* Error Display */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+
+      {/* Search and Add Button */}
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <Input
+          placeholder={
+            config.displayName === 'Comunidad' 
+              ? 'Buscar por número o parroquia...' 
+              : `Buscar ${config.displayName.toLowerCase()}...`
+          }
+          value={search}
+          onChange={e => { 
+            setSearch(e.target.value); 
+            setPage(1); 
+          }}
+          className="w-80"
+          style={{ width: '320px', minWidth: '320px' }}
+        />
+        {!hideDefaultAddButton && (
           <Button 
             color="amber" 
             highContrast 
@@ -134,67 +156,45 @@ export function EntityPage<T extends BaseEntity>({
           >
             Agregar {config.displayName.toLowerCase()}
           </Button>
-        </CardHeader>
-        
-        <CardContent>
-          {/* Error Display */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
-            </div>
-          )}
+        )}
+      </div>
 
-          {/* Search */}
-          <div className="flex items-center gap-4 mb-4">
-            <Input
-              placeholder={`Buscar ${config.displayName.toLowerCase()}...`}
-              value={search}
-              onChange={e => { 
-                setSearch(e.target.value); 
-                setPage(1); 
-              }}
-              className="max-w-xs"
-            />
-          </div>
+      {/* Table */}
+      <EntityTable
+        data={data}
+        columns={columns}
+        loading={loading}
+        sort={sort}
+        onSort={handleSort}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onRowClick={onRowClick}
+        emptyMessage={`No hay ${config.displayName.toLowerCase()}s`}
+      />
 
-          {/* Table */}
-          <EntityTable
-            data={data}
-            columns={columns}
-            loading={loading}
-            sort={sort}
-            onSort={handleSort}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onRowClick={onRowClick}
-            emptyMessage={`No hay ${config.displayName.toLowerCase()}s`}
-          />
-
-          {/* Pagination */}
-          <div className="flex justify-between items-center mt-4">
-            <span>
-              Página {page} de {totalPages || 1} 
-              {count > 0 && ` (${count} total)`}
-            </span>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setPage(Math.max(1, page - 1))} 
-                disabled={page === 1}
-              >
-                Anterior
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => setPage(Math.min(totalPages, page + 1))} 
-                disabled={page === totalPages}
-              >
-                Siguiente
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Pagination */}
+      <div className="flex justify-between items-center mt-4">
+        <span>
+          Página {page} de {totalPages || 1} 
+          {count > 0 && ` (${count} total)`}
+        </span>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setPage(Math.max(1, page - 1))} 
+            disabled={page === 1}
+          >
+            Anterior
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setPage(Math.min(totalPages, page + 1))} 
+            disabled={page === totalPages}
+          >
+            Siguiente
+          </Button>
+        </div>
+      </div>
 
       {/* Modal */}
       {needsDynamicModal ? (

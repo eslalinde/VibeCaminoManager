@@ -25,6 +25,7 @@ import {
   useAllCityOptions,
   useParishOptions,
   usePeopleOptions,
+  useEntityOptions,
 } from "@/hooks/useEntityOptions";
 
 interface DynamicEntityModalProps<T extends BaseEntity> {
@@ -47,6 +48,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
   loading = false,
 }: DynamicEntityModalProps<T>) {
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formKey, setFormKey] = useState(0); // Key para forzar re-render
   const [errors, setErrors] = useState<Record<string, string>>({});
   const isInitialized = useRef(false);
   const previousValues = useRef<Record<string, any>>({});
@@ -65,32 +67,43 @@ export function DynamicEntityModal<T extends BaseEntity>({
     : useAllCityOptions();
     
   const { options: parishOptions } = useParishOptions(formData.city_id);
-  const { options: peopleOptions } = usePeopleOptions(initial?.id);
-
-  // Debug logging para países
-  useEffect(() => {
-    if (hasCountryField) {
-      console.log('DynamicEntityModal - Country options:', {
-        countryOptions,
-        countryLoading,
-        countryError,
-        hasCountryField
-      });
-    }
-  }, [countryOptions, countryLoading, countryError, hasCountryField]);
+  const { options: peopleOptions, loading: peopleLoading } = usePeopleOptions(initial?.id);
+  const { options: stepWayOptions } = useEntityOptions({ tableName: 'step_ways' });
 
   useEffect(() => {
     if (open) {
       const initialData: Record<string, any> = {};
-      // Solo inicializar los campos que están definidos en la configuración
       fields.forEach((field) => {
-        const value = initial?.[field.name as keyof T] || "";
+        const rawValue = initial?.[field.name as keyof T];
+        let value: any = rawValue;
+        
+        // Handle different field types properly
+        if (field.type === 'select') {
+          // For select fields, convert to string or empty string
+          value = rawValue !== null && rawValue !== undefined ? String(rawValue) : "";
+        } else {
+          // For other fields, use the raw value or empty string
+          value = rawValue || "";
+        }
+        
         initialData[field.name] = value;
-        // Store initial values for comparison
         previousValues.current[field.name] = value;
+        
+        // Debug logging for person fields
+        if (field.name === 'person_type_id' || field.name === 'gender_id') {
+          console.log(`🔍 Person field ${field.name}:`, {
+            rawValue,
+            processedValue: value,
+            fieldType: field.type,
+            hasOptions: field.options && field.options.length > 0,
+            options: field.options
+          });
+        }
       });
+      
       setFormData(initialData);
       setErrors({});
+      setFormKey(prev => prev + 1); // Force re-render
       isInitialized.current = true;
     } else {
       // Reset when modal closes
@@ -98,6 +111,26 @@ export function DynamicEntityModal<T extends BaseEntity>({
       previousValues.current = {};
     }
   }, [open, initial, fields]);
+
+  // Re-sincronizar spouse_id cuando se carguen las opciones de personas
+  useEffect(() => {
+    if (!isInitialized.current || !open || peopleLoading) return;
+    
+    // Si las opciones de personas se cargaron y tenemos un spouse_id, asegurar que esté sincronizado
+    if (peopleOptions && peopleOptions.length > 0 && (initial as any)?.spouse_id) {
+      const currentSpouseValue = formData.spouse_id;
+      const expectedSpouseValue = String((initial as any).spouse_id);
+      
+      if (currentSpouseValue !== expectedSpouseValue) {
+        console.log('🔄 Re-syncing spouse_id after options loaded:', {
+          currentSpouseValue,
+          expectedSpouseValue,
+          peopleOptions: peopleOptions.length
+        });
+        setFormData(prev => ({ ...prev, spouse_id: expectedSpouseValue }));
+      }
+    }
+  }, [peopleOptions, peopleLoading, (initial as any)?.spouse_id, formData.spouse_id, isInitialized.current, open]);
 
   // Limpiar campos dependientes cuando cambia el padre (solo después de la inicialización)
   useEffect(() => {
@@ -228,6 +261,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
     // Buscar el campo en la configuración para obtener sus opciones
     const fieldConfig = fields.find(f => f.name === fieldName);
     if (fieldConfig && fieldConfig.options && fieldConfig.options.length > 0) {
+      console.log(`✅ Field ${fieldName} using config options:`, fieldConfig.options);
       return fieldConfig.options;
     }
     
@@ -242,7 +276,10 @@ export function DynamicEntityModal<T extends BaseEntity>({
         return parishOptions && parishOptions.length > 0 ? parishOptions : [];
       case "spouse_id":
         return peopleOptions && peopleOptions.length > 0 ? peopleOptions : [];
+      case "step_way_id":
+        return stepWayOptions && stepWayOptions.length > 0 ? stepWayOptions : [];
       default:
+        console.log(`❌ Field ${fieldName} has no options`);
         return fieldName.includes("_id") ? [] : undefined;
     }
   };
@@ -254,9 +291,19 @@ export function DynamicEntityModal<T extends BaseEntity>({
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative">
         <h2 className="text-lg font-bold mb-4">{title}</h2>
 
-        <FormRoot onSubmit={handleSubmit}>
+        <FormRoot key={formKey} onSubmit={handleSubmit}>
           {fields.map((field) => {
             const fieldOptions = getFieldOptions(field.name);
+            
+            // Debug logging for person fields
+            if (field.name === 'person_type_id' || field.name === 'gender_id') {
+              console.log(`🎯 Rendering person field ${field.name}:`, {
+                formDataValue: formData[field.name],
+                fieldOptions: fieldOptions,
+                hasOptions: fieldOptions && fieldOptions.length > 0,
+                configOptions: field.options
+              });
+            }
 
             return (
               <FormField key={field.name} name={field.name}>
@@ -277,7 +324,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
                     />
                   ) : field.type === "select" ? (
                     <Select
-                      value={formData[field.name] ? formData[field.name].toString() : ""}
+                      value={formData[field.name] !== null && formData[field.name] !== undefined ? String(formData[field.name]) : ""}
                       onValueChange={(value: string) =>
                         handleInputChange(field.name, value)
                       }
@@ -290,7 +337,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
                         {(fieldOptions || field.options || []).map((option) => (
                           <SelectItem
                             key={option.value}
-                            value={option.value.toString()}
+                            value={String(option.value)}
                           >
                             {option.label}
                           </SelectItem>

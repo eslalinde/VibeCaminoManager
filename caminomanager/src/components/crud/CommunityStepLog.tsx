@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,18 +26,20 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
     outcome: undefined,
   });
 
+  const foreignKeys = useMemo(() => [
+    {
+      foreignKey: 'step_way_id',
+      tableName: 'step_ways',
+      displayField: 'name',
+      alias: 'step_way'
+    }
+  ], []);
+
   const { data: stepLogs, loading, create, fetchData } = useCrud<CommunityStepLogType>({
     tableName: 'community_step_log',
     searchFields: ['principal_catechist_name', 'notes'],
     defaultSort: { field: 'date_of_step', asc: false },
-    foreignKeys: [
-      {
-        foreignKey: 'step_way_id',
-        tableName: 'step_ways',
-        displayField: 'name',
-        alias: 'step_way'
-      }
-    ]
+    foreignKeys
   });
 
   const { options: stepWayOptions } = useEntityOptions({ tableName: 'step_ways' });
@@ -46,7 +48,7 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
     if (communityId) {
       fetchData({ filters: { community_id: communityId } });
     }
-  }, [communityId, fetchData]);
+  }, [communityId]);
 
   const handleAddEntry = async () => {
     try {

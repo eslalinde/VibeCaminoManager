@@ -439,7 +439,7 @@ export const communityConfig: EntityConfig<Community> = {
       placeholder: 'YYYY-MM-DD'
     }
   ],
-  searchFields: ['number'],
+  searchFields: ['number', 'parish'],
   sortableFields: ['number', 'born_date', 'actual_brothers'],
   defaultSort: { field: 'number', asc: true },
   foreignKeys: [

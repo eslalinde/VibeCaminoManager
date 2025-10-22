@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,19 +18,21 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
   const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 2;
 
+  const foreignKeys = useMemo(() => [
+    {
+      foreignKey: 'step_way_id',
+      tableName: 'step_ways',
+      displayField: 'name',
+      alias: 'step_way'
+    }
+  ], []);
+
   const { data: stepLogs, loading, count, fetchData } = useCrud<CommunityStepLogType>({
     tableName: 'community_step_log',
     searchFields: ['principal_catechist_name', 'notes'],
     defaultSort: { field: 'date_of_step', asc: false },
     pageSize: 10, // Usar un pageSize fijo más grande
-    foreignKeys: [
-      {
-        foreignKey: 'step_way_id',
-        tableName: 'step_ways',
-        displayField: 'name',
-        alias: 'step_way'
-      }
-    ]
+    foreignKeys
   });
 
   useEffect(() => {

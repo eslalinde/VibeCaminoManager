@@ -78,13 +78,102 @@ export function useCrud<T extends BaseEntity>({
       
       let query = supabase.from(tableName).select(selectFields, { count: 'exact' });
       
+      // Apply filters
+      const filters = params?.filters;
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            query = query.eq(key, value);
+          }
+        });
+      }
+      
       // Apply search
       const searchTerm = params?.search || search;
       if (searchTerm && searchFields.length > 0) {
-        const searchConditions = searchFields.map(field => 
-          `${String(field)}.ilike.%${searchTerm}%`
-        );
-        query = query.or(searchConditions.join(','));
+        // Separate regular fields from foreign key fields
+        const regularFields: string[] = [];
+        const foreignKeySearches: { foreignKey: string; displayField: string; tableName: string }[] = [];
+        
+        searchFields.forEach(field => {
+          const fieldStr = String(field);
+          const foreignKeyConfig = foreignKeys.find(fk => fk.alias === fieldStr);
+          
+          if (foreignKeyConfig) {
+            foreignKeySearches.push({
+              foreignKey: foreignKeyConfig.foreignKey,
+              displayField: foreignKeyConfig.displayField,
+              tableName: foreignKeyConfig.tableName
+            });
+          } else {
+            regularFields.push(fieldStr);
+          }
+        });
+        
+        // Handle foreign key searches by querying related tables first
+        if (foreignKeySearches.length > 0) {
+          try {
+            // Search in related tables to get matching IDs
+            const foreignKeyIds: number[] = [];
+            
+            for (const fkSearch of foreignKeySearches) {
+              const { data: relatedData } = await supabase
+                .from(fkSearch.tableName)
+                .select('id')
+                .ilike(fkSearch.displayField, `%${searchTerm}%`);
+              
+              if (relatedData) {
+                foreignKeyIds.push(...relatedData.map(item => item.id));
+              }
+            }
+            
+            // If we found matching foreign key IDs, add them to the query
+            if (foreignKeyIds.length > 0) {
+              // Create conditions for foreign key searches
+              const foreignKeyConditions: string[] = [];
+              foreignKeySearches.forEach(fkSearch => {
+                foreignKeyConditions.push(`${fkSearch.foreignKey}.in.(${foreignKeyIds.join(',')})`);
+              });
+              
+              // Combine with regular field conditions
+              const allConditions: string[] = [];
+              
+              if (regularFields.length > 0) {
+                const regularConditions = regularFields.map(field => 
+                  `${field}.ilike.%${searchTerm}%`
+                );
+                allConditions.push(...regularConditions);
+              }
+              
+              allConditions.push(...foreignKeyConditions);
+              
+              if (allConditions.length > 0) {
+                query = query.or(allConditions.join(','));
+              }
+            } else if (regularFields.length > 0) {
+              // If no foreign key matches, only search regular fields
+              const regularConditions = regularFields.map(field => 
+                `${field}.ilike.%${searchTerm}%`
+              );
+              query = query.or(regularConditions.join(','));
+            }
+          } catch (error) {
+            console.error('Error searching foreign key fields:', error);
+            // Fallback to regular field search only
+            if (regularFields.length > 0) {
+              const regularConditions = regularFields.map(field => 
+                `${field}.ilike.%${searchTerm}%`
+              );
+              query = query.or(regularConditions.join(','));
+            }
+          }
+        } else if (regularFields.length > 0) {
+          // Only regular fields to search
+          const regularConditions = regularFields.map(field => 
+            `${field}.ilike.%${searchTerm}%`
+          );
+          query = query.or(regularConditions.join(','));
+        }
       }
       
       // Apply sorting
@@ -109,7 +198,7 @@ export function useCrud<T extends BaseEntity>({
     } finally {
       setLoading(false);
     }
-  }, [supabase, tableName, searchFields, pageSize, foreignKeys]);
+  }, [supabase, tableName, searchFields, pageSize, foreignKeys, search, sort, page]);
 
   const create = useCallback(async (newData: Omit<T, 'id' | 'created_at' | 'updated_at'>) => {
     setLoading(true);
