@@ -1,4 +1,4 @@
--- SEED SQL PARA CAMINOMANAGER
+-- SEED SQL PARA COMUNIDADCAT
 -- Países
 INSERT INTO countries (id, name, code) VALUES (1, 'Colombia', 'CO');
 

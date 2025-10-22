@@ -1,6 +1,6 @@
-# PRD: CaminoManager
+# PRD: ComunidadCat
 ## Visión general 
-CaminoManager es una aplicación web que permite a los responsables de la ciudad la creación, búsqueda y coordinación del manejo de las comunidades neocatecumenales de una ciudad y país.
+ComunidadCat es una aplicación web que permite a los responsables de la ciudad la creación, búsqueda y coordinación del manejo de las comunidades neocatecumenales de una ciudad y país.
 
 ## Funcionalidades esenciales 
 - Autenticación con email

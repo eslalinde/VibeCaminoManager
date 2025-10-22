@@ -1,6 +1,6 @@
 # Arquitectura CRUD Reutilizable
 
-Esta documentación describe la nueva arquitectura CRUD reutilizable implementada en el proyecto CaminoManager.
+Esta documentación describe la nueva arquitectura CRUD reutilizable implementada en el proyecto ComunidadCat.
 
 ## Visión General
 

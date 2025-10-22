@@ -14,7 +14,7 @@ export default async function Home() {
       className="flex flex-col items-center justify-center w-full h-full"
       title="Inicio"
     >
-      <h1 className="text-4xl font-bold mb-4 text-primary">Bienvenido a CaminoManager</h1>
+      <h1 className="text-4xl font-bold mb-4 text-primary">Panel de Control</h1>
       <p className="mb-8 text-lg text-gray-700 text-center max-w-xl">
         Gestiona comunidades neocatecumenales de manera eficiente. Utiliza la navegación lateral para acceder a las diferentes secciones del sistema.
       </p>

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import {
-  Home,
   Globe,
   MapPinned,
   Building2,
@@ -18,7 +17,6 @@ import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import "@radix-ui/themes/styles.css";
 
 const navItems = [
-  { label: "Dashboard", href: "/protected", icon: Home },
   { label: "Países", href: "/protected/countries", icon: Globe },
   { label: "Departamentos", href: "/protected/departamentos", icon: MapPinned },
   { label: "Ciudades", href: "/protected/cities", icon: Building2 },
@@ -40,7 +38,7 @@ export default function Sidebar() {
       )}
     >
       <div className="flex items-center justify-between h-16 px-4 border-b">
-        <span className={cn("font-bold text-lg transition-all", collapsed && "hidden")}>CaminoManager</span>
+        <span className={cn("font-bold text-lg transition-all", collapsed && "hidden")}>ComunidadCat</span>
         <button
           className="p-2 rounded hover:bg-gray-100"
           onClick={() => setCollapsed((c) => !c)}

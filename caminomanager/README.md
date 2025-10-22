@@ -1,4 +1,4 @@
-# CaminoManager
+# ComunidadCat
 
 Este proyecto fue creado con [Next.js](https://nextjs.org/) y [Supabase](https://supabase.com/).
 

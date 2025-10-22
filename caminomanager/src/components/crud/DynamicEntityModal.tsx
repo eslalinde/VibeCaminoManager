@@ -244,7 +244,19 @@ export function DynamicEntityModal<T extends BaseEntity>({
   };
 
   const handleInputChange = (fieldName: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [fieldName]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [fieldName]: value };
+      
+      // Si se cambia el person_type_id y no es "Casado" (valor 1), limpiar spouse_id
+      if (fieldName === 'person_type_id') {
+        const isMarried = value === '1' || value === 1;
+        if (!isMarried) {
+          newData.spouse_id = null; // Limpiar el cónyuge si no está casado
+        }
+      }
+      
+      return newData;
+    });
 
     // Clear error when user starts typing
     if (errors[fieldName]) {
@@ -303,6 +315,15 @@ export function DynamicEntityModal<T extends BaseEntity>({
                 hasOptions: fieldOptions && fieldOptions.length > 0,
                 configOptions: field.options
               });
+            }
+
+            // Lógica condicional para mostrar/ocultar el campo cónyuge
+            // Solo mostrar spouse_id si person_type_id es 1 (Casado)
+            if (field.name === 'spouse_id') {
+              const isMarried = formData.person_type_id === '1' || formData.person_type_id === 1;
+              if (!isMarried) {
+                return null; // No renderizar el campo si no está casado
+              }
             }
 
             return (
