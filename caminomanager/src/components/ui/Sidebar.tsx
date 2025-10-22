@@ -20,7 +20,7 @@ import "@radix-ui/themes/styles.css";
 const navItems = [
   { label: "Dashboard", href: "/protected", icon: Home },
   { label: "Países", href: "/protected/countries", icon: Globe },
-  { label: "Departamentos", href: "/protected/states", icon: MapPinned },
+  { label: "Departamentos", href: "/protected/departamentos", icon: MapPinned },
   { label: "Ciudades", href: "/protected/cities", icon: Building2 },
   { label: "Parroquias", href: "/protected/parishes", icon: Church },
   { label: "Etapas del Camino", href: "/protected/stepways", icon: Route },
