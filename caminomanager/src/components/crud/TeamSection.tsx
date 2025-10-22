@@ -1,15 +1,16 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Team, Belongs } from '@/types/database';
+import { Team, Belongs, Parish } from '@/types/database';
 
 interface TeamSectionProps {
   team: Team;
   members: Belongs[];
+  parishes: Parish[];
   loading?: boolean;
   teamNumber?: number;
 }
 
-export function TeamSection({ team, members, loading, teamNumber }: TeamSectionProps) {
+export function TeamSection({ team, members, parishes, loading, teamNumber }: TeamSectionProps) {
   if (loading) {
     return (
       <Card>
@@ -119,9 +120,17 @@ export function TeamSection({ team, members, loading, teamNumber }: TeamSectionP
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">{getTeamTitle()}</CardTitle>
-        <p className="text-sm text-gray-600">
-          {mergedMembers.length} {mergedMembers.length === 1 ? 'miembro' : 'miembros'}
-        </p>
+        {team.team_type_id === 3 && parishes.length > 0 && (
+          <div className="mt-2">
+            <div className="space-y-1">
+              {parishes.map((parish) => (
+                <p key={parish.id} className="text-sm text-gray-600">
+                  Lleva {parish.name}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

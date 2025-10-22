@@ -19,6 +19,7 @@ export default function CommunityDetailPage() {
     mergedBrothers,
     teams,
     teamMembers,
+    teamParishes,
     loading,
     error
   } = useCommunityData(communityId);
@@ -79,6 +80,7 @@ export default function CommunityDetailPage() {
                   key={team.id || `responsable-${Math.random()}`}
                   team={team}
                   members={team.id ? teamMembers[team.id] || [] : []}
+                  parishes={team.id ? teamParishes[team.id] || [] : []}
                   loading={loading}
                 />
               ))
@@ -100,6 +102,7 @@ export default function CommunityDetailPage() {
                   <TeamSection
                     team={team}
                     members={team.id ? teamMembers[team.id] || [] : []}
+                    parishes={team.id ? teamParishes[team.id] || [] : []}
                     loading={loading}
                     teamNumber={index + 1}
                   />

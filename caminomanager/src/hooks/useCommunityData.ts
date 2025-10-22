@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Community, Brother, Team, Belongs, Person } from '@/types/database';
+import { Community, Brother, Team, Belongs, Person, Parish } from '@/types/database';
 
 export interface CommunityData {
   community: Community | null;
@@ -10,6 +10,7 @@ export interface CommunityData {
     catequistas: Team[];
   };
   teamMembers: Record<number, Belongs[]>;
+  teamParishes: Record<number, Parish[]>;
   loading: boolean;
   error: string | null;
 }
@@ -30,6 +31,7 @@ export function useCommunityData(communityId: number): CommunityData & {
   const [brothers, setBrothers] = useState<Brother[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamMembers, setTeamMembers] = useState<Record<number, Belongs[]>>({});
+  const [teamParishes, setTeamParishes] = useState<Record<number, Parish[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,10 +106,36 @@ export function useCommunityData(communityId: number): CommunityData & {
           membersByTeam[member.team_id].push(member);
         });
 
+        // Fetch parishes for each team
+        const parishesByTeam: Record<number, Parish[]> = {};
+        
+        if (teamIds.length > 0) {
+          const { data: parishTeamsData, error: parishTeamsError } = await supabase
+            .from('parish_teams')
+            .select(`
+              team_id,
+              parish:parishes(*)
+            `)
+            .in('team_id', teamIds);
+
+          if (parishTeamsError) throw parishTeamsError;
+
+          // Group parishes by team_id
+          parishTeamsData?.forEach(item => {
+            if (!parishesByTeam[item.team_id]) {
+              parishesByTeam[item.team_id] = [];
+            }
+            if (item.parish) {
+              parishesByTeam[item.team_id].push(item.parish as unknown as Parish);
+            }
+          });
+        }
+
         setCommunity(communityData);
         setBrothers(brothersData || []);
         setTeams(teamsData || []);
         setTeamMembers(membersByTeam);
+        setTeamParishes(parishesByTeam);
 
       } catch (err) {
         console.error('Error fetching community data:', err);
@@ -160,10 +188,10 @@ export function useCommunityData(communityId: number): CommunityData & {
             carisma: 'Casado',
             celular: husband.mobile || wife.mobile || '',
             isMarriage: true,
-            personIds: [person.id, spouseBrother.person_id]
+            personIds: [person.id!, spouseBrother.person_id]
           });
 
-          processedIds.add(person.id);
+          processedIds.add(person.id!);
           processedIds.add(spouseBrother.person_id);
           return;
         }
@@ -188,10 +216,10 @@ export function useCommunityData(communityId: number): CommunityData & {
         carisma,
         celular: person.mobile || '',
         isMarriage: false,
-        personIds: [person.id]
+        personIds: [person.id!]
       });
 
-      processedIds.add(person.id);
+      processedIds.add(person.id!);
     });
 
     return merged;
@@ -202,6 +230,7 @@ export function useCommunityData(communityId: number): CommunityData & {
     brothers,
     teams: groupedTeams,
     teamMembers,
+    teamParishes,
     loading,
     error,
     mergedBrothers
