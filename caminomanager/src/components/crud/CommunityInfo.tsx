@@ -45,6 +45,21 @@ export function CommunityInfo({ community, loading, onEdit }: CommunityInfoProps
     return new Date(dateString).toLocaleDateString('es-CO');
   };
 
+  const calculateYears = (dateString?: string) => {
+    if (!dateString) return '';
+    const birthDate = new Date(dateString);
+    const today = new Date();
+    const years = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Si aún no ha cumplido años este año, restar 1
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      return years - 1;
+    }
+    
+    return years;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -72,12 +87,19 @@ export function CommunityInfo({ community, loading, onEdit }: CommunityInfoProps
           
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hermanos Actuales</label>
-            <p className="text-sm font-semibold text-blue-600">{community.actual_brothers || 'No especificado'}</p>
+            <p className="text-sm font-semibold text-gray-700">{community.actual_brothers || 'No especificado'}</p>
           </div>
           
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha de Nacimiento</label>
-            <p className="text-sm text-gray-700">{formatDate(community.born_date)}</p>
+            <p className="text-sm text-gray-700">
+              {formatDate(community.born_date)}
+              {community.born_date && (
+                <span className="ml-2 text-xs text-gray-500">
+                  ({calculateYears(community.born_date)} años)
+                </span>
+              )}
+            </p>
           </div>
           
           <div className="space-y-1">

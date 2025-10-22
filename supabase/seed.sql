@@ -417,23 +417,23 @@ INSERT INTO brothers (id, person_id, community_id) VALUES
 -- Belongs (pertenencia a equipos)
 -- Ejemplo para Comunidad 1: Equipo de responsables (matrimonios 1,3,5 y soltera 76)
 INSERT INTO belongs (id, person_id, community_id, team_id, is_responsible_for_the_team) VALUES
-(1, 1, 1, 1, TRUE), (2, 3, 1, 1, FALSE), (3, 5, 1, 1, FALSE), (4, 76, 1, 1, FALSE),
+(1, 1, 1, 1, TRUE), (2, 2, 1, 1, TRUE), (3, 3, 1, 1, FALSE), (4, 4, 1, 1, FALSE), (5, 5, 1, 1, FALSE), (6, 6, 1, 1, FALSE), (7, 76, 1, 1, FALSE),
 -- Equipo catequistas 1 (matrimonios 1,5,9 y soltera 78)
-(5, 1, 1, 2, TRUE), (6, 5, 1, 2, FALSE), (7, 9, 1, 2, FALSE), (8, 78, 1, 2, FALSE),
+(8, 1, 1, 2, TRUE), (9, 2, 1, 2, TRUE), (10, 5, 1, 2, FALSE), (11, 6, 1, 2, FALSE), (12, 9, 1, 2, FALSE), (13, 10, 1, 2, FALSE), (14, 78, 1, 2, FALSE),
 -- Equipo catequistas 2 (matrimonios 7,11 y solteros 79,81,83)
-(9, 7, 1, 3, TRUE), (10, 11, 1, 3, FALSE), (11, 79, 1, 3, FALSE), (12, 81, 1, 3, FALSE), (13, 83, 1, 3, FALSE),
+(15, 7, 1, 3, TRUE), (16, 8, 1, 3, TRUE), (17, 11, 1, 3, FALSE), (18, 12, 1, 3, FALSE), (19, 79, 1, 3, FALSE), (20, 81, 1, 3, FALSE), (21, 83, 1, 3, FALSE),
 -- Comunidad 2: Equipo de responsables (matrimonios 21,23,25 y soltera 88)
-(14, 21, 2, 4, TRUE), (15, 23, 2, 4, FALSE), (16, 25, 2, 4, FALSE), (17, 88, 2, 4, FALSE),
+(22, 21, 2, 4, TRUE), (23, 22, 2, 4, TRUE), (24, 23, 2, 4, FALSE), (25, 24, 2, 4, FALSE), (26, 25, 2, 4, FALSE), (27, 26, 2, 4, FALSE), (28, 88, 2, 4, FALSE),
 -- Equipo catequistas (matrimonios 21,25 y solteros 89,91)
-(18, 21, 2, 5, TRUE), (19, 25, 2, 5, FALSE), (20, 89, 2, 5, FALSE), (21, 91, 2, 5, FALSE),
+(29, 21, 2, 5, TRUE), (30, 22, 2, 5, TRUE), (31, 25, 2, 5, FALSE), (32, 26, 2, 5, FALSE), (33, 89, 2, 5, FALSE), (34, 91, 2, 5, FALSE),
 -- Comunidad 3: Equipo de responsables (matrimonios 35,37 y soltera 100)
-(22, 35, 3, 6, TRUE), (23, 37, 3, 6, FALSE), (24, 100, 3, 6, FALSE),
+(35, 35, 3, 6, TRUE), (36, 36, 3, 6, TRUE), (37, 37, 3, 6, FALSE), (38, 38, 3, 6, FALSE), (39, 100, 3, 6, FALSE),
 -- Equipo catequistas (matrimonios 35,39 y solteros 101,103)
-(25, 35, 3, 7, TRUE), (26, 39, 3, 7, FALSE), (27, 101, 3, 7, FALSE), (28, 103, 3, 7, FALSE),
+(40, 35, 3, 7, TRUE), (41, 36, 3, 7, TRUE), (42, 39, 3, 7, FALSE), (43, 40, 3, 7, FALSE), (44, 101, 3, 7, FALSE), (45, 103, 3, 7, FALSE),
 -- Comunidad 4: Equipo de responsables (matrimonios 45,47 y soltera 128)
-(29, 45, 4, 8, TRUE), (30, 47, 4, 8, FALSE), (31, 128, 4, 8, FALSE),
+(46, 45, 4, 8, TRUE), (47, 46, 4, 8, TRUE), (48, 47, 4, 8, FALSE), (49, 48, 4, 8, FALSE), (50, 128, 4, 8, FALSE),
 -- Equipo catequistas (matrimonios 45,49 y solteros 129,131)
-(32, 45, 4, 9, TRUE), (33, 49, 4, 9, FALSE), (34, 129, 4, 9, FALSE), (35, 131, 4, 9, FALSE);
+(51, 45, 4, 9, TRUE), (52, 46, 4, 9, TRUE), (53, 49, 4, 9, FALSE), (54, 50, 4, 9, FALSE), (55, 129, 4, 9, FALSE), (56, 131, 4, 9, FALSE);
 
 -- CommunityStepLog (registro de etapas)
 INSERT INTO community_step_log (id, community_id, step_way_id, date_of_step, principal_catechist_name, outcome, notes) VALUES
@@ -495,7 +495,7 @@ SELECT setval('public.priests_id_seq', (SELECT MAX(id) FROM priests));
 -- Brothers sequence (max ID: 200)
 SELECT setval('public.brothers_id_seq', (SELECT MAX(id) FROM brothers));
 
--- Belongs sequence (max ID: 35)
+-- Belongs sequence (max ID: 56)
 SELECT setval('public.belongs_id_seq', (SELECT MAX(id) FROM belongs));
 
 -- CommunityStepLog sequence (max ID: 4)

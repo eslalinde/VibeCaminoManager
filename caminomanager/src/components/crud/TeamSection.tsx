@@ -154,11 +154,6 @@ export function TeamSection({ team, members, parishes, loading, teamNumber }: Te
                   <TableRow key={member.id}>
                     <TableCell className="font-medium">
                       {member.name}
-                      {member.isMarriage && (
-                        <span className="ml-2 text-xs bg-pink-100 text-pink-800 px-2 py-1 rounded">
-                          Matrimonio
-                        </span>
-                      )}
                       {team.team_type_id === 3 ? (
                         <>
                           {member.isResponsible && (
