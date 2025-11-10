@@ -42,7 +42,10 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
     foreignKeys
   });
 
-  const { options: stepWayOptions } = useEntityOptions({ tableName: 'step_ways' });
+  const { options: stepWayOptions } = useEntityOptions({ 
+    tableName: 'step_ways',
+    orderBy: { field: 'order_num', asc: true }
+  });
 
   useEffect(() => {
     if (communityId) {

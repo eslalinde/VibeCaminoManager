@@ -1,18 +1,25 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCommunityData } from '@/hooks/useCommunityData';
 import { CommunityInfo } from '@/components/crud/CommunityInfo';
 import { BrothersList } from '@/components/crud/BrothersList';
 import { TeamSection } from '@/components/crud/TeamSection';
 import { CommunityStepLogCompact } from '@/components/crud/CommunityStepLogCompact';
+import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
+import { communityConfig } from '@/config/entities';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+import { Community } from '@/types/database';
 
 export default function CommunityDetailPage() {
   const params = useParams();
   const router = useRouter();
   const communityId = parseInt(params.id as string);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const {
     community,
@@ -21,13 +28,36 @@ export default function CommunityDetailPage() {
     teamMembers,
     teamParishes,
     loading,
-    error
+    error,
+    refreshCommunity
   } = useCommunityData(communityId);
 
   const handleEdit = () => {
-    // Por ahora, simplemente navegamos de vuelta a la tabla
-    // En el futuro, esto podría abrir un modal de edición o navegar a una página de edición
-    router.push('/protected/communities');
+    setIsEditModalOpen(true);
+  };
+
+  const handleSave = async (data: Omit<Community, 'id' | 'created_at' | 'updated_at'>) => {
+    if (!community?.id) return;
+    
+    setIsSaving(true);
+    try {
+      const supabase = createClient();
+      const { error: updateError } = await supabase
+        .from('communities')
+        .update(data)
+        .eq('id', community.id);
+
+      if (updateError) throw updateError;
+
+      // Refrescar los datos de la comunidad
+      await refreshCommunity();
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error('Error updating community:', err);
+      throw err;
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (error) {
@@ -135,6 +165,17 @@ export default function CommunityDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de edición */}
+      <DynamicEntityModal
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSave}
+        initial={community}
+        fields={communityConfig.fields}
+        title="Editar Comunidad"
+        loading={isSaving}
+      />
     </div>
   );
 }

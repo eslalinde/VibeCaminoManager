@@ -24,6 +24,7 @@ import {
   useCityOptions,
   useAllCityOptions,
   useParishOptions,
+  useAllParishOptions,
   usePeopleOptions,
   useEntityOptions,
 } from "@/hooks/useEntityOptions";
@@ -60,15 +61,22 @@ export function DynamicEntityModal<T extends BaseEntity>({
   // Determinar si el formulario tiene campos de país y departamento
   const hasCountryField = fields.some(f => f.name === 'country_id');
   const hasStateField = fields.some(f => f.name === 'state_id');
+  const hasCityField = fields.some(f => f.name === 'city_id');
   
   // Usar el hook apropiado para ciudades
   const { options: cityOptions } = hasCountryField || hasStateField 
     ? useCityOptions(formData.country_id, formData.state_id)
     : useAllCityOptions();
     
-  const { options: parishOptions } = useParishOptions(formData.city_id);
+  // Usar el hook apropiado para parroquias
+  const { options: parishOptions } = hasCityField
+    ? useParishOptions(formData.city_id)
+    : useAllParishOptions();
   const { options: peopleOptions, loading: peopleLoading } = usePeopleOptions(initial?.id);
-  const { options: stepWayOptions } = useEntityOptions({ tableName: 'step_ways' });
+  const { options: stepWayOptions } = useEntityOptions({ 
+    tableName: 'step_ways',
+    orderBy: { field: 'order_num', asc: true }
+  });
 
   useEffect(() => {
     if (open) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Community, Brother, Team, Belongs, Person, Parish } from '@/types/database';
 
@@ -26,6 +26,7 @@ export interface MergedBrother {
 
 export function useCommunityData(communityId: number): CommunityData & {
   mergedBrothers: MergedBrother[];
+  refreshCommunity: () => Promise<void>;
 } {
   const [community, setCommunity] = useState<Community | null>(null);
   const [brothers, setBrothers] = useState<Brother[]>([]);
@@ -37,116 +38,120 @@ export function useCommunityData(communityId: number): CommunityData & {
 
   const supabase = useMemo(() => createClient(), []);
 
-  useEffect(() => {
+  const fetchCommunityData = useCallback(async () => {
     if (!communityId) return;
     
-    const fetchCommunityData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        // Fetch community with relations
-        const { data: communityData, error: communityError } = await supabase
-          .from('communities')
-          .select(`
-            *,
-            parish:parishes(*),
-            step_way:step_ways(*)
-          `)
-          .eq('id', communityId)
-          .single();
+      // Fetch community with relations
+      const { data: communityData, error: communityError } = await supabase
+        .from('communities')
+        .select(`
+          *,
+          parish:parishes(*),
+          step_way:step_ways(*)
+        `)
+        .eq('id', communityId)
+        .single();
 
-        if (communityError) throw communityError;
+      if (communityError) throw communityError;
 
-        // Fetch brothers with person data
-        const { data: brothersData, error: brothersError } = await supabase
-          .from('brothers')
+      // Fetch brothers with person data
+      const { data: brothersData, error: brothersError } = await supabase
+        .from('brothers')
+        .select(`
+          *,
+          person:people(*)
+        `)
+        .eq('community_id', communityId);
+
+      if (brothersError) throw brothersError;
+
+      // Fetch teams
+      const { data: teamsData, error: teamsError } = await supabase
+        .from('teams')
+        .select(`
+          *,
+          team_type:team_types(*)
+        `)
+        .eq('community_id', communityId);
+
+      if (teamsError) throw teamsError;
+
+      // Fetch team members for all teams
+      const teamIds = teamsData?.map(team => team.id) || [];
+      let membersData: Belongs[] = [];
+      
+      if (teamIds.length > 0) {
+        const { data: members, error: membersError } = await supabase
+          .from('belongs')
           .select(`
             *,
             person:people(*)
           `)
-          .eq('community_id', communityId);
+          .in('team_id', teamIds);
 
-        if (brothersError) throw brothersError;
-
-        // Fetch teams
-        const { data: teamsData, error: teamsError } = await supabase
-          .from('teams')
-          .select(`
-            *,
-            team_type:team_types(*)
-          `)
-          .eq('community_id', communityId);
-
-        if (teamsError) throw teamsError;
-
-        // Fetch team members for all teams
-        const teamIds = teamsData?.map(team => team.id) || [];
-        let membersData: Belongs[] = [];
-        
-        if (teamIds.length > 0) {
-          const { data: members, error: membersError } = await supabase
-            .from('belongs')
-            .select(`
-              *,
-              person:people(*)
-            `)
-            .in('team_id', teamIds);
-
-          if (membersError) throw membersError;
-          membersData = members || [];
-        }
-
-        // Group team members by team_id
-        const membersByTeam: Record<number, Belongs[]> = {};
-        membersData.forEach(member => {
-          if (!membersByTeam[member.team_id]) {
-            membersByTeam[member.team_id] = [];
-          }
-          membersByTeam[member.team_id].push(member);
-        });
-
-        // Fetch parishes for each team
-        const parishesByTeam: Record<number, Parish[]> = {};
-        
-        if (teamIds.length > 0) {
-          const { data: parishTeamsData, error: parishTeamsError } = await supabase
-            .from('parish_teams')
-            .select(`
-              team_id,
-              parish:parishes(*)
-            `)
-            .in('team_id', teamIds);
-
-          if (parishTeamsError) throw parishTeamsError;
-
-          // Group parishes by team_id
-          parishTeamsData?.forEach(item => {
-            if (!parishesByTeam[item.team_id]) {
-              parishesByTeam[item.team_id] = [];
-            }
-            if (item.parish) {
-              parishesByTeam[item.team_id].push(item.parish as unknown as Parish);
-            }
-          });
-        }
-
-        setCommunity(communityData);
-        setBrothers(brothersData || []);
-        setTeams(teamsData || []);
-        setTeamMembers(membersByTeam);
-        setTeamParishes(parishesByTeam);
-
-      } catch (err) {
-        console.error('Error fetching community data:', err);
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setLoading(false);
+        if (membersError) throw membersError;
+        membersData = members || [];
       }
-    };
 
-    fetchCommunityData();
+      // Group team members by team_id
+      const membersByTeam: Record<number, Belongs[]> = {};
+      membersData.forEach(member => {
+        if (!membersByTeam[member.team_id]) {
+          membersByTeam[member.team_id] = [];
+        }
+        membersByTeam[member.team_id].push(member);
+      });
+
+      // Fetch parishes for each team
+      const parishesByTeam: Record<number, Parish[]> = {};
+      
+      if (teamIds.length > 0) {
+        const { data: parishTeamsData, error: parishTeamsError } = await supabase
+          .from('parish_teams')
+          .select(`
+            team_id,
+            parish:parishes(*)
+          `)
+          .in('team_id', teamIds);
+
+        if (parishTeamsError) throw parishTeamsError;
+
+        // Group parishes by team_id
+        parishTeamsData?.forEach(item => {
+          if (!parishesByTeam[item.team_id]) {
+            parishesByTeam[item.team_id] = [];
+          }
+          if (item.parish) {
+            parishesByTeam[item.team_id].push(item.parish as unknown as Parish);
+          }
+        });
+      }
+
+      setCommunity(communityData);
+      setBrothers(brothersData || []);
+      setTeams(teamsData || []);
+      setTeamMembers(membersByTeam);
+      setTeamParishes(parishesByTeam);
+
+    } catch (err) {
+      console.error('Error fetching community data:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setLoading(false);
+    }
   }, [communityId, supabase]);
+
+  useEffect(() => {
+    fetchCommunityData();
+  }, [fetchCommunityData]);
+
+  const refreshCommunity = useCallback(async () => {
+    await fetchCommunityData();
+  }, [fetchCommunityData]);
 
   // Group teams by type
   const groupedTeams = useMemo(() => {
@@ -246,6 +251,7 @@ export function useCommunityData(communityId: number): CommunityData & {
     teamParishes,
     loading,
     error,
-    mergedBrothers
+    mergedBrothers,
+    refreshCommunity
   };
 }

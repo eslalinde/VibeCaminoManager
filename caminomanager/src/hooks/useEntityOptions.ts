@@ -128,6 +128,14 @@ export function useParishOptions(cityId?: number) {
   });
 }
 
+// Hook específico para todas las parroquias (sin filtros)
+export function useAllParishOptions() {
+  return useEntityOptions({
+    tableName: 'parishes',
+    orderBy: { field: 'name', asc: true }
+  });
+}
+
 // Hook específico para personas (para cónyuges)
 export function usePeopleOptions(excludeId?: number) {
   const filters: Record<string, any> = {};
