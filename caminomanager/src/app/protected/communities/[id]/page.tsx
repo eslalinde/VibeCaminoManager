@@ -112,6 +112,8 @@ export default function CommunityDetailPage() {
                   members={team.id ? teamMembers[team.id] || [] : []}
                   parishes={team.id ? teamParishes[team.id] || [] : []}
                   loading={loading}
+                  communityId={communityId}
+                  onDelete={refreshCommunity}
                 />
               ))
             ) : (
@@ -135,6 +137,8 @@ export default function CommunityDetailPage() {
                     parishes={team.id ? teamParishes[team.id] || [] : []}
                     loading={loading}
                     teamNumber={index + 1}
+                    communityId={communityId}
+                    onDelete={refreshCommunity}
                   />
                 </div>
               ))
@@ -161,7 +165,13 @@ export default function CommunityDetailPage() {
           
           {/* Brothers List */}
           <div className="flex-1">
-            <BrothersList brothers={mergedBrothers} loading={loading} />
+            <BrothersList 
+              brothers={mergedBrothers} 
+              loading={loading}
+              communityId={communityId}
+              teamMembers={teamMembers}
+              onDelete={refreshCommunity}
+            />
           </div>
         </div>
       </div>

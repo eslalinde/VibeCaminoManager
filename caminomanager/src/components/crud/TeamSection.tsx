@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { Team, Belongs, Parish } from '@/types/database';
+import { createClient } from '@/utils/supabase/client';
+import { Trash2 } from 'lucide-react';
 
 interface TeamSectionProps {
   team: Team;
@@ -8,9 +12,13 @@ interface TeamSectionProps {
   parishes: Parish[];
   loading?: boolean;
   teamNumber?: number;
+  communityId: number;
+  onDelete?: () => void;
 }
 
-export function TeamSection({ team, members, parishes, loading, teamNumber }: TeamSectionProps) {
+export function TeamSection({ team, members, parishes, loading, teamNumber, communityId, onDelete }: TeamSectionProps) {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   if (loading) {
     return (
       <Card>
@@ -53,6 +61,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber }: Te
       isResponsible: boolean;
       isMarriage: boolean;
       isPresbitero: boolean;
+      personIds: number[];
     }> = [];
 
     members.forEach(member => {
@@ -80,7 +89,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber }: Te
             mobile: husband.mobile || wife.mobile || '',
             isResponsible: member.is_responsible_for_the_team || spouseMember.is_responsible_for_the_team,
             isMarriage: true,
-            isPresbitero: false // Married couples are not presbíteros
+            isPresbitero: false, // Married couples are not presbíteros
+            personIds: [person.id!, spouseMember.person_id]
           });
 
           if (person.id) processedIds.add(person.id);
@@ -98,7 +108,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber }: Te
         mobile: person.mobile || '',
         isResponsible: member.is_responsible_for_the_team,
         isMarriage: false,
-        isPresbitero: person.person_type_id === 3 // person_type_id 3 = Presbítero
+        isPresbitero: person.person_type_id === 3, // person_type_id 3 = Presbítero
+        personIds: [person.id!]
       });
 
       if (person.id) processedIds.add(person.id);
@@ -106,6 +117,39 @@ export function TeamSection({ team, members, parishes, loading, teamNumber }: Te
 
     return merged;
   })();
+
+  const handleDelete = async (member: { id: string; name: string; personIds: number[] }) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar a ${member.name} de este equipo?`)) {
+      return;
+    }
+
+    setDeletingId(member.id);
+    try {
+      const supabase = createClient();
+      
+      // Delete all belongs records for all person IDs in this merged member
+      for (const personId of member.personIds) {
+        const { error } = await supabase
+          .from('belongs')
+          .delete()
+          .eq('person_id', personId)
+          .eq('team_id', team.id)
+          .eq('community_id', communityId);
+
+        if (error) throw error;
+      }
+
+      // Refresh the community data
+      if (onDelete) {
+        onDelete();
+      }
+    } catch (error) {
+      console.error('Error deleting team member:', error);
+      alert('Error al eliminar el miembro del equipo. Por favor, intenta de nuevo.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const getTeamTitle = () => {
     if (team.team_type_id === 4) {
@@ -210,8 +254,17 @@ export function TeamSection({ team, members, parishes, loading, teamNumber }: Te
                       {member.mobile || '-'}
                     </TableCell>
                     <TableCell>
-                      {/* Acciones - por implementar */}
-                      <span className="text-gray-400 text-sm">-</span>
+                      <Button
+                        size="1"
+                        variant="outline"
+                        radius="small"
+                        color="red"
+                        onClick={() => handleDelete(member)}
+                        disabled={deletingId === member.id}
+                        title="Eliminar miembro del equipo"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
