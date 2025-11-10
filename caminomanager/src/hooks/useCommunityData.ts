@@ -164,50 +164,63 @@ export function useCommunityData(communityId: number): CommunityData & {
     const processedIds = new Set<number>();
     const merged: MergedBrother[] = [];
 
+    const carismaOptions = [
+      { value: 1, label: 'Casado' },
+      { value: 2, label: 'Soltero' },
+      { value: 3, label: 'Presbítero' },
+      { value: 4, label: 'Seminarista' },
+      { value: 5, label: 'Diácono' },
+      { value: 6, label: 'Monja' },
+      { value: 7, label: 'Viudo' }
+    ];
+
+    // Person types that cannot be married (should not be merged with spouse)
+    const nonMarriageTypes = [3, 4, 5, 6]; // Presbítero, Seminarista, Diácono, Monja
+
     brothers.forEach(brother => {
       if (processedIds.has(brother.person_id)) return;
 
       const person = brother.person;
       if (!person) return;
 
+      // Check person_type_id first - if it's a type that cannot be married, skip marriage logic
+      const cannotBeMarried = person.person_type_id && nonMarriageTypes.includes(person.person_type_id);
+
       // Check if this person is married and spouse is also in the community
-      if (person.spouse_id) {
+      // Only check for marriage if the person type allows it
+      if (!cannotBeMarried && person.spouse_id) {
         const spouseBrother = brothers.find(b => 
           b.person_id === person.spouse_id && 
           !processedIds.has(b.person_id)
         );
 
         if (spouseBrother && spouseBrother.person) {
-          // Create merged marriage entry
-          const husband = person.gender_id === 1 ? person : spouseBrother.person;
-          const wife = person.gender_id === 2 ? person : spouseBrother.person;
+          // Verify spouse is also not a non-marriage type
+          const spouseCannotBeMarried = spouseBrother.person.person_type_id && 
+            nonMarriageTypes.includes(spouseBrother.person.person_type_id);
           
-          merged.push({
-            id: `marriage-${person.id}-${spouseBrother.person_id}`,
-            name: `${husband.person_name} y ${wife.person_name}`,
-            carisma: 'Casado',
-            celular: husband.mobile || wife.mobile || '',
-            isMarriage: true,
-            personIds: [person.id!, spouseBrother.person_id]
-          });
+          if (!spouseCannotBeMarried) {
+            // Create merged marriage entry
+            const husband = person.gender_id === 1 ? person : spouseBrother.person;
+            const wife = person.gender_id === 2 ? person : spouseBrother.person;
+            
+            merged.push({
+              id: `marriage-${person.id}-${spouseBrother.person_id}`,
+              name: `${husband.person_name} y ${wife.person_name}`,
+              carisma: 'Casado',
+              celular: husband.mobile || wife.mobile || '',
+              isMarriage: true,
+              personIds: [person.id!, spouseBrother.person_id]
+            });
 
-          processedIds.add(person.id!);
-          processedIds.add(spouseBrother.person_id);
-          return;
+            processedIds.add(person.id!);
+            processedIds.add(spouseBrother.person_id);
+            return;
+          }
         }
       }
 
-      // Single person
-      const carismaOptions = [
-        { value: 1, label: 'Casado' },
-        { value: 2, label: 'Soltero' },
-        { value: 3, label: 'Presbítero' },
-        { value: 4, label: 'Seminarista' },
-        { value: 5, label: 'Diácono' },
-        { value: 6, label: 'Monja' },
-        { value: 7, label: 'Viudo' }
-      ];
-      
+      // Single person (or person type that cannot be married)
       const carisma = carismaOptions.find(opt => opt.value === person.person_type_id)?.label || '';
 
       merged.push({

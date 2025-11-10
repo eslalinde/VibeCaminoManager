@@ -11,7 +11,8 @@ import {
   Users2,
   ChevronLeft,
   ChevronRight,
-  Route,  
+  Route,
+  BarChart3,
 } from "lucide-react";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import "@radix-ui/themes/styles.css";
@@ -25,6 +26,7 @@ const navItems = [
   { label: "Tipos de Equipo", href: "/protected/teamtypes", icon: Users2 },
   { label: "Personas", href: "/protected/people", icon: Users },
   { label: "Comunidades", href: "/protected/communities", icon: Users2 },
+  { label: "Reportes", href: "/protected/reports", icon: BarChart3 },
 ];
 
 export default function Sidebar() {

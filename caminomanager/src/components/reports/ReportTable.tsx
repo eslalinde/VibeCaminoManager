@@ -1,0 +1,168 @@
+"use client";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Download, RefreshCw } from "lucide-react";
+import Link from "next/link";
+
+interface ReportData {
+  [key: string]: any;
+}
+
+interface ReportTableProps {
+  title: string;
+  description: string;
+  columns: {
+    key: string;
+    label: string;
+    render?: (value: any, row: ReportData) => React.ReactNode;
+  }[];
+  data: ReportData[];
+  loading: boolean;
+  onRefresh: () => void;
+  exportFileName?: string;
+}
+
+export function ReportTable({
+  title,
+  description,
+  columns,
+  data,
+  loading,
+  onRefresh,
+  exportFileName = "reporte"
+}: ReportTableProps) {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const exportToCSV = () => {
+    setIsExporting(true);
+    
+    // Función para escapar valores CSV correctamente
+    const escapeCSVValue = (value: any): string => {
+      if (value === null || value === undefined) return '';
+      
+      const stringValue = String(value);
+      
+      // Si contiene comillas, comas o saltos de línea, envolver en comillas y escapar comillas internas
+      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n') || stringValue.includes('\r')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      
+      return stringValue;
+    };
+    
+    const headers = columns.map(col => escapeCSVValue(col.label)).join(',');
+    const rows = data.map(row => 
+      columns.map(col => {
+        const value = row[col.key];
+        return escapeCSVValue(value);
+      }).join(',')
+    );
+    
+    const csvContent = [headers, ...rows].join('\n');
+    
+    // Agregar BOM (Byte Order Mark) para UTF-8 para compatibilidad con Excel
+    const BOM = '\uFEFF';
+    const csvWithBOM = BOM + csvContent;
+    
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${exportFileName}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setIsExporting(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link href="/protected/reports">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+            <p className="text-gray-600">{description}</p>
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={onRefresh}
+            disabled={loading}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Actualizar
+          </Button>
+          <Button 
+            onClick={exportToCSV}
+            disabled={loading || isExporting || data.length === 0}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            {isExporting ? 'Exportando...' : 'Exportar CSV'}
+          </Button>
+        </div>
+      </div>
+
+      <Card className="p-6">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
+            <span className="ml-3 text-gray-600">Cargando datos...</span>
+          </div>
+        ) : data.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No hay datos disponibles</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b">
+                  {columns.map((column) => (
+                    <th 
+                      key={column.key}
+                      className="text-left py-3 px-4 font-semibold text-gray-900"
+                    >
+                      {column.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((row, index) => (
+                  <tr key={index} className="border-b hover:bg-gray-50">
+                    {columns.map((column) => (
+                      <td key={column.key} className="py-3 px-4 text-gray-700">
+                        {column.render 
+                          ? column.render(row[column.key], row)
+                          : row[column.key] || '-'
+                        }
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        {data.length > 0 && (
+          <div className="mt-4 text-sm text-gray-500 text-center">
+            Mostrando {data.length} registros
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}

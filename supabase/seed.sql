@@ -180,20 +180,20 @@ INSERT INTO people (id, person_name, phone, mobile, email, person_type_id, gende
 (59, 'Samuel Pineda', '6041000059', '3001000059', 'samuel.pineda@email.com', 1, 1, 60),
 (60, 'Valeria Cárdenas', '6041000060', '3001000060', 'valeria.cardenas@email.com', 1, 2, 59),
 -- Presbíteros (1 por parroquia de la Visitación + 10 extra, total 14)
-(61, 'Padre Álvaro Restrepo', '6041000061', '3001000061', 'alvaro.restrepo@email.com', 2, 1, NULL),
-(62, 'Padre Jorge Giraldo', '6041000062', '3001000062', 'jorge.giraldo@email.com', 2, 1, NULL),
-(63, 'Padre Luis Zapata', '6041000063', '3001000063', 'luis.zapata@email.com', 2, 1, NULL),
-(64, 'Padre Mario Castaño', '6041000064', '3001000064', 'mario.castano@email.com', 2, 1, NULL),
-(65, 'Padre Hernán Quintero', '6041000065', '3001000065', 'hernan.quintero@email.com', 2, 1, NULL),
-(66, 'Padre Fabián Ospina', '6041000066', '3001000066', 'fabian.ospina@email.com', 2, 1, NULL),
-(67, 'Padre Camilo Betancur', '6041000067', '3001000067', 'camilo.betancur@email.com', 2, 1, NULL),
-(68, 'Padre Esteban Hoyos', '6041000068', '3001000068', 'esteban.hoyos@email.com', 2, 1, NULL),
-(69, 'Padre Julián Restrepo', '6041000069', '3001000069', 'julian.restrepo@email.com', 2, 1, NULL),
-(70, 'Padre Sergio Montoya', '6041000070', '3001000070', 'sergio.montoya@email.com', 2, 1, NULL),
-(71, 'Padre Andrés Zapata', '6041000071', '3001000071', 'andres.zapata@email.com', 2, 1, NULL),
-(72, 'Padre Diego Cárdenas', '6041000072', '3001000072', 'diego.cardenas@email.com', 2, 1, NULL),
-(73, 'Padre Felipe Salazar', '6041000073', '3001000073', 'felipe.salazar@email.com', 2, 1, NULL),
-(74, 'Padre Simón Ríos', '6041000074', '3001000074', 'simon.rios@email.com', 2, 1, NULL),
+(61, 'Padre Álvaro Restrepo', '6041000061', '3001000061', 'alvaro.restrepo@email.com', 3, 1, NULL),
+(62, 'Padre Jorge Giraldo', '6041000062', '3001000062', 'jorge.giraldo@email.com', 3, 1, NULL),
+(63, 'Padre Luis Zapata', '6041000063', '3001000063', 'luis.zapata@email.com', 3, 1, NULL),
+(64, 'Padre Mario Castaño', '6041000064', '3001000064', 'mario.castano@email.com', 3, 1, NULL),
+(65, 'Padre Hernán Quintero', '6041000065', '3001000065', 'hernan.quintero@email.com', 3, 1, NULL),
+(66, 'Padre Fabián Ospina', '6041000066', '3001000066', 'fabian.ospina@email.com', 3, 1, NULL),
+(67, 'Padre Camilo Betancur', '6041000067', '3001000067', 'camilo.betancur@email.com', 3, 1, NULL),
+(68, 'Padre Esteban Hoyos', '6041000068', '3001000068', 'esteban.hoyos@email.com', 3, 1, NULL),
+(69, 'Padre Julián Restrepo', '6041000069', '3001000069', 'julian.restrepo@email.com', 3, 1, NULL),
+(70, 'Padre Sergio Montoya', '6041000070', '3001000070', 'sergio.montoya@email.com', 3, 1, NULL),
+(71, 'Padre Andrés Zapata', '6041000071', '3001000071', 'andres.zapata@email.com', 3, 1, NULL),
+(72, 'Padre Diego Cárdenas', '6041000072', '3001000072', 'diego.cardenas@email.com', 3, 1, NULL),
+(73, 'Padre Felipe Salazar', '6041000073', '3001000073', 'felipe.salazar@email.com', 3, 1, NULL),
+(74, 'Padre Simón Ríos', '6041000074', '3001000074', 'simon.rios@email.com', 3, 1, NULL),
 -- Seminaristas (10)
 (75, 'Seminarista Juan Esteban', '6041000075', '3001000075', 'seminarista.juan@email.com', 4, 1, NULL),
 (76, 'Seminarista Pablo López', '6041000076', '3001000076', 'seminarista.pablo@email.com', 4, 1, NULL),
@@ -206,131 +206,157 @@ INSERT INTO people (id, person_name, phone, mobile, email, person_type_id, gende
 (83, 'Seminarista Emiliano Peña', '6041000083', '3001000083', 'seminarista.emiliano@email.com', 4, 1, NULL),
 (84, 'Seminarista Simón Vargas', '6041000084', '3001000084', 'seminarista.simon@email.com', 4, 1, NULL),
 -- Monjas (10)
-(85, 'Hermana Lucía Restrepo', '6041000085', '3001000085', 'hermana.lucia@email.com', 5, 2, NULL),
-(86, 'Hermana Teresa Zapata', '6041000086', '3001000086', 'hermana.teresa@email.com', 5, 2, NULL),
-(87, 'Hermana Rosa Castaño', '6041000087', '3001000087', 'hermana.rosa@email.com', 5, 2, NULL),
-(88, 'Hermana Carmen Quintero', '6041000088', '3001000088', 'hermana.carmen@email.com', 5, 2, NULL),
-(89, 'Hermana Gloria Ospina', '6041000089', '3001000089', 'hermana.gloria@email.com', 5, 2, NULL),
-(90, 'Hermana Patricia Betancur', '6041000090', '3001000090', 'hermana.patricia@email.com', 5, 2, NULL),
-(91, 'Hermana Sandra Hoyos', '6041000091', '3001000091', 'hermana.sandra@email.com', 5, 2, NULL),
-(92, 'Hermana Adriana Restrepo', '6041000092', '3001000092', 'hermana.adriana@email.com', 5, 2, NULL),
-(93, 'Hermana Marcela Montoya', '6041000093', '3001000093', 'hermana.marcela@email.com', 5, 2, NULL),
-(94, 'Hermana Carolina Zapata', '6041000094', '3001000094', 'hermana.carolina@email.com', 5, 2, NULL),
+(85, 'Hermana Lucía Restrepo', '6041000085', '3001000085', 'hermana.lucia@email.com', 6, 2, NULL),
+(86, 'Hermana Teresa Zapata', '6041000086', '3001000086', 'hermana.teresa@email.com', 6, 2, NULL),
+(87, 'Hermana Rosa Castaño', '6041000087', '3001000087', 'hermana.rosa@email.com', 6, 2, NULL),
+(88, 'Hermana Carmen Quintero', '6041000088', '3001000088', 'hermana.carmen@email.com', 6, 2, NULL),
+(89, 'Hermana Gloria Ospina', '6041000089', '3001000089', 'hermana.gloria@email.com', 6, 2, NULL),
+(90, 'Hermana Patricia Betancur', '6041000090', '3001000090', 'hermana.patricia@email.com', 6, 2, NULL),
+(91, 'Hermana Sandra Hoyos', '6041000091', '3001000091', 'hermana.sandra@email.com', 6, 2, NULL),
+(92, 'Hermana Adriana Restrepo', '6041000092', '3001000092', 'hermana.adriana@email.com', 6, 2, NULL),
+(93, 'Hermana Marcela Montoya', '6041000093', '3001000093', 'hermana.marcela@email.com', 6, 2, NULL),
+(94, 'Hermana Carolina Zapata', '6041000094', '3001000094', 'hermana.carolina@email.com', 6, 2, NULL),
 -- Viudos y viudas (10)
-(95, 'José Viudo', '6041000095', '3001000095', 'jose.viudo@email.com', 6, 1, NULL),
-(96, 'Marta Viuda', '6041000096', '3001000096', 'marta.viuda@email.com', 6, 2, NULL),
-(97, 'Alberto Viudo', '6041000097', '3001000097', 'alberto.viudo@email.com', 6, 1, NULL),
-(98, 'Rosa Viuda', '6041000098', '3001000098', 'rosa.viuda@email.com', 6, 2, NULL),
-(99, 'Enrique Viudo', '6041000099', '3001000099', 'enrique.viudo@email.com', 6, 1, NULL),
-(100, 'Clara Viuda', '6041000100', '3001000100', 'clara.viuda@email.com', 6, 2, NULL),
-(101, 'Ramiro Viudo', '6041000101', '3001000101', 'ramiro.viudo@email.com', 6, 1, NULL),
-(102, 'Beatriz Viuda', '6041000102', '3001000102', 'beatriz.viuda@email.com', 6, 2, NULL),
-(103, 'Gustavo Viudo', '6041000103', '3001000103', 'gustavo.viudo@email.com', 6, 1, NULL),
-(104, 'Elena Viuda', '6041000104', '3001000104', 'elena.viuda@email.com', 6, 2, NULL),
+(95, 'José Viudo', '6041000095', '3001000095', 'jose.viudo@email.com', 7, 1, NULL),
+(96, 'Marta Viuda', '6041000096', '3001000096', 'marta.viuda@email.com', 7, 2, NULL),
+(97, 'Alberto Viudo', '6041000097', '3001000097', 'alberto.viudo@email.com', 7, 1, NULL),
+(98, 'Rosa Viuda', '6041000098', '3001000098', 'rosa.viuda@email.com', 7, 2, NULL),
+(99, 'Enrique Viudo', '6041000099', '3001000099', 'enrique.viudo@email.com', 7, 1, NULL),
+(100, 'Clara Viuda', '6041000100', '3001000100', 'clara.viuda@email.com', 7, 2, NULL),
+(101, 'Ramiro Viudo', '6041000101', '3001000101', 'ramiro.viudo@email.com', 7, 1, NULL),
+(102, 'Beatriz Viuda', '6041000102', '3001000102', 'beatriz.viuda@email.com', 7, 2, NULL),
+(103, 'Gustavo Viudo', '6041000103', '3001000103', 'gustavo.viudo@email.com', 7, 1, NULL),
+(104, 'Elena Viuda', '6041000104', '3001000104', 'elena.viuda@email.com', 7, 2, NULL),
 -- Solteros y solteras (resto hasta 200, alternando género y carisma)
-(105, 'Santiago Soltero', '6041000105', '3001000105', 'santiago.soltero@email.com', 7, 1, NULL),
-(106, 'Valeria Soltera', '6041000106', '3001000106', 'valeria.soltera@email.com', 7, 2, NULL),
-(107, 'Tomás Soltero', '6041000107', '3001000107', 'tomas.soltero@email.com', 7, 1, NULL),
-(108, 'Isabella Soltera', '6041000108', '3001000108', 'isabella.soltera@email.com', 7, 2, NULL),
-(109, 'Emilio Soltero', '6041000109', '3001000109', 'emilio.soltero@email.com', 7, 1, NULL),
-(110, 'Mariana Soltera', '6041000110', '3001000110', 'mariana.soltera@email.com', 7, 2, NULL),
-(111, 'Alejandro Soltero', '6041000111', '3001000111', 'alejandro.soltero@email.com', 7, 1, NULL),
-(112, 'Juliana Soltera', '6041000112', '3001000112', 'juliana.soltera@email.com', 7, 2, NULL),
-(113, 'Esteban Soltero', '6041000113', '3001000113', 'esteban.soltero@email.com', 7, 1, NULL),
-(114, 'Daniela Soltera', '6041000114', '3001000114', 'daniela.soltera@email.com', 7, 2, NULL),
-(115, 'Nicolás Soltero', '6041000115', '3001000115', 'nicolas.soltero@email.com', 7, 1, NULL),
-(116, 'Sara Soltera', '6041000116', '3001000116', 'sara.soltera@email.com', 7, 2, NULL),
-(117, 'Diogenes Albeiro Soltero', '6041000117', '3001000117', 'diogenes.albeiro@email.com', 7, 1, NULL),
-(118, 'Valentina Soltera', '6041000118', '3001000118', 'valentina2.soltera@email.com', 7, 2, NULL),
-(119, 'Martín Soltero', '6041000119', '3001000119', 'martin.soltero@email.com', 7, 1, NULL),
-(120, 'Camila Soltera', '6041000120', '3001000120', 'camila2.soltera@email.com', 7, 2, NULL),
-(121, 'Samuel Soltero', '6041000121', '3001000121', 'samuel.soltero@email.com', 7, 1, NULL),
-(122, 'Alejandra Soltera', '6041000122', '3001000122', 'alejandra.soltera@email.com', 7, 2, NULL),
-(123, 'Roberto Soltero', '6041000123', '3001000123', 'roberto.soltero@email.com', 7, 1, NULL),
-(124, 'Carmen Soltera', '6041000124', '3001000124', 'carmen.soltera@email.com', 7, 2, NULL),
-(125, 'Hugo Soltero', '6041000125', '3001000125', 'hugo.soltero@email.com', 7, 1, NULL),
-(126, 'Catalina Soltera', '6041000126', '3001000126', 'catalina.soltera@email.com', 7, 2, NULL),
-(127, 'Ignacio Soltero', '6041000127', '3001000127', 'ignacio.soltero@email.com', 7, 1, NULL),
-(128, 'Elena Soltera', '6041000128', '3001000128', 'elena.soltera@email.com', 7, 2, NULL),
-(129, 'Rafael Soltero', '6041000129', '3001000129', 'rafael.soltero@email.com', 7, 1, NULL),
-(130, 'Beatriz Soltera', '6041000130', '3001000130', 'beatriz.soltera@email.com', 7, 2, NULL),
-(131, 'Víctor Soltero', '6041000131', '3001000131', 'victor.soltero@email.com', 7, 1, NULL),
-(132, 'Cristina Soltera', '6041000132', '3001000132', 'cristina.soltera@email.com', 7, 2, NULL),
-(133, 'Adrián Soltero', '6041000133', '3001000133', 'adrian.soltero@email.com', 7, 1, NULL),
-(134, 'Dolores Soltera', '6041000134', '3001000134', 'dolores.soltera@email.com', 7, 2, NULL),
-(135, 'Eduardo Soltero', '6041000135', '3001000135', 'eduardo.soltero@email.com', 7, 1, NULL),
-(136, 'Esperanza Soltera', '6041000136', '3001000136', 'esperanza.soltera@email.com', 7, 2, NULL),
-(137, 'Óscar Soltero', '6041000137', '3001000137', 'oscar2.soltero@email.com', 7, 1, NULL),
-(138, 'Fernanda Soltera', '6041000138', '3001000138', 'fernanda.soltera@email.com', 7, 2, NULL),
-(139, 'Leonardo Soltero', '6041000139', '3001000139', 'leonardo.soltero@email.com', 7, 1, NULL),
-(140, 'Gloria Soltera', '6041000140', '3001000140', 'gloria.soltera@email.com', 7, 2, NULL),
-(141, 'Cristian Soltero', '6041000141', '3001000141', 'cristian.soltero@email.com', 7, 1, NULL),
-(142, 'Inés Soltera', '6041000142', '3001000142', 'ines.soltera@email.com', 7, 2, NULL),
-(143, 'Fernando Soltero', '6041000143', '3001000143', 'fernando2.soltero@email.com', 7, 1, NULL),
-(144, 'Natalia Soltera', '6041000144', '3001000144', 'natalia2.soltera@email.com', 7, 2, NULL),
-(145, 'Rodrigo Soltero', '6041000145', '3001000145', 'rodrigo2.soltero@email.com', 7, 1, NULL),
-(146, 'Julia Soltera', '6041000146', '3001000146', 'julia.soltera@email.com', 7, 2, NULL),
-(147, 'Mauricio Soltero', '6041000147', '3001000147', 'mauricio2.soltero@email.com', 7, 1, NULL),
-(148, 'Lorena Soltera', '6041000148', '3001000148', 'lorena.soltera@email.com', 7, 2, NULL),
-(149, 'Gonzalo Soltero', '6041000149', '3001000149', 'gonzalo.soltero@email.com', 7, 1, NULL),
-(150, 'Mónica Soltera', '6041000150', '3001000150', 'monica.soltera@email.com', 7, 2, NULL),
-(151, 'Patricio Soltero', '6041000151', '3001000151', 'patricio.soltero@email.com', 7, 1, NULL),
-(152, 'Olga Soltera', '6041000152', '3001000152', 'olga.soltera@email.com', 7, 2, NULL),
-(153, 'Francisco Soltero', '6041000153', '3001000153', 'francisco2.soltero@email.com', 7, 1, NULL),
-(154, 'Patricia Soltera', '6041000154', '3001000154', 'patricia2.soltera@email.com', 7, 2, NULL),
-(155, 'Antonio Soltero', '6041000155', '3001000155', 'antonio2.soltero@email.com', 7, 1, NULL),
-(156, 'Raquel Soltera', '6041000156', '3001000156', 'raquel.soltera@email.com', 7, 2, NULL),
-(157, 'César Soltero', '6041000157', '3001000157', 'cesar.soltero@email.com', 7, 1, NULL),
-(158, 'Sofía Soltera', '6041000158', '3001000158', 'sofia2.soltera@email.com', 7, 2, NULL),
-(159, 'Ricardo Soltero', '6041000159', '3001000159', 'ricardo2.soltero@email.com', 7, 1, NULL),
-(160, 'Teresa Soltera', '6041000160', '3001000160', 'teresa.soltera@email.com', 7, 2, NULL),
-(161, 'Alberto Soltero', '6041000161', '3001000161', 'alberto2.soltero@email.com', 7, 1, NULL),
-(162, 'Ursula Soltera', '6041000162', '3001000162', 'ursula.soltera@email.com', 7, 2, NULL),
-(163, 'Manuel Soltero', '6041000163', '3001000163', 'manuel2.soltero@email.com', 7, 1, NULL),
-(164, 'Victoria Soltera', '6041000164', '3001000164', 'victoria.soltera@email.com', 7, 2, NULL),
-(165, 'Rubén Soltero', '6041000165', '3001000165', 'ruben.soltero@email.com', 7, 1, NULL),
-(166, 'Ximena Soltera', '6041000166', '3001000166', 'ximena.soltera@email.com', 7, 2, NULL),
-(167, 'Héctor Soltero', '6041000167', '3001000167', 'hector2.soltero@email.com', 7, 1, NULL),
-(168, 'Yolanda Soltera', '6041000168', '3001000168', 'yolanda.soltera@email.com', 7, 2, NULL),
-(169, 'Mario Soltero', '6041000169', '3001000169', 'mario2.soltero@email.com', 7, 1, NULL),
-(170, 'Zulema Soltera', '6041000170', '3001000170', 'zulema.soltera@email.com', 7, 2, NULL),
-(171, 'Eugenio Soltero', '6041000171', '3001000171', 'eugenio.soltero@email.com', 7, 1, NULL),
-(172, 'Alicia Soltera', '6041000172', '3001000172', 'alicia.soltera@email.com', 7, 2, NULL),
-(173, 'Armando Soltero', '6041000173', '3001000173', 'armando.soltero@email.com', 7, 1, NULL),
-(174, 'Bárbara Soltera', '6041000174', '3001000174', 'barbara.soltera@email.com', 7, 2, NULL),
-(175, 'Bernardo Soltero', '6041000175', '3001000175', 'bernardo.soltero@email.com', 7, 1, NULL),
-(176, 'Claudia Soltera', '6041000176', '3001000176', 'claudia2.soltera@email.com', 7, 2, NULL),
-(177, 'Ernesto Soltero', '6041000177', '3001000177', 'ernesto.soltero@email.com', 7, 1, NULL),
-(178, 'Diana Soltera', '6041000178', '3001000178', 'diana2.soltera@email.com', 7, 2, NULL),
-(179, 'Arturo Soltero', '6041000179', '3001000179', 'arturo.soltero@email.com', 7, 1, NULL),
-(180, 'Pedro Viudo', '6041000180', '3001000180', 'pedro.viudo@email.com', 6, 1, NULL),
-(181, 'Lucía Viuda', '6041000181', '3001000181', 'lucia2.viuda@email.com', 6, 2, NULL),
-(182, 'Javier Viudo', '6041000182', '3001000182', 'javier.viudo@email.com', 6, 1, NULL),
-(183, 'Marina Viuda', '6041000183', '3001000183', 'marina.viuda@email.com', 6, 2, NULL),
-(184, 'Héctor Viudo', '6041000184', '3001000184', 'hector.viudo@email.com', 6, 1, NULL),
-(185, 'Mercedes Viuda', '6041000185', '3001000185', 'mercedes.viuda@email.com', 6, 2, NULL),
-(186, 'Germán Viudo', '6041000186', '3001000186', 'german.viudo@email.com', 6, 1, NULL),
-(187, 'Cecilia Viuda', '6041000187', '3001000187', 'cecilia.viuda@email.com', 6, 2, NULL),
-(188, 'Alfonso Viudo', '6041000188', '3001000188', 'alfonso.viudo@email.com', 6, 1, NULL),
-(189, 'Margarita Viuda', '6041000189', '3001000189', 'margarita.viuda@email.com', 6, 2, NULL),
-(190, 'Raúl Viudo', '6041000190', '3001000190', 'raul.viudo@email.com', 6, 1, NULL),
-(191, 'Francisca Viuda', '6041000191', '3001000191', 'francisca.viuda@email.com', 6, 2, NULL),
-(192, 'Fernando Viudo', '6041000192', '3001000192', 'fernando.viudo@email.com', 6, 1, NULL),
-(193, 'Carmen Viuda', '6041000193', '3001000193', 'carmen2.viuda@email.com', 6, 2, NULL),
-(194, 'Pablo Viudo', '6041000194', '3001000194', 'pablo.viudo@email.com', 6, 1, NULL),
-(195, 'Gloria Viuda', '6041000195', '3001000195', 'gloria2.viuda@email.com', 6, 2, NULL),
-(196, 'Rubén Viudo', '6041000196', '3001000196', 'ruben.viudo@email.com', 6, 1, NULL),
-(197, 'Silvia Viuda', '6041000197', '3001000197', 'silvia.viuda@email.com', 6, 2, NULL),
-(198, 'Mario Viudo', '6041000198', '3001000198', 'mario.viudo@email.com', 6, 1, NULL),
-(199, 'Camila Viuda', '6041000199', '3001000199', 'camila.viuda@email.com', 6, 2, NULL),
-(200, 'Jorge Viudo', '6041000200', '3001000200', 'jorge.viudo@email.com', 6, 1, NULL);
+(105, 'Santiago Soltero', '6041000105', '3001000105', 'santiago.soltero@email.com', 2, 1, NULL),
+(106, 'Valeria Soltera', '6041000106', '3001000106', 'valeria.soltera@email.com', 2, 2, NULL),
+(107, 'Tomás Soltero', '6041000107', '3001000107', 'tomas.soltero@email.com', 2, 1, NULL),
+(108, 'Isabella Soltera', '6041000108', '3001000108', 'isabella.soltera@email.com', 2, 2, NULL),
+(109, 'Emilio Soltero', '6041000109', '3001000109', 'emilio.soltero@email.com', 2, 1, NULL),
+(110, 'Mariana Soltera', '6041000110', '3001000110', 'mariana.soltera@email.com', 2, 2, NULL),
+(111, 'Alejandro Soltero', '6041000111', '3001000111', 'alejandro.soltero@email.com', 2, 1, NULL),
+(112, 'Juliana Soltera', '6041000112', '3001000112', 'juliana.soltera@email.com', 2, 2, NULL),
+(113, 'Esteban Soltero', '6041000113', '3001000113', 'esteban.soltero@email.com', 2, 1, NULL),
+(114, 'Daniela Soltera', '6041000114', '3001000114', 'daniela.soltera@email.com', 2, 2, NULL),
+(115, 'Nicolás Soltero', '6041000115', '3001000115', 'nicolas.soltero@email.com', 2, 1, NULL),
+(116, 'Sara Soltera', '6041000116', '3001000116', 'sara.soltera@email.com', 2, 2, NULL),
+(117, 'Diogenes Albeiro Soltero', '6041000117', '3001000117', 'diogenes.albeiro@email.com', 2, 1, NULL),
+(118, 'Valentina Soltera', '6041000118', '3001000118', 'valentina2.soltera@email.com', 2, 2, NULL),
+(119, 'Martín Soltero', '6041000119', '3001000119', 'martin.soltero@email.com', 2, 1, NULL),
+(120, 'Camila Soltera', '6041000120', '3001000120', 'camila2.soltera@email.com', 2, 2, NULL),
+(121, 'Samuel Soltero', '6041000121', '3001000121', 'samuel.soltero@email.com', 2, 1, NULL),
+(122, 'Alejandra Soltera', '6041000122', '3001000122', 'alejandra.soltera@email.com', 2, 2, NULL),
+(123, 'Roberto Soltero', '6041000123', '3001000123', 'roberto.soltero@email.com', 2, 1, NULL),
+(124, 'Carmen Soltera', '6041000124', '3001000124', 'carmen.soltera@email.com', 2, 2, NULL),
+(125, 'Hugo Soltero', '6041000125', '3001000125', 'hugo.soltero@email.com', 2, 1, NULL),
+(126, 'Catalina Soltera', '6041000126', '3001000126', 'catalina.soltera@email.com', 2, 2, NULL),
+(127, 'Ignacio Soltero', '6041000127', '3001000127', 'ignacio.soltero@email.com', 2, 1, NULL),
+(128, 'Elena Soltera', '6041000128', '3001000128', 'elena.soltera@email.com', 2, 2, NULL),
+(129, 'Rafael Soltero', '6041000129', '3001000129', 'rafael.soltero@email.com', 2, 1, NULL),
+(130, 'Beatriz Soltera', '6041000130', '3001000130', 'beatriz.soltera@email.com', 2, 2, NULL),
+(131, 'Víctor Soltero', '6041000131', '3001000131', 'victor.soltero@email.com', 2, 1, NULL),
+(132, 'Cristina Soltera', '6041000132', '3001000132', 'cristina.soltera@email.com', 2, 2, NULL),
+(133, 'Adrián Soltero', '6041000133', '3001000133', 'adrian.soltero@email.com', 2, 1, NULL),
+(134, 'Dolores Soltera', '6041000134', '3001000134', 'dolores.soltera@email.com', 2, 2, NULL),
+(135, 'Eduardo Soltero', '6041000135', '3001000135', 'eduardo.soltero@email.com', 2, 1, NULL),
+(136, 'Esperanza Soltera', '6041000136', '3001000136', 'esperanza.soltera@email.com', 2, 2, NULL),
+(137, 'Óscar Soltero', '6041000137', '3001000137', 'oscar2.soltero@email.com', 2, 1, NULL),
+(138, 'Fernanda Soltera', '6041000138', '3001000138', 'fernanda.soltera@email.com', 2, 2, NULL),
+(139, 'Leonardo Soltero', '6041000139', '3001000139', 'leonardo.soltero@email.com', 2, 1, NULL),
+(140, 'Gloria Soltera', '6041000140', '3001000140', 'gloria.soltera@email.com', 2, 2, NULL),
+(141, 'Cristian Soltero', '6041000141', '3001000141', 'cristian.soltero@email.com', 2, 1, NULL),
+(142, 'Inés Soltera', '6041000142', '3001000142', 'ines.soltera@email.com', 2, 2, NULL),
+(143, 'Fernando Soltero', '6041000143', '3001000143', 'fernando2.soltero@email.com', 2, 1, NULL),
+(144, 'Natalia Soltera', '6041000144', '3001000144', 'natalia2.soltera@email.com', 2, 2, NULL),
+(145, 'Rodrigo Soltero', '6041000145', '3001000145', 'rodrigo2.soltero@email.com', 2, 1, NULL),
+(146, 'Julia Soltera', '6041000146', '3001000146', 'julia.soltera@email.com', 2, 2, NULL),
+(147, 'Mauricio Soltero', '6041000147', '3001000147', 'mauricio2.soltero@email.com', 2, 1, NULL),
+(148, 'Lorena Soltera', '6041000148', '3001000148', 'lorena.soltera@email.com', 2, 2, NULL),
+(149, 'Gonzalo Soltero', '6041000149', '3001000149', 'gonzalo.soltero@email.com', 2, 1, NULL),
+(150, 'Mónica Soltera', '6041000150', '3001000150', 'monica.soltera@email.com', 2, 2, NULL),
+(151, 'Patricio Soltero', '6041000151', '3001000151', 'patricio.soltero@email.com', 2, 1, NULL),
+(152, 'Olga Soltera', '6041000152', '3001000152', 'olga.soltera@email.com', 2, 2, NULL),
+(153, 'Francisco Soltero', '6041000153', '3001000153', 'francisco2.soltero@email.com', 2, 1, NULL),
+(154, 'Patricia Soltera', '6041000154', '3001000154', 'patricia2.soltera@email.com', 2, 2, NULL),
+(155, 'Antonio Soltero', '6041000155', '3001000155', 'antonio2.soltero@email.com', 2, 1, NULL),
+(156, 'Raquel Soltera', '6041000156', '3001000156', 'raquel.soltera@email.com', 2, 2, NULL),
+(157, 'César Soltero', '6041000157', '3001000157', 'cesar.soltero@email.com', 2, 1, NULL),
+(158, 'Sofía Soltera', '6041000158', '3001000158', 'sofia2.soltera@email.com', 2, 2, NULL),
+(159, 'Ricardo Soltero', '6041000159', '3001000159', 'ricardo2.soltero@email.com', 2, 1, NULL),
+(160, 'Teresa Soltera', '6041000160', '3001000160', 'teresa.soltera@email.com', 2, 2, NULL),
+(161, 'Alberto Soltero', '6041000161', '3001000161', 'alberto2.soltero@email.com', 2, 1, NULL),
+(162, 'Ursula Soltera', '6041000162', '3001000162', 'ursula.soltera@email.com', 2, 2, NULL),
+(163, 'Manuel Soltero', '6041000163', '3001000163', 'manuel2.soltero@email.com', 2, 1, NULL),
+(164, 'Victoria Soltera', '6041000164', '3001000164', 'victoria.soltera@email.com', 2, 2, NULL),
+(165, 'Rubén Soltero', '6041000165', '3001000165', 'ruben.soltero@email.com', 2, 1, NULL),
+(166, 'Ximena Soltera', '6041000166', '3001000166', 'ximena.soltera@email.com', 2, 2, NULL),
+(167, 'Héctor Soltero', '6041000167', '3001000167', 'hector2.soltero@email.com', 2, 1, NULL),
+(168, 'Yolanda Soltera', '6041000168', '3001000168', 'yolanda.soltera@email.com', 2, 2, NULL),
+(169, 'Mario Soltero', '6041000169', '3001000169', 'mario2.soltero@email.com', 2, 1, NULL),
+(170, 'Zulema Soltera', '6041000170', '3001000170', 'zulema.soltera@email.com', 2, 2, NULL),
+(171, 'Eugenio Soltero', '6041000171', '3001000171', 'eugenio.soltero@email.com', 2, 1, NULL),
+(172, 'Alicia Soltera', '6041000172', '3001000172', 'alicia.soltera@email.com', 2, 2, NULL),
+(173, 'Armando Soltero', '6041000173', '3001000173', 'armando.soltero@email.com', 2, 1, NULL),
+(174, 'Bárbara Soltera', '6041000174', '3001000174', 'barbara.soltera@email.com', 2, 2, NULL),
+(175, 'Bernardo Soltero', '6041000175', '3001000175', 'bernardo.soltero@email.com', 2, 1, NULL),
+(176, 'Claudia Soltera', '6041000176', '3001000176', 'claudia2.soltera@email.com', 2, 2, NULL),
+(177, 'Ernesto Soltero', '6041000177', '3001000177', 'ernesto.soltero@email.com', 2, 1, NULL),
+(178, 'Diana Soltera', '6041000178', '3001000178', 'diana2.soltera@email.com', 2, 2, NULL),
+(179, 'Arturo Soltero', '6041000179', '3001000179', 'arturo.soltero@email.com', 2, 1, NULL),
+(180, 'Pedro Viudo', '6041000180', '3001000180', 'pedro.viudo@email.com', 7, 1, NULL),
+(181, 'Lucía Viuda', '6041000181', '3001000181', 'lucia2.viuda@email.com', 7, 2, NULL),
+(182, 'Javier Viudo', '6041000182', '3001000182', 'javier.viudo@email.com', 7, 1, NULL),
+(183, 'Marina Viuda', '6041000183', '3001000183', 'marina.viuda@email.com', 7, 2, NULL),
+(184, 'Héctor Viudo', '6041000184', '3001000184', 'hector.viudo@email.com', 7, 1, NULL),
+(185, 'Mercedes Viuda', '6041000185', '3001000185', 'mercedes.viuda@email.com', 7, 2, NULL),
+(186, 'Germán Viudo', '6041000186', '3001000186', 'german.viudo@email.com', 7, 1, NULL),
+(187, 'Cecilia Viuda', '6041000187', '3001000187', 'cecilia.viuda@email.com', 7, 2, NULL),
+(188, 'Alfonso Viudo', '6041000188', '3001000188', 'alfonso.viudo@email.com', 7, 1, NULL),
+(189, 'Margarita Viuda', '6041000189', '3001000189', 'margarita.viuda@email.com', 7, 2, NULL),
+(190, 'Raúl Viudo', '6041000190', '3001000190', 'raul.viudo@email.com', 7, 1, NULL),
+(191, 'Francisca Viuda', '6041000191', '3001000191', 'francisca.viuda@email.com', 7, 2, NULL),
+(192, 'Fernando Viudo', '6041000192', '3001000192', 'fernando.viudo@email.com', 7, 1, NULL),
+(193, 'Carmen Viuda', '6041000193', '3001000193', 'carmen2.viuda@email.com', 7, 2, NULL),
+(194, 'Pablo Viudo', '6041000194', '3001000194', 'pablo.viudo@email.com', 7, 1, NULL),
+(195, 'Gloria Viuda', '6041000195', '3001000195', 'gloria2.viuda@email.com', 7, 2, NULL),
+(196, 'Rubén Viudo', '6041000196', '3001000196', 'ruben.viudo@email.com', 7, 1, NULL),
+(197, 'Silvia Viuda', '6041000197', '3001000197', 'silvia.viuda@email.com', 7, 2, NULL),
+(198, 'Mario Viudo', '6041000198', '3001000198', 'mario.viudo@email.com', 7, 1, NULL),
+(199, 'Camila Viuda', '6041000199', '3001000199', 'camila.viuda@email.com', 7, 2, NULL),
+(200, 'Jorge Viudo', '6041000200', '3001000200', 'jorge.viudo@email.com', 7, 1, NULL);
 
--- Communities
+-- Communities (comunidades distribuidas en diferentes parroquias)
 INSERT INTO communities (id, number, born_date, parish_id, born_brothers, actual_brothers, step_way_id, last_step_way_date, cathechist_team_id) VALUES
+-- Parroquia La Visitación (ID 1)
 (1, '1', '2000-01-01', 1, 50, 50, 1, '2024-01-01', 1),
 (2, '2', '2002-01-01', 1, 42, 42, 2, '2024-01-01', 2),
 (3, '3', '2004-01-01', 1, 30, 30, 3, '2024-01-01', 3),
-(4, '4', '2006-01-01', 1, 46, 46, 4, '2024-01-01', 4);
+(4, '4', '2006-01-01', 1, 46, 46, 4, '2024-01-01', 4),
+
+-- Parroquia Santa María de los Ángeles (ID 2)
+(5, '1', '2001-03-15', 2, 35, 35, 2, '2024-02-15', 5),
+(6, '2', '2003-06-20', 2, 28, 28, 3, '2024-03-10', 6),
+
+-- Parroquia La Balbanera (ID 3)
+(7, '1', '2002-09-10', 3, 40, 40, 1, '2024-01-20', 7),
+
+-- Parroquia Santuario Niño Jesús de Praga (ID 4)
+(8, '1', '2005-12-08', 4, 32, 32, 2, '2024-02-28', 8),
+(9, '2', '2007-04-15', 4, 25, 25, 4, '2024-03-15', 9),
+
+-- Parroquia Nuestra Señora del Sagrado Corazón (ID 5)
+(10, '1', '2003-11-21', 5, 38, 38, 3, '2024-02-10', 10),
+
+-- Parroquia María Madre Admirable (ID 6)
+(11, '1', '2004-08-15', 6, 45, 45, 1, '2024-01-25', 11),
+(12, '2', '2006-12-12', 6, 30, 30, 2, '2024-03-05', 12),
+
+-- Parroquia El Señor de las Misericordias (ID 7)
+(13, '1', '2005-05-03', 7, 33, 33, 3, '2024-02-20', 13),
+
+-- Parroquia San José de El Poblado (ID 8)
+(14, '1', '2001-03-19', 8, 42, 42, 2, '2024-02-15', 14),
+(15, '2', '2003-07-25', 8, 36, 36, 4, '2024-03-20', 15);
 
 -- Teams (Responsables y Catequistas)
 INSERT INTO teams (id, name, team_type_id, community_id) VALUES
@@ -348,9 +374,37 @@ INSERT INTO teams (id, name, team_type_id, community_id) VALUES
 INSERT INTO parish_teams (id, parish_id, team_id) VALUES
   (1, 1, 1), (2, 1, 2), (3, 1, 3), (4, 1, 4), (5, 1, 5), (6, 1, 6), (7, 1, 7), (8, 1, 8), (9, 1, 9);
 
--- Priests (presbíteros)
+-- Priests (presbíteros distribuidos en diferentes parroquias con algunos como párrocos)
 INSERT INTO priests (id, person_id, is_parish_priest, parish_id) VALUES
-  (1, 61, TRUE, 1), (2, 62, FALSE, 1), (3, 63, FALSE, 1), (4, 64, FALSE, 1), (5, 65, FALSE, 1), (6, 66, FALSE, 1), (7, 67, FALSE, 1), (8, 68, FALSE, 1), (9, 69, FALSE, 1), (10, 70, FALSE, 1), (11, 71, FALSE, 1), (12, 72, FALSE, 1), (13, 73, FALSE, 1), (14, 74, FALSE, 1);
+  -- Parroquia La Visitación (ID 1) - Párroco + vicarios
+  (1, 61, TRUE, 1),   -- Párroco
+  (2, 62, FALSE, 1),  -- Vicario
+  (3, 63, FALSE, 1),  -- Vicario
+  
+  -- Parroquia Santa María de los Ángeles (ID 2) - Párroco + vicarios
+  (4, 64, TRUE, 2),    -- Párroco
+  (5, 65, FALSE, 2),  -- Vicario
+  
+  -- Parroquia La Balbanera (ID 3) - Solo párroco
+  (6, 66, TRUE, 3),    -- Párroco
+  
+  -- Parroquia Santuario Niño Jesús de Praga (ID 4) - Párroco + vicario
+  (7, 67, TRUE, 4),    -- Párroco
+  (8, 68, FALSE, 4),   -- Vicario
+  
+  -- Parroquia Nuestra Señora del Sagrado Corazón (ID 5) - Solo párroco
+  (9, 69, TRUE, 5),    -- Párroco
+  
+  -- Parroquia María Madre Admirable (ID 6) - Párroco + vicario
+  (10, 70, TRUE, 6),   -- Párroco
+  (11, 71, FALSE, 6),  -- Vicario
+  
+  -- Parroquia El Señor de las Misericordias (ID 7) - Solo párroco
+  (12, 72, TRUE, 7),   -- Párroco
+  
+  -- Parroquia San José de El Poblado (ID 8) - Párroco + vicario
+  (13, 73, TRUE, 8),   -- Párroco
+  (14, 74, FALSE, 8);  -- Vicario
 
 -- Brothers (hermanos de comunidad)
 -- Asignación variada y cumpliendo reglas de composición de cada comunidad
@@ -480,7 +534,7 @@ SELECT setval('public.step_ways_id_seq', (SELECT MAX(id) FROM step_ways));
 -- TeamTypes sequence (max ID: 4)
 SELECT setval('public.team_types_id_seq', (SELECT MAX(id) FROM team_types));
 
--- Communities sequence (max ID: 4)
+-- Communities sequence (max ID: 15)
 SELECT setval('public.communities_id_seq', (SELECT MAX(id) FROM communities));
 
 -- Teams sequence (max ID: 9)
