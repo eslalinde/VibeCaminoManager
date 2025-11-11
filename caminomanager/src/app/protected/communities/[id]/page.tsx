@@ -171,6 +171,7 @@ export default function CommunityDetailPage() {
               communityId={communityId}
               teamMembers={teamMembers}
               onDelete={refreshCommunity}
+              onAdd={refreshCommunity}
             />
           </div>
         </div>

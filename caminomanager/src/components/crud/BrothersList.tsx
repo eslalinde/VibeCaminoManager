@@ -3,9 +3,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { MergedBrother } from '@/hooks/useCommunityData';
-import { Belongs } from '@/types/database';
+import { Belongs, Person } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
-import { Trash2 } from 'lucide-react';
+import { Trash2, UserPlus, Plus } from 'lucide-react';
+import { SelectBrotherModal } from './SelectBrotherModal';
+import { DynamicEntityModal } from './DynamicEntityModal';
+import { personConfig } from '@/config/entities';
 
 interface BrothersListProps {
   brothers: MergedBrother[];
@@ -13,10 +16,14 @@ interface BrothersListProps {
   communityId: number;
   teamMembers: Record<number, Belongs[]>;
   onDelete?: () => void;
+  onAdd?: () => void;
 }
 
-export function BrothersList({ brothers, loading, communityId, teamMembers, onDelete }: BrothersListProps) {
+export function BrothersList({ brothers, loading, communityId, teamMembers, onDelete, onAdd }: BrothersListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Check if a brother is associated with any team
   const isBrotherInTeam = (brother: MergedBrother): boolean => {
@@ -72,6 +79,60 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
     }
   };
 
+  const handleSelectExistingBrother = async (personId: number) => {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('brothers')
+      .insert({
+        person_id: personId,
+        community_id: communityId,
+      });
+
+    if (error) throw error;
+
+    // Refresh the community data
+    if (onAdd) {
+      onAdd();
+    }
+  };
+
+  const handleCreateNewBrother = async (data: Omit<Person, 'id' | 'created_at' | 'updated_at'>) => {
+    setIsSaving(true);
+    try {
+      const supabase = createClient();
+
+      // First, create the person
+      const { data: newPerson, error: personError } = await supabase
+        .from('people')
+        .insert(data)
+        .select()
+        .single();
+
+      if (personError) throw personError;
+
+      // Then, create the brother relationship
+      const { error: brotherError } = await supabase
+        .from('brothers')
+        .insert({
+          person_id: newPerson.id,
+          community_id: communityId,
+        });
+
+      if (brotherError) throw brotherError;
+
+      // Refresh the community data
+      if (onAdd) {
+        onAdd();
+      }
+    } catch (error: any) {
+      console.error('Error creating new brother:', error);
+      alert(error.message || 'Error al crear el hermano. Por favor, intenta de nuevo.');
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <Card className="h-full">
@@ -90,13 +151,37 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
   }
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex-shrink-0">
-        <CardTitle>Hermanos de la Comunidad</CardTitle>
-        <p className="text-sm text-gray-600">
-          Total: {brothers.length} {brothers.length === 1 ? 'hermano' : 'hermanos'}
-        </p>
-      </CardHeader>
+    <>
+      <Card className="h-full flex flex-col">
+        <CardHeader className="flex-shrink-0">
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>Hermanos de la Comunidad</CardTitle>
+              <p className="text-sm text-gray-600">
+                Total: {brothers.length} {brothers.length === 1 ? 'hermano' : 'hermanos'}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="2"
+                variant="outline"
+                onClick={() => setIsSelectModalOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                Agregar Existente
+              </Button>
+              <Button
+                size="2"
+                onClick={() => setIsCreateModalOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Nuevo Hermano
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto">
           <Table>
@@ -154,5 +239,25 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
         </div>
       </CardContent>
     </Card>
+
+    {/* Modal para seleccionar hermano existente */}
+    <SelectBrotherModal
+      open={isSelectModalOpen}
+      onClose={() => setIsSelectModalOpen(false)}
+      onSelect={handleSelectExistingBrother}
+      communityId={communityId}
+    />
+
+    {/* Modal para crear nuevo hermano */}
+    <DynamicEntityModal
+      open={isCreateModalOpen}
+      onClose={() => setIsCreateModalOpen(false)}
+      onSave={handleCreateNewBrother}
+      initial={null}
+      fields={personConfig.fields}
+      title="Crear Nuevo Hermano"
+      loading={isSaving}
+    />
+  </>
   );
 }
