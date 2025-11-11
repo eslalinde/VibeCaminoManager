@@ -10,7 +10,7 @@ import { CommunityStepLogCompact } from '@/components/crud/CommunityStepLogCompa
 import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { communityConfig } from '@/config/entities';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Community } from '@/types/database';
 
@@ -60,6 +60,61 @@ export default function CommunityDetailPage() {
     }
   };
 
+  const handleCreateResponsablesTeam = async () => {
+    if (!community?.id) return;
+    
+    try {
+      const supabase = createClient();
+      const { data: newTeam, error: teamError } = await supabase
+        .from('teams')
+        .insert({
+          name: `Equipo de Responsables - Comunidad ${community.number}`,
+          team_type_id: 4, // Responsables
+          community_id: community.id
+        })
+        .select()
+        .single();
+
+      if (teamError) throw teamError;
+
+      // Refrescar los datos de la comunidad
+      await refreshCommunity();
+    } catch (err) {
+      console.error('Error creating responsables team:', err);
+      alert('Error al crear el equipo de responsables. Por favor, intenta de nuevo.');
+    }
+  };
+
+  const handleCreateCatequistasTeam = async () => {
+    if (!community?.id) return;
+    
+    try {
+      const supabase = createClient();
+      
+      // Contar cuántos equipos de catequistas ya existen para numerarlos
+      const existingCatequistasCount = teams.catequistas.length;
+      const teamNumber = existingCatequistasCount + 1;
+      
+      const { data: newTeam, error: teamError } = await supabase
+        .from('teams')
+        .insert({
+          name: `Equipo de Catequistas ${teamNumber} - Comunidad ${community.number}`,
+          team_type_id: 3, // Catequistas
+          community_id: community.id
+        })
+        .select()
+        .single();
+
+      if (teamError) throw teamError;
+
+      // Refrescar los datos de la comunidad
+      await refreshCommunity();
+    } catch (err) {
+      console.error('Error creating catequistas team:', err);
+      alert('Error al crear el equipo de catequistas. Por favor, intenta de nuevo.');
+    }
+  };
+
   if (error) {
     return (
       <div className="container mx-auto p-6">
@@ -77,7 +132,7 @@ export default function CommunityDetailPage() {
         <div className="flex items-center gap-4 mb-4">
           <Button
             variant="outline"
-            size="sm"
+            size="2"
             onClick={() => router.push('/protected/communities')}
             className="flex items-center gap-2"
           >
@@ -118,9 +173,17 @@ export default function CommunityDetailPage() {
               ))
             ) : (
               <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <div className="text-center">
+                <div className="text-center space-y-4">
                   <p className="text-gray-500 text-lg">No hay equipo de responsables</p>
-                  <p className="text-gray-400 text-sm">Los responsables aún no han sido asignados</p>
+                  <p className="text-gray-400 text-sm">Crea el equipo de responsables para comenzar</p>
+                  <Button
+                    onClick={handleCreateResponsablesTeam}
+                    className="flex items-center gap-2"
+                    disabled={loading}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Crear Equipo de Responsables
+                  </Button>
                 </div>
               </div>
             )}
@@ -129,24 +192,45 @@ export default function CommunityDetailPage() {
           {/* Catequistas Teams */}
           <div className="space-y-4">
             {teams.catequistas.length > 0 ? (
-              teams.catequistas.map((team, index) => (
-                <div key={team.id || `catequista-${index}`}>
-                  <TeamSection
-                    team={team}
-                    members={team.id ? teamMembers[team.id] || [] : []}
-                    parishes={team.id ? teamParishes[team.id] || [] : []}
-                    loading={loading}
-                    teamNumber={index + 1}
-                    communityId={communityId}
-                    onDelete={refreshCommunity}
-                  />
+              <>
+                {teams.catequistas.map((team, index) => (
+                  <div key={team.id || `catequista-${index}`}>
+                    <TeamSection
+                      team={team}
+                      members={team.id ? teamMembers[team.id] || [] : []}
+                      parishes={team.id ? teamParishes[team.id] || [] : []}
+                      loading={loading}
+                      teamNumber={index + 1}
+                      communityId={communityId}
+                      onDelete={refreshCommunity}
+                    />
+                  </div>
+                ))}
+                <div className="flex justify-center pt-2">
+                  <Button
+                    onClick={handleCreateCatequistasTeam}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    disabled={loading}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Agregar Equipo de Catequistas
+                  </Button>
                 </div>
-              ))
+              </>
             ) : (
               <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <div className="text-center">
+                <div className="text-center space-y-4">
                   <p className="text-gray-500 text-lg">No hay equipos de catequistas</p>
-                  <p className="text-gray-400 text-sm">Los equipos de catequistas aún no han sido creados</p>
+                  <p className="text-gray-400 text-sm">Crea el primer equipo de catequistas para comenzar</p>
+                  <Button
+                    onClick={handleCreateCatequistasTeam}
+                    className="flex items-center gap-2"
+                    disabled={loading}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Crear Equipo de Catequistas
+                  </Button>
                 </div>
               </div>
             )}
