@@ -2,6 +2,15 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Theme } from '@radix-ui/themes';
 import { Team, Belongs, Parish } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserMinus, Crown } from 'lucide-react';
@@ -20,6 +29,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [removingResponsibleId, setRemovingResponsibleId] = useState<string | null>(null);
   const [assigningResponsibleId, setAssigningResponsibleId] = useState<string | null>(null);
+  const [deletingTeam, setDeletingTeam] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   if (loading) {
     return (
@@ -258,10 +269,67 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
     return team.name;
   };
 
+  const handleDeleteTeam = async () => {
+    setShowDeleteDialog(false);
+    setDeletingTeam(true);
+    try {
+      const supabase = createClient();
+      
+      // 1. Eliminar todos los registros de belongs asociados al equipo
+      const { error: belongsError } = await supabase
+        .from('belongs')
+        .delete()
+        .eq('team_id', team.id)
+        .eq('community_id', communityId);
+
+      if (belongsError) throw belongsError;
+
+      // 2. Eliminar todos los registros de parish_teams asociados al equipo
+      const { error: parishTeamsError } = await supabase
+        .from('parish_teams')
+        .delete()
+        .eq('team_id', team.id);
+
+      if (parishTeamsError) throw parishTeamsError;
+
+      // 3. Eliminar el equipo
+      const { error: teamError } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', team.id);
+
+      if (teamError) throw teamError;
+
+      // Refresh the community data
+      if (onDelete) {
+        onDelete();
+      }
+    } catch (error) {
+      console.error('Error deleting team:', error);
+      alert('Error al eliminar el equipo. Por favor, intenta de nuevo.');
+    } finally {
+      setDeletingTeam(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">{getTeamTitle()}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">{getTeamTitle()}</CardTitle>
+          <Button
+            size="1"
+            variant="outline"
+            radius="small"
+            color="red"
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={deletingTeam || deletingId !== null || removingResponsibleId !== null || assigningResponsibleId !== null}
+            title="Eliminar equipo completo"
+          >
+            <Trash2 className="h-4 w-4" />
+            {deletingTeam ? 'Eliminando...' : 'Eliminar Equipo'}
+          </Button>
+        </div>
         {team.team_type_id === 3 && parishes.length > 0 && (
           <div className="mt-2">
             <div className="space-y-1">
@@ -398,6 +466,36 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
           </Table>
         </div>
       </CardContent>
+
+      {/* Diálogo de confirmación para eliminar equipo */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <Theme>
+            <DialogHeader>
+              <DialogTitle>¿Eliminar equipo?</DialogTitle>
+              <DialogDescription>
+                ¿Estás seguro de que deseas eliminar el {getTeamTitle()}? Esta acción eliminará el equipo y todos sus miembros. Esta acción no se puede deshacer.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(false)}
+                disabled={deletingTeam}
+              >
+                Cancelar
+              </Button>
+              <Button
+                color="red"
+                onClick={handleDeleteTeam}
+                disabled={deletingTeam}
+              >
+                {deletingTeam ? 'Eliminando...' : 'Eliminar Equipo'}
+              </Button>
+            </DialogFooter>
+          </Theme>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
