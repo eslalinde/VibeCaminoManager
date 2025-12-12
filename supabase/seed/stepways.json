@@ -5,8 +5,9 @@
   { "name": "2º Escrutinio Bautismal", "order": 4 },
   { "name": "1ª Iniciación a la Oración", "order": 5 },
   { "name": "Traditio Symboli", "order": 6 },
-  { "name": "Redditio Symboli", "order": 7 },
-  { "name": "2ª Iniciación a la Oración: Padrenuestro", "order": 8 },
-  { "name": "3º Escrutinio Bautismal", "order": 9 },
-  { "name": "Renovación Promesas Bautismales", "order": 10 }
+  { "name": "Retraditio Symboli", "order": 7 },
+  { "name": "Redditio Symboli", "order": 8 },
+  { "name": "2ª Iniciación a la Oración: Padrenuestro", "order": 9 },
+  { "name": "3º Escrutinio Bautismal", "order": 10 },
+  { "name": "Renovación Promesas Bautismales", "order": 11 }
 ]

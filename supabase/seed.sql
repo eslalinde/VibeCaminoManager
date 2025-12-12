@@ -253,10 +253,11 @@ INSERT INTO "public"."step_ways" ("id", "name", "order_num") VALUES
 	(4, '2º Escrutinio Bautismal', 4),
 	(5, '1ª Iniciación a la Oración', 5),
 	(6, 'Traditio Symboli', 6),
-	(7, 'Redditio Symboli', 7),
-	(8, '2ª Iniciación a la Oración: Padrenuestro', 8),
-	(9, '3º Escrutinio Bautismal', 9),
-	(10, 'Renovación Promesas Bautismales', 10);
+	(7, 'Retraditio Symboli', 7),
+	(8, 'Redditio Symboli', 8),
+	(9, '2ª Iniciación a la Oración: Padrenuestro', 9),
+	(10, '3º Escrutinio Bautismal', 10),
+	(11, 'Renovación Promesas Bautismales', 11);
 
 
 --
@@ -964,7 +965,7 @@ SELECT pg_catalog.setval('"public"."states_id_seq"', 32, true);
 -- Name: step_ways_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"public"."step_ways_id_seq"', 10, true);
+SELECT pg_catalog.setval('"public"."step_ways_id_seq"', 11, true);
 
 
 --
