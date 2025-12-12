@@ -385,7 +385,13 @@ export function DynamicEntityModal<T extends BaseEntity>({
                       minLength={field.minLength}
                       placeholder={field.placeholder}
                       disabled={loading}
-                      className={field.name === "code" ? "uppercase" : ""}
+                      className={
+                        field.name === "code" 
+                          ? "uppercase" 
+                          : field.type === "date"
+                          ? "date-input"
+                          : ""
+                      }
                     />
                   )}
                 </FormControl>

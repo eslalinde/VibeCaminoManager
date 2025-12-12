@@ -397,9 +397,9 @@ export const communityConfig: EntityConfig<Community> = {
     {
       name: 'born_date',
       label: 'Fecha de Nacimiento',
-      type: 'text',
+      type: 'date',
       required: false,
-      placeholder: 'YYYY-MM-DD'
+      placeholder: 'Seleccione la fecha'
     },
     {
       name: 'parish_id',
@@ -434,9 +434,9 @@ export const communityConfig: EntityConfig<Community> = {
     {
       name: 'last_step_way_date',
       label: 'Fecha Última Etapa',
-      type: 'text',
+      type: 'date',
       required: false,
-      placeholder: 'YYYY-MM-DD'
+      placeholder: 'Seleccione la fecha'
     }
   ],
   searchFields: ['number', 'parish'],
@@ -481,10 +481,10 @@ export const communityStepLogConfig: EntityConfig<CommunityStepLog> = {
     },
     {
       name: 'date_of_step',
-      label: 'Fecha del Paso',
-      type: 'text',
+      label: 'Fecha del evento',
+      type: 'date',
       required: false,
-      placeholder: 'YYYY-MM-DD'
+      placeholder: 'Seleccione la fecha'
     },
     {
       name: 'principal_catechist_name',
@@ -493,17 +493,6 @@ export const communityStepLogConfig: EntityConfig<CommunityStepLog> = {
       required: false,
       maxLength: 256,
       placeholder: 'Ingrese el nombre del catequista'
-    },
-    {
-      name: 'outcome',
-      label: 'Resultado',
-      type: 'select',
-      required: false,
-      options: [
-        { value: 'true', label: 'Exitoso' },
-        { value: 'false', label: 'No exitoso' }
-      ],
-      placeholder: 'Seleccione el resultado'
     },
     {
       name: 'notes',
@@ -531,9 +520,6 @@ export const communityStepLogConfig: EntityConfig<CommunityStepLog> = {
     }
   ],
   renderValue: (fieldName: string, value: any) => {
-    if (fieldName === 'outcome') {
-      return value === true ? 'Exitoso' : value === false ? 'No exitoso' : '';
-    }
     return String(value || '');
   }
 };

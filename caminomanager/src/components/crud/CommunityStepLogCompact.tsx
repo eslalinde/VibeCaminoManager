@@ -7,7 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
 import { CommunityStepLog as CommunityStepLogType } from '@/types/database';
-import { Calendar, FileText, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { Calendar, FileText, ChevronDown, ChevronUp, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
+import { communityStepLogConfig } from '@/config/entities';
+import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Theme } from '@radix-ui/themes';
+import { createClient } from '@/utils/supabase/client';
 
 interface CommunityStepLogCompactProps {
   communityId: number;
@@ -16,6 +21,11 @@ interface CommunityStepLogCompactProps {
 
 export function CommunityStepLogCompact({ communityId, communityNumber }: CommunityStepLogCompactProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const itemsPerPage = 2;
 
   const foreignKeys = useMemo(() => [
@@ -27,7 +37,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
     }
   ], []);
 
-  const { data: stepLogs, loading, count, fetchData } = useCrud<CommunityStepLogType>({
+  const { data: stepLogs, loading, count, fetchData, create, delete: deleteEntry } = useCrud<CommunityStepLogType>({
     tableName: 'community_step_log',
     searchFields: ['principal_catechist_name', 'notes'],
     defaultSort: { field: 'date_of_step', asc: false },
@@ -46,6 +56,64 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'No especificada';
     return new Date(dateString).toLocaleDateString('es-CO');
+  };
+
+  const handleAddEntry = async (data: any) => {
+    setIsSaving(true);
+    try {
+      // Asegurar que el community_id esté establecido
+      const entryData: Omit<CommunityStepLogType, 'id' | 'created_at' | 'updated_at'> = {
+        ...data,
+        community_id: communityId,
+      };
+      
+      await create(entryData);
+      setIsAddModalOpen(false);
+      // Refrescar los datos
+      await fetchData({ filters: { community_id: communityId } });
+    } catch (error) {
+      console.error('Error adding step log entry:', error);
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Preparar los campos del formulario, excluyendo community_id ya que se pre-llena
+  const formFields = useMemo(() => {
+    return communityStepLogConfig.fields.filter(field => field.name !== 'community_id');
+  }, []);
+
+  const handleDeleteClick = (entryId: number) => {
+    setDeletingId(entryId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingId || isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      // Eliminar el registro directamente con Supabase para tener más control
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('community_step_log')
+        .delete()
+        .eq('id', deletingId);
+      
+      if (error) throw error;
+      
+      setIsDeleteDialogOpen(false);
+      setDeletingId(null);
+      
+      // Refrescar los datos con los filtros correctos
+      await fetchData({ filters: { community_id: communityId } });
+    } catch (error) {
+      console.error('Error deleting step log entry:', error);
+      alert('Error al eliminar el registro. Por favor, intenta de nuevo.');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
 
@@ -80,51 +148,73 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
             <FileText className="w-4 h-4" />
             Bitácora
           </CardTitle>
-          {count > itemsPerPage && (
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="2"
-                  className="h-6 px-2 text-xs"
-                >
-                  <ExternalLink className="w-3 h-3 mr-1" />
-                  Ver todos ({count})
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    Bitácora - Comunidad {communityNumber}
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  {stepLogs.map((entry) => (
-                    <div key={entry.id} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Calendar className="w-4 h-4" />
-                          <span>{formatDate(entry.date_of_step)}</span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="2"
+              className="h-6 px-2 text-xs"
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              Agregar
+            </Button>
+            {count > itemsPerPage && (
+              <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="2"
+                    className="h-6 px-2 text-xs"
+                  >
+                    <ExternalLink className="w-3 h-3 mr-1" />
+                    Ver todos ({count})
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
+                      Bitácora - Comunidad {communityNumber}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {stepLogs.map((entry) => (
+                      <div key={entry.id} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Calendar className="w-4 h-4" />
+                              <span>{formatDate(entry.date_of_step)}</span>
+                            </div>
+                            {entry.step_way && (
+                              <Badge variant="outline">{entry.step_way.name}</Badge>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="2"
+                            className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleDeleteClick(entry.id!)}
+                            disabled={deletingId === entry.id}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
                         </div>
-                        {entry.step_way && (
-                          <Badge variant="outline">{entry.step_way.name}</Badge>
+                        
+                        {entry.notes && (
+                          <div className="text-sm text-gray-700">
+                            <p className="font-medium mb-1">Comentario:</p>
+                            <p className="whitespace-pre-wrap">{entry.notes}</p>
+                          </div>
                         )}
+                        
                       </div>
-                      
-                      {entry.notes && (
-                        <div className="text-sm text-gray-700">
-                          <p className="font-medium mb-1">Comentario:</p>
-                          <p className="whitespace-pre-wrap">{entry.notes}</p>
-                        </div>
-                      )}
-                      
-                    </div>
-                  ))}
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
         </div>
       </CardHeader>
       
@@ -145,9 +235,21 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
                       <Calendar className="w-3 h-3" />
                       <span>{formatDate(entry.date_of_step)}</span>
                     </div>
-                    {entry.step_way && (
-                      <Badge variant="outline" className="text-xs">{entry.step_way.name}</Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {entry.step_way && (
+                        <Badge variant="outline" className="text-xs">{entry.step_way.name}</Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="2"
+                        className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDeleteClick(entry.id!)}
+                        disabled={deletingId === entry.id}
+                        title="Eliminar evento"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                   
                   {/* Comentario debajo */}
@@ -163,6 +265,57 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
           </div>
         </div>
       </CardContent>
+
+      {/* Modal para agregar nuevo registro */}
+      <DynamicEntityModal
+        open={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleAddEntry}
+        initial={{
+          date_of_step: new Date().toISOString().split('T')[0],
+        } as any}
+        fields={formFields}
+        title="Agregar Registro a la Bitácora"
+        loading={isSaving}
+      />
+
+      {/* Diálogo de confirmación para eliminar */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsDeleteDialogOpen(false);
+          setDeletingId(null);
+        }
+      }}>
+        <DialogContent>
+          <Theme>
+            <DialogHeader>
+              <DialogTitle>¿Eliminar evento de bitácora?</DialogTitle>
+              <DialogDescription>
+                ¿Estás seguro de que deseas eliminar este evento de la bitácora? Esta acción no se puede deshacer.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setDeletingId(null);
+                }}
+                disabled={isDeleting}
+              >
+                Cancelar
+              </Button>
+              <Button
+                color="red"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting || !deletingId}
+              >
+                {isDeleting ? 'Eliminando...' : 'Eliminar'}
+              </Button>
+            </DialogFooter>
+          </Theme>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
