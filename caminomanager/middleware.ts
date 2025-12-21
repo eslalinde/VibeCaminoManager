@@ -5,17 +5,19 @@ import { type NextRequest, NextResponse } from "next/server";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // 1. Define protected paths - incluye el grupo (protected)
-  const protectedPaths = ['/dashboard', '/admin', '/account'];
+  // 1. Define protected paths - todas las rutas bajo /protected/ están protegidas
+  // La página raíz (/) también está protegida
+  const protectedPaths = ['/protected', '/dashboard', '/admin', '/account'];
   
   // 2. Check if the current path is protected
-  const isProtected = protectedPaths.some((path) => {
-    console.log(pathname, path);
+  // La raíz (/) también está protegida a menos que sea una ruta pública explícita
+  const isProtected = pathname === '/' || protectedPaths.some((path) => {
     return pathname === path || pathname.startsWith(`${path}/`)
   });
 
   // 3. Skip auth check for public routes and auth actions
-  const publicRoutes = ['/login', '/signup', '/auth', '/'];
+  // Nota: La página raíz (/) es privada y requiere autenticación
+  const publicRoutes = ['/login', '/signup', '/auth', '/public', '/test-signup'];
   const authActionRoutes = ['/auth/signout', '/auth/confirm'];
   const isPublicRoute = publicRoutes.some((route) =>
     pathname === route || pathname.startsWith(`${route}/`)

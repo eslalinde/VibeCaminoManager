@@ -1,11 +1,12 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { redirect } from "next/navigation";
 
 export default function AccountPage() {
+  const router = useRouter();
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -20,14 +21,14 @@ export default function AccountPage() {
       const { data } = await supabase.auth.getUser();
 
       if (!data.user) {
-        redirect('/login');
+        router.push('/login');
         return;
       }
       
       setUser(data.user);
     }
     fetchUser();
-  }, [supabase]);
+  }, [supabase, router]);
 
   const getProfile = useCallback(async () => {
     if (!user) return;
