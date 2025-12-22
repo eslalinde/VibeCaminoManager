@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+'use client';
+
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EntityTable } from './EntityTable';
@@ -22,7 +24,6 @@ export function EntityPage<T extends BaseEntity>({
 }: EntityPageProps<T>) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<T | null>(null);
-  const [search, setSearch] = useState('');
 
   const {
     data,
@@ -32,12 +33,13 @@ export function EntityPage<T extends BaseEntity>({
     page,
     totalPages,
     sort,
-    fetchData,
     create,
     update,
     delete: deleteItem,
     setSort,
     setPage,
+    setSearch,
+    search,
     clearError
   } = useCrud<T>({
     tableName: config.tableName,
@@ -46,11 +48,6 @@ export function EntityPage<T extends BaseEntity>({
     pageSize,
     foreignKeys: config.foreignKeys
   });
-
-  // Fetch data when search, sort, or page changes
-  useEffect(() => {
-    fetchData({ search, sort: { field: sort.field as string, asc: sort.asc }, page });
-  }, [search, sort, page]);
 
   const handleSave = async (formData: Omit<T, 'id' | 'created_at' | 'updated_at'>) => {
     try {

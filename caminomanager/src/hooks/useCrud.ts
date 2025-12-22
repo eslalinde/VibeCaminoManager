@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
-import { CrudOperation, QueryParams, BaseEntity } from '@/types/database';
+import { QueryParams, BaseEntity } from '@/types/database';
 
 export interface ForeignKeyRelation {
   foreignKey: string;
@@ -40,6 +41,19 @@ export interface UseCrudReturn<T extends BaseEntity> {
   clearError: () => void;
 }
 
+interface CrudQueryState<T extends BaseEntity> {
+  search: string;
+  sort: { field: keyof T; asc: boolean };
+  page: number;
+  filters: Record<string, any>;
+}
+
+interface CrudQueryData<T extends BaseEntity> {
+  items: T[];
+  count: number;
+  page: number;
+}
+
 export function useCrud<T extends BaseEntity>({
   tableName,
   searchFields = [],
@@ -48,229 +62,302 @@ export function useCrud<T extends BaseEntity>({
   foreignKeys = []
 }: UseCrudOptions<T>): UseCrudReturn<T> {
   const supabase = useMemo(() => createClient(), []);
-  
-  const [data, setData] = useState<T[]>([]);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+
   const [error, setError] = useState<string | null>(null);
-  const [count, setCount] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<{ field: keyof T; asc: boolean }>(defaultSort);
-
-  const totalPages = Math.ceil(count / pageSize);
+  const [filters, setFilters] = useState<Record<string, any>>({});
 
   const clearError = useCallback(() => setError(null), []);
 
-  const fetchData = useCallback(async (params?: QueryParams) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Build select statement with foreign key joins
-      let selectFields = '*';
-      if (foreignKeys.length > 0) {
-        const foreignKeySelects = foreignKeys.map(fk => {
-          const alias = fk.alias || fk.tableName;
-          return `${alias}:${fk.foreignKey}(${fk.displayField})`;
-        });
-        selectFields = `*, ${foreignKeySelects.join(', ')}`;
-      }
-      
-      let query = supabase.from(tableName).select(selectFields, { count: 'exact' });
-      
-      // Apply filters
-      const filters = params?.filters;
-      if (filters) {
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            query = query.eq(key, value);
-          }
-        });
-      }
-      
-      // Apply search
-      const searchTerm = params?.search || search;
-      if (searchTerm && searchFields.length > 0) {
-        // Separate regular fields from foreign key fields
-        const regularFields: string[] = [];
-        const foreignKeySearches: { foreignKey: string; displayField: string; tableName: string }[] = [];
-        
-        searchFields.forEach(field => {
-          const fieldStr = String(field);
-          const foreignKeyConfig = foreignKeys.find(fk => fk.alias === fieldStr);
-          
-          if (foreignKeyConfig) {
-            foreignKeySearches.push({
-              foreignKey: foreignKeyConfig.foreignKey,
-              displayField: foreignKeyConfig.displayField,
-              tableName: foreignKeyConfig.tableName
-            });
-          } else {
-            regularFields.push(fieldStr);
-          }
-        });
-        
-        // Handle foreign key searches by querying related tables first
-        if (foreignKeySearches.length > 0) {
-          try {
-            // Search in related tables to get matching IDs
-            const foreignKeyIds: number[] = [];
-            
-            for (const fkSearch of foreignKeySearches) {
-              const { data: relatedData } = await supabase
-                .from(fkSearch.tableName)
-                .select('id')
-                .ilike(fkSearch.displayField, `%${searchTerm}%`);
-              
-              if (relatedData) {
-                foreignKeyIds.push(...relatedData.map(item => item.id));
-              }
-            }
-            
-            // If we found matching foreign key IDs, add them to the query
-            if (foreignKeyIds.length > 0) {
-              // Create conditions for foreign key searches
-              const foreignKeyConditions: string[] = [];
-              foreignKeySearches.forEach(fkSearch => {
-                foreignKeyConditions.push(`${fkSearch.foreignKey}.in.(${foreignKeyIds.join(',')})`);
-              });
-              
-              // Combine with regular field conditions
-              const allConditions: string[] = [];
-              
-              if (regularFields.length > 0) {
-                const regularConditions = regularFields.map(field => 
-                  `${field}.ilike.%${searchTerm}%`
-                );
-                allConditions.push(...regularConditions);
-              }
-              
-              allConditions.push(...foreignKeyConditions);
-              
-              if (allConditions.length > 0) {
-                query = query.or(allConditions.join(','));
-              }
-            } else if (regularFields.length > 0) {
-              // If no foreign key matches, only search regular fields
-              const regularConditions = regularFields.map(field => 
-                `${field}.ilike.%${searchTerm}%`
-              );
-              query = query.or(regularConditions.join(','));
-            }
-          } catch (error) {
-            console.error('Error searching foreign key fields:', error);
-            // Fallback to regular field search only
-            if (regularFields.length > 0) {
-              const regularConditions = regularFields.map(field => 
-                `${field}.ilike.%${searchTerm}%`
-              );
-              query = query.or(regularConditions.join(','));
-            }
-          }
-        } else if (regularFields.length > 0) {
-          // Only regular fields to search
-          const regularConditions = regularFields.map(field => 
-            `${field}.ilike.%${searchTerm}%`
-          );
-          query = query.or(regularConditions.join(','));
-        }
-      }
-      
-      // Apply sorting
-      const sortConfig = params?.sort || sort;
-      query = query.order(sortConfig.field as string, { ascending: sortConfig.asc });
-      
-      // Apply pagination
-      const currentPage = params?.page || page;
-      const from = (currentPage - 1) * pageSize;
-      const to = from + pageSize - 1;
-      query = query.range(from, to);
-      
-      const { data: result, error: queryError, count: totalCount } = await query;
-      
-      if (queryError) throw queryError;
-      
-      setData((result as unknown as T[]) || []);
-      setCount(totalCount || 0);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar los datos');
-      console.error('Error fetching data:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, tableName, searchFields, pageSize, foreignKeys, search, sort, page]);
+  const currentParams: CrudQueryState<T> = useMemo(
+    () => ({
+      search,
+      sort,
+      page,
+      filters,
+    }),
+    [search, sort, page, filters]
+  );
 
-  const create = useCallback(async (newData: Omit<T, 'id' | 'created_at' | 'updated_at'>) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
+  const queryKey = useMemo(() => ['crud', tableName, pageSize, currentParams], [tableName, pageSize, currentParams]);
+
+  const fetchEntities = useCallback(
+    async (params: CrudQueryState<T>): Promise<CrudQueryData<T>> => {
+      try {
+        // Build select statement with foreign key joins
+        let selectFields = '*';
+        if (foreignKeys.length > 0) {
+          const foreignKeySelects = foreignKeys.map(fk => {
+            const alias = fk.alias || fk.tableName;
+            return `${alias}:${fk.foreignKey}(${fk.displayField})`;
+          });
+          selectFields = `*, ${foreignKeySelects.join(', ')}`;
+        }
+
+        let query = supabase.from(tableName).select(selectFields, { count: 'exact' });
+
+        // Apply filters
+        if (params.filters) {
+          Object.entries(params.filters).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              query = query.eq(key, value);
+            }
+          });
+        }
+
+        // Apply search
+        const searchTerm = params.search;
+        if (searchTerm && searchFields.length > 0) {
+          // Separate regular fields from foreign key fields
+          const regularFields: string[] = [];
+          const foreignKeySearches: { foreignKey: string; displayField: string; tableName: string }[] = [];
+
+          searchFields.forEach(field => {
+            const fieldStr = String(field);
+            const foreignKeyConfig = foreignKeys.find(fk => fk.alias === fieldStr);
+
+            if (foreignKeyConfig) {
+              foreignKeySearches.push({
+                foreignKey: foreignKeyConfig.foreignKey,
+                displayField: foreignKeyConfig.displayField,
+                tableName: foreignKeyConfig.tableName,
+              });
+            } else {
+              regularFields.push(fieldStr);
+            }
+          });
+
+          // Handle foreign key searches by querying related tables first
+          if (foreignKeySearches.length > 0) {
+            try {
+              // Search in related tables to get matching IDs
+              const foreignKeyIds: number[] = [];
+
+              for (const fkSearch of foreignKeySearches) {
+                const { data: relatedData } = await supabase
+                  .from(fkSearch.tableName)
+                  .select('id')
+                  .ilike(fkSearch.displayField, `%${searchTerm}%`);
+
+                if (relatedData) {
+                  foreignKeyIds.push(...relatedData.map(item => item.id));
+                }
+              }
+
+              // If we found matching foreign key IDs, add them to the query
+              if (foreignKeyIds.length > 0) {
+                // Create conditions for foreign key searches
+                const foreignKeyConditions: string[] = [];
+                foreignKeySearches.forEach(fkSearch => {
+                  foreignKeyConditions.push(`${fkSearch.foreignKey}.in.(${foreignKeyIds.join(',')})`);
+                });
+
+                // Combine with regular field conditions
+                const allConditions: string[] = [];
+
+                if (regularFields.length > 0) {
+                  const regularConditions = regularFields.map(field => `${field}.ilike.%${searchTerm}%`);
+                  allConditions.push(...regularConditions);
+                }
+
+                allConditions.push(...foreignKeyConditions);
+
+                if (allConditions.length > 0) {
+                  query = query.or(allConditions.join(','));
+                }
+              } else if (regularFields.length > 0) {
+                // If no foreign key matches, only search regular fields
+                const regularConditions = regularFields.map(field => `${field}.ilike.%${searchTerm}%`);
+                query = query.or(regularConditions.join(','));
+              }
+            } catch (err) {
+              console.error('Error searching foreign key fields:', err);
+              // Fallback to regular field search only
+              if (regularFields.length > 0) {
+                const regularConditions = regularFields.map(field => `${field}.ilike.%${searchTerm}%`);
+                query = query.or(regularConditions.join(','));
+              }
+            }
+          } else if (regularFields.length > 0) {
+            // Only regular fields to search
+            const regularConditions = regularFields.map(field => `${field}.ilike.%${searchTerm}%`);
+            query = query.or(regularConditions.join(','));
+          }
+        }
+
+        // Apply sorting
+        const sortConfig = params.sort;
+        query = query.order(sortConfig.field as string, { ascending: sortConfig.asc });
+
+        // Apply pagination
+        const currentPage = params.page || 1;
+        const from = (currentPage - 1) * pageSize;
+        const to = from + pageSize - 1;
+        query = query.range(from, to);
+
+        const { data: result, error: queryError, count: totalCount } = await query;
+
+        if (queryError) throw queryError;
+
+        return {
+          items: (result as unknown as T[]) || [],
+          count: totalCount || 0,
+          page: currentPage,
+        };
+      } catch (err: any) {
+        const message = err?.message || 'Error al cargar los datos';
+        setError(message);
+        throw new Error(message);
+      }
+  },
+    [foreignKeys, supabase, tableName, searchFields, pageSize]
+  );
+
+  const query = useQuery<CrudQueryData<T>>({
+    queryKey,
+    queryFn: () => fetchEntities(currentParams),
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+  });
+
+  const invalidateTableQueries = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: ['crud', tableName] }),
+    [queryClient, tableName]
+  );
+
+  const createMutation = useMutation<T, Error, Omit<T, 'id' | 'created_at' | 'updated_at'>, { previousData?: CrudQueryData<T> }>({
+    mutationFn: async (newData) => {
       const { data: result, error } = await supabase
         .from(tableName)
         .insert([newData])
         .select()
         .single();
-      
+
       if (error) throw error;
-      
-      await fetchData();
-      return result;
-    } catch (err: any) {
-      const errorMessage = handleSupabaseError(err);
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, tableName, fetchData]);
+      return result as unknown as T;
+    },
+    onMutate: async (newData) => {
+      await queryClient.cancelQueries({ queryKey: ['crud', tableName] });
+      const previousData = queryClient.getQueryData<CrudQueryData<T>>(queryKey);
+      const tempId = Date.now() * -1;
 
+      queryClient.setQueryData<CrudQueryData<T>>(queryKey, (current) => {
+        if (!current) return current;
+        const optimisticItem = { ...(newData as any), id: tempId } as T;
+        return {
+          ...current,
+          items: [optimisticItem, ...current.items].slice(0, pageSize),
+          count: current.count + 1,
+        };
+      });
 
-  const update = useCallback(async (id: number, updateData: Partial<T>) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
+      return { previousData };
+    },
+    onError: (err: any, _variables, context) => {
+      const message = handleSupabaseError(err);
+      setError(message);
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+    },
+    onSettled: () => invalidateTableQueries(),
+  });
+
+  const updateMutation = useMutation<T, Error, { id: number; data: Partial<T> }, { previousData?: CrudQueryData<T> }>({
+    mutationFn: async ({ id, data }) => {
       const { data: result, error } = await supabase
         .from(tableName)
-        .update(updateData)
+        .update(data)
         .eq('id', id)
         .select()
         .single();
-      
-      if (error) throw error;
-      
-      await fetchData();
-      return result;
-    } catch (err: any) {
-      const errorMessage = handleSupabaseError(err);
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, tableName, fetchData]);
 
-  const deleteItem = useCallback(async (id: number) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const { error } = await supabase
-        .from(tableName)
-        .delete()
-        .eq('id', id);
-      
       if (error) throw error;
-      
-      await fetchData();
-    } catch (err: any) {
-      const errorMessage = handleSupabaseError(err);
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, tableName, fetchData]);
+      return result as unknown as T;
+    },
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['crud', tableName] });
+      const previousData = queryClient.getQueryData<CrudQueryData<T>>(queryKey);
+
+      queryClient.setQueryData<CrudQueryData<T>>(queryKey, (current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          items: current.items.map(item => (item.id === id ? { ...item, ...data } : item)),
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (err: any, _variables, context) => {
+      const message = handleSupabaseError(err);
+      setError(message);
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+    },
+    onSettled: () => invalidateTableQueries(),
+  });
+
+  const deleteMutation = useMutation<void, Error, number, { previousData?: CrudQueryData<T> }>({
+    mutationFn: async (id) => {
+      const { error } = await supabase.from(tableName).delete().eq('id', id);
+      if (error) throw error;
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['crud', tableName] });
+      const previousData = queryClient.getQueryData<CrudQueryData<T>>(queryKey);
+
+      queryClient.setQueryData<CrudQueryData<T>>(queryKey, (current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          items: current.items.filter(item => item.id !== id),
+          count: Math.max(0, current.count - 1),
+        };
+      });
+
+      return { previousData };
+    },
+    onError: (err: any, _variables, context) => {
+      const message = handleSupabaseError(err);
+      setError(message);
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKey, context.previousData);
+      }
+    },
+    onSettled: () => invalidateTableQueries(),
+  });
+
+  const fetchData = useCallback(
+    async (params?: QueryParams) => {
+      const nextSearch = params?.search ?? search;
+      const nextSort = (params?.sort as { field: keyof T; asc: boolean } | undefined) ?? sort;
+      const nextPage = params?.page ?? page;
+      const nextFilters = params?.filters ?? filters;
+
+      setSearch(nextSearch);
+      setSort(nextSort);
+      setPage(nextPage);
+      setFilters(nextFilters);
+      setError(null);
+
+      await queryClient.invalidateQueries({ queryKey: ['crud', tableName] });
+    },
+    [filters, page, queryClient, search, sort, tableName]
+  );
+
+  const loading =
+    query.isFetching ||
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    deleteMutation.isPending;
+
+  const data = query.data?.items || [];
+  const count = query.data?.count || 0;
 
   return {
     data,
@@ -278,13 +365,13 @@ export function useCrud<T extends BaseEntity>({
     error,
     count,
     page,
-    totalPages,
+    totalPages: Math.max(1, Math.ceil(count / pageSize)),
     search,
     sort,
     fetchData,
-    create,
-    update,
-    delete: deleteItem,
+    create: createMutation.mutateAsync,
+    update: (id: number, data: Partial<T>) => updateMutation.mutateAsync({ id, data }),
+    delete: (id: number) => deleteMutation.mutateAsync(id),
     setSearch,
     setSort,
     setPage,

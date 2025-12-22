@@ -7,6 +7,7 @@ import "./globals.css";
 import React, { ReactElement } from "react";
 import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
+import { QueryProvider } from "./QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,20 +35,22 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Theme accentColor="amber" grayColor="mauve" panelBackground="solid">        
-          {user ? (
-            <div className="flex h-screen bg-gray-50">
-              <Sidebar />
-              <div className="flex-1 flex flex-col h-screen">
-                <Header userEmail={user.email} title="ComunidadCat" />
-                <main className="flex-1 overflow-y-auto p-6">
-                  {children}
-                </main>
+        <Theme accentColor="amber" grayColor="mauve" panelBackground="solid">
+          <QueryProvider>
+            {user ? (
+              <div className="flex h-screen bg-gray-50">
+                <Sidebar />
+                <div className="flex-1 flex flex-col h-screen">
+                  <Header userEmail={user.email} title="ComunidadCat" />
+                  <main className="flex-1 overflow-y-auto p-6">
+                    {children}
+                  </main>
+                </div>
               </div>
-            </div>
-          ) : (
-            children
-          )}
+            ) : (
+              children
+            )}
+          </QueryProvider>
         </Theme>
       </body>
     </html>
