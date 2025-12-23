@@ -1,14 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
-
-export default async function Home() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
+export default function Home() {
   return (
     <div
       className="flex flex-col items-center justify-center w-full h-full"
@@ -20,4 +10,5 @@ export default async function Home() {
       </p>
     </div>
   );
-} 
+}
+

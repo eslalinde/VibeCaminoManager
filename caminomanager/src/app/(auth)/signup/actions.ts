@@ -1,6 +1,6 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export async function signupAction(formData: FormData) {
   const email = formData.get("email") as string;
@@ -28,6 +28,12 @@ export async function signupAction(formData: FormData) {
   try {
     const supabase = await createClient();
     
+    // Obtener la URL del sitio de forma dinámica si no está configurada
+    const headersList = await headers();
+    const host = headersList.get("host") || "localhost:3000";
+    const protocol = host.includes("localhost") ? "http" : "https";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
+    
     // Crear el usuario en Supabase Auth
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -36,24 +42,38 @@ export async function signupAction(formData: FormData) {
         data: {
           full_name: full_name,
         },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
+        emailRedirectTo: `${siteUrl}/auth/confirm`,
       },
     });
 
     if (error) {
       console.error("Error en signup:", error);
+      
+      // Mensajes de error más amigables
+      if (error.message.includes("already registered")) {
+        return { error: "Este email ya está registrado. Intenta iniciar sesión." };
+      }
+      if (error.message.includes("password")) {
+        return { error: "La contraseña no cumple con los requisitos de seguridad." };
+      }
+      
       return { error: error.message };
     }
 
-    if (data.user && !data.user.email_confirmed_at) {
-      // Si la confirmación de email está habilitada
+    // Si el usuario tiene sesión activa (confirmación de email deshabilitada)
+    // indicar al cliente que debe redirigir
+    if (data.session) {
       return { 
-        success: "Cuenta creada exitosamente. Por favor, revisa tu email para confirmar tu cuenta antes de iniciar sesión." 
+        success: "¡Cuenta creada exitosamente!",
+        redirectTo: "/"
       };
-    } else if (data.user) {
-      // Si la confirmación de email está deshabilitada, redirigir al login
+    }
+
+    // Si no hay sesión pero hay usuario, significa que necesita confirmar email
+    if (data.user && !data.session) {
       return { 
-        success: "Cuenta creada exitosamente. Ya puedes iniciar sesión." 
+        success: "¡Cuenta creada exitosamente! Por favor, revisa tu email para confirmar tu cuenta antes de iniciar sesión.",
+        requiresEmailConfirmation: true
       };
     }
 
@@ -64,3 +84,4 @@ export async function signupAction(formData: FormData) {
     return { error: "Error interno del servidor. Intenta nuevamente." };
   }
 }
+

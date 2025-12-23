@@ -1,15 +1,35 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { signupAction } from "./actions";
+import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Verificar si el usuario ya está autenticado
+  useEffect(() => {
+    async function checkAuth() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Si ya está autenticado, redirigir a la página principal
+        router.replace("/");
+        return;
+      }
+      setCheckingAuth(false);
+    }
+    checkAuth();
+  }, [router]);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -19,17 +39,42 @@ export default function SignupPage() {
     try {
       const result = await signupAction(formData);
       
-      if (result.error) {
+      if (result?.error) {
         setError(result.error);
-      } else if (result.success) {
+        setLoading(false);
+        return;
+      }
+      
+      // Si hay redirección indicada (usuario autenticado automáticamente)
+      if (result?.redirectTo) {
+        // Forzar refresh del layout para que detecte el nuevo usuario
+        router.refresh();
+        router.replace(result.redirectTo);
+        return; // No desactivar loading, estamos redirigiendo
+      }
+      
+      // Si requiere confirmación de email
+      if (result?.success) {
         setSuccess(result.success);
       }
-    } catch (error) {
-      console.error("Error inesperado:", error);
+    } catch (err) {
+      console.error("Error en signup:", err);
       setError("Error interno del servidor. Intenta nuevamente.");
     }
     
     setLoading(false);
+  }
+
+  // Mostrar loading mientras verificamos autenticación
+  if (checkingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -102,13 +147,21 @@ export default function SignupPage() {
             
             {success && (
               <div className="text-green-600 text-sm bg-green-50 p-3 rounded">
-                {success}
+                <p>{success}</p>
+                <Link 
+                  href="/login" 
+                  className="block mt-2 text-blue-600 hover:text-blue-800 underline"
+                >
+                  Ir a iniciar sesión
+                </Link>
               </div>
             )}
             
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creando cuenta..." : "Crear cuenta"}
-            </Button>
+            {!success && (
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Creando cuenta..." : "Crear cuenta"}
+              </Button>
+            )}
             
             <div className="text-center text-sm text-gray-600">
               ¿Ya tienes una cuenta?{" "}
@@ -122,3 +175,4 @@ export default function SignupPage() {
     </div>
   );
 }
+

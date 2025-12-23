@@ -19,7 +19,10 @@ Este proyecto fue creado con [Next.js](https://nextjs.org/) y [Supabase](https:/
    ```env
    NEXT_PUBLIC_SUPABASE_URL=tu_url_supabase
    NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
    ```
+   
+   > **Nota:** En producción, `NEXT_PUBLIC_SITE_URL` debe ser la URL de tu dominio (ej: `https://tudominio.com`).
 6. Inicia el servidor de desarrollo:
    ```bash
    npm run dev
