@@ -25,6 +25,10 @@ Este proyecto fue creado con [Next.js](https://nextjs.org/) y [Supabase](https:/
    npm run dev
    ```
 
+## Base de datos (Supabase)
+
+Las instrucciones para **desplegar las migraciones de la base de datos a Supabase Cloud** están en el README raíz del repo: `../README.md`.
+
 ## Scripts
 
 - `npm run dev` — Inicia el servidor de desarrollo

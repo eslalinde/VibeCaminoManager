@@ -145,17 +145,17 @@ ComunidadCat es una aplicación web que permite a los responsables de la ciudad 
 NOTAS: Requiere de una supervision especial, es necesario hacerlo paso a paso por cada tabla.
 Ten en cuenta la siguiente informacion al momento de generar la semilla:
 - Countries: Quiero que crees un solo pais Colombia y codigo CO
-- States: Se puede crear basado en el archivo states.json de la carpeta seeds.
-- Cities: se puede crear con en el archivo states.json de la carpeta seeds, todos los departamentos son de Colombia.
+- States: Se crean en `supabase/seed.sql`.
+- Cities: Se crean en `supabase/seed.sql` (todos los departamentos son de Colombia).
 - People: Por favor crea 200 personas en la tabla con la siguientes caracteristicas
   - Todos los nombres en español, ojala nombre y apellido colombiano
   - Que sean 45% hombres y 55% mujeres
   - De los hombres saca un presbitero para cada parroquia + otros 10
   - Crea 30 matrimonios
   - El resto de las personas que sean solteros o solteras, seminaristas, monjas, viudas y viudos
-- Parishes: se puede crear con el archivo de parishes.json
-- TeamTypes: se puede crear con el archivo de teamtypes.json
-- StepWays: se puede crear con el archivo de stepways.json
+- Parishes: Se crean en `supabase/seed.sql`.
+- TeamTypes: Se crean en `supabase/seed.sql`.
+- StepWays: Se crean en `supabase/seed.sql`.
 - Communities: Quiero que crees 4 communidades en la parroquia de la Visitacion de la siguiente manera:
   - Primera comunidad: 50 hermanos de los cuales 10 matrimonios, 7 presbiteros, otros.
     - Equipos: 
@@ -173,6 +173,75 @@ Para iniciar el ambiente local, cd a la carpeta supabase y ejecutar npx supabase
 ### Inicializacion del proyecto local
 - npx supabase init
 - npx supabase login
+
+### Deploy de la base de datos a Supabase Cloud (producción / staging)
+
+> **Importante**: todos los comandos de Supabase CLI en este repo se ejecutan desde la carpeta `supabase/` [[memory:4978703]].
+
+#### Prerrequisitos
+- Tener una cuenta en [Supabase](https://supabase.com/dashboard) y crear un proyecto (staging o producción).
+- Tener el **Project Ref** (lo ves en la URL del dashboard: `https://supabase.com/dashboard/project/<project-ref>`).
+- Tener el **DB Password** del proyecto (lo defines al crear el proyecto; guárdalo en un password manager).
+
+#### 1) Login al CLI
+
+```bash
+cd supabase
+npx supabase login
+```
+
+#### 2) Link del repo con el proyecto remoto
+
+```bash
+cd supabase
+npx supabase link --project-ref <project-ref>
+```
+
+Si el proyecto remoto ya tiene cambios hechos desde el Dashboard (SQL editor / Table editor), **haz pull primero** para capturarlos como migración local:
+
+```bash
+cd supabase
+npx supabase db pull
+```
+
+#### 3) Publicar migraciones (schema) en Supabase Cloud
+
+Primero puedes ver lo que va a aplicar:
+
+```bash
+cd supabase
+npx supabase db push --dry-run
+```
+
+Luego aplica las migraciones:
+
+```bash
+cd supabase
+npx supabase db push
+```
+
+#### 4) (Opcional) Cargar datos semilla en Supabase Cloud
+
+Este repo tiene un `supabase/seed.sql` con datos de ejemplo del **schema `public`** (datos del dominio de la app).
+
+- **Recomendado**: usar seed **solo** para entornos de demo/staging.
+- **Evitar en producción**: no ejecutes seed si ya hay datos reales o reglas de seguridad configuradas manualmente.
+
+Para aplicar migraciones + seed en el remoto:
+
+```bash
+cd supabase
+npx supabase db push --include-seed
+```
+
+#### 5) Verificación rápida
+- En el dashboard de Supabase: revisa que existan las tablas/vistas del esquema.
+- En CLI: lista el historial de migraciones aplicadas:
+
+```bash
+cd supabase
+npx supabase migration list
+```
 
 ### Configurar Supabase server side auth
 Ejecutar npm install @supabase/ssr

@@ -1,996 +1,715 @@
-SET session_replication_role = replica;
+-- Seed data for ComunidadCat (public schema only)
+-- This seed intentionally does NOT insert into Supabase system schemas like:
+-- - auth.* (users, audit logs, sessions, refresh tokens, identities, ...)
+-- - storage.* (objects)
+-- - supabase_functions.*
+--
+-- Why? Those tables are managed by Supabase, and seeding them is usually unsafe and noisy.
+-- Keep this file focused on your app's domain data under the `public` schema.
+
+begin;
+
+-- ------------------------------------------------------------
+-- Countries
+-- ------------------------------------------------------------
+INSERT INTO public.countries (id, name, code) VALUES
+  (1, 'Colombia', 'CO');
+
+-- ------------------------------------------------------------
+-- States
+-- ------------------------------------------------------------
+INSERT INTO public.states (id, name, country_id) VALUES
+  (1, 'Amazonas', 1),
+  (2, 'Antioquia', 1),
+  (3, 'Arauca', 1),
+  (4, 'Atlántico', 1),
+  (5, 'Bolívar', 1),
+  (6, 'Boyacá', 1),
+  (7, 'Caldas', 1),
+  (8, 'Caquetá', 1),
+  (9, 'Casanare', 1),
+  (10, 'Cauca', 1),
+  (11, 'Cesar', 1),
+  (12, 'Chocó', 1),
+  (13, 'Córdoba', 1),
+  (14, 'Cundinamarca', 1),
+  (15, 'Guainía', 1),
+  (16, 'Guaviare', 1),
+  (17, 'Huila', 1),
+  (18, 'La Guajira', 1),
+  (19, 'Magdalena', 1),
+  (20, 'Meta', 1),
+  (21, 'Nariño', 1),
+  (22, 'Norte de Santander', 1),
+  (23, 'Putumayo', 1),
+  (24, 'Quindío', 1),
+  (25, 'Risaralda', 1),
+  (26, 'San Andrés y Providencia', 1),
+  (27, 'Santander', 1),
+  (28, 'Sucre', 1),
+  (29, 'Tolima', 1),
+  (30, 'Valle del Cauca', 1),
+  (31, 'Vaupés', 1),
+  (32, 'Vichada', 1);
+
+-- ------------------------------------------------------------
+-- Cities
+-- ------------------------------------------------------------
+INSERT INTO public.cities (id, name, country_id, state_id) VALUES
+  (1, 'Leticia', 1, 1),
+  (2, 'Medellín', 1, 2),
+  (3, 'Arauca', 1, 3),
+  (4, 'Barranquilla', 1, 4),
+  (5, 'Cartagena de Indias', 1, 5),
+  (6, 'Tunja', 1, 6),
+  (7, 'Manizales', 1, 7),
+  (8, 'Florencia', 1, 8),
+  (9, 'Yopal', 1, 9),
+  (10, 'Popayán', 1, 10),
+  (11, 'Valledupar', 1, 11),
+  (12, 'Quibdó', 1, 12),
+  (13, 'Montería', 1, 13),
+  (14, 'Bogotá', 1, 14),
+  (15, 'Inírida', 1, 15),
+  (16, 'San José del Guaviare', 1, 16),
+  (17, 'Neiva', 1, 17),
+  (18, 'Riohacha', 1, 18),
+  (19, 'Santa Marta', 1, 19),
+  (20, 'Villavicencio', 1, 20),
+  (21, 'Pasto', 1, 21),
+  (22, 'Cúcuta', 1, 22),
+  (23, 'Mocoa', 1, 23),
+  (24, 'Armenia', 1, 24),
+  (25, 'Pereira', 1, 25),
+  (26, 'San Andrés', 1, 26),
+  (27, 'Bucaramanga', 1, 27),
+  (28, 'Sincelejo', 1, 28),
+  (29, 'Ibagué', 1, 29),
+  (30, 'Cali', 1, 30),
+  (31, 'Mitú', 1, 31),
+  (32, 'Puerto Carreño', 1, 32);
+
+-- ------------------------------------------------------------
+-- Parishes
+-- ------------------------------------------------------------
+INSERT INTO public.parishes (id, name, diocese, address, phone, email, city_id, country_id, state_id) VALUES
+  (1, 'Parroquia La Visitación', 'Diócesis de Medellín', 'Calle 12 #35-21, Medellín', '3065874400', 'pquia.visitacion@iglesia.org', 2, 1, 2),
+  (2, 'Parroquia Santa María de los Ángeles', 'Diócesis de Medellín', 'Carrera 43A #18-60, Medellín', '3065874401', 'sma.angeles@iglesia.org', 2, 1, 2),
+  (3, 'Parroquia La Balbanera', 'Diócesis de Medellín', 'Calle 30 #65-50, Medellín', '3065874402', 'balbanera@iglesia.org', 2, 1, 2),
+  (4, 'Parroquia Santuario Niño Jesús de Praga', 'Diócesis de Medellín', 'Carrera 50 #49-30, Medellín', '3065874403', 'ninojesus.praga@iglesia.org', 2, 1, 2),
+  (5, 'Parroquia Nuestra Señora del Sagrado Corazón', 'Diócesis de Medellín', 'Calle 45 #80-20, Medellín', '3065874404', 'ns.sagradocorazon@iglesia.org', 2, 1, 2),
+  (6, 'Parroquia María Madre Admirable', 'Diócesis de Medellín', 'Carrera 70 #32-15, Medellín', '3065874405', 'madre.admirable@iglesia.org', 2, 1, 2),
+  (7, 'Parroquia El Señor de las Misericordias', 'Diócesis de Medellín', 'Calle 50 #40-10, Medellín', '3065874406', 'senor.misericordias@iglesia.org', 2, 1, 2),
+  (8, 'Parroquia San José de El Poblado', 'Diócesis de Medellín', 'Carrera 43A #9-50, Medellín', '3065874407', 'san.jose.poblado@iglesia.org', 2, 1, 2),
+  (9, 'Parroquia San Joaquín', 'Diócesis de Medellín', 'Calle 42 #68-20, Medellín', '3065874408', 'san.joaquin@iglesia.org', 2, 1, 2),
+  (10, 'Parroquia San Cayetano', 'Diócesis de Medellín', 'Carrera 65 #48-30, Medellín', '3065874409', 'san.cayetano@iglesia.org', 2, 1, 2),
+  (11, 'Parroquia San Juan Bosco', 'Diócesis de Medellín', 'Calle 44 #80-15, Medellín', '3065874410', 'san.juanbosco@iglesia.org', 2, 1, 2),
+  (12, 'Parroquia San Antonio de Padua', 'Diócesis de Medellín', 'Carrera 52 #49-20, Medellín', '3065874411', 'san.antonio.padua@iglesia.org', 2, 1, 2),
+  (13, 'Parroquia Nuestra Señora de Chiquinquirá', 'Diócesis de Medellín', 'Calle 54 #80-30, Medellín', '3065874412', 'ns.chiquinquira@iglesia.org', 2, 1, 2),
+  (14, 'Parroquia Nuestra Señora de Belén', 'Diócesis de Medellín', 'Carrera 76 #32-20, Medellín', '3065874413', 'ns.belen@iglesia.org', 2, 1, 2),
+  (15, 'Parroquia Nuestra Señora del Rosario', 'Diócesis de Medellín', 'Calle 51 #50-10, Medellín', '3065874414', 'ns.rosario@iglesia.org', 2, 1, 2),
+  (16, 'Parroquia Nuestra Señora de la Candelaria', 'Diócesis de Medellín', 'Carrera 50 #51-30, Medellín', '3065874415', 'ns.candelaria@iglesia.org', 2, 1, 2),
+  (17, 'Parroquia Nuestra Señora de Fátima', 'Diócesis de Medellín', 'Calle 60 #80-40, Medellín', '3065874416', 'ns.fatima@iglesia.org', 2, 1, 2),
+  (18, 'Parroquia Nuestra Señora de Guadalupe', 'Diócesis de Medellín', 'Carrera 65 #30-50, Medellín', '3065874417', 'ns.guadalupe@iglesia.org', 2, 1, 2),
+  (19, 'Parroquia Nuestra Señora de las Lajas', 'Diócesis de Medellín', 'Calle 70 #80-50, Medellín', '3065874418', 'ns.lajas@iglesia.org', 2, 1, 2),
+  (20, 'Parroquia Nuestra Señora de Lourdes', 'Diócesis de Medellín', 'Carrera 80 #32-60, Medellín', '3065874419', 'ns.lourdes@iglesia.org', 2, 1, 2);
+
+-- ------------------------------------------------------------
+-- Step ways
+-- ------------------------------------------------------------
+INSERT INTO public.step_ways (id, name, order_num) VALUES
+  (1, 'Catequesis iniciales', 1),
+  (2, '1º Escrutinio Bautismal', 2),
+  (3, 'Shemá Israel', 3),
+  (4, '2º Escrutinio Bautismal', 4),
+  (5, '1ª Iniciación a la Oración', 5),
+  (6, 'Traditio Symboli', 6),
+  (7, 'Retraditio Symboli', 7),
+  (8, 'Redditio Symboli', 8),
+  (9, '2ª Iniciación a la Oración: Padrenuestro', 9),
+  (10, '3º Escrutinio Bautismal', 10),
+  (11, 'Renovación Promesas Bautismales', 11);
+
+-- ------------------------------------------------------------
+-- Communities
+-- ------------------------------------------------------------
+INSERT INTO public.communities (id, number, born_date, parish_id, born_brothers, actual_brothers, step_way_id, last_step_way_date, cathechist_team_id) VALUES
+  (2, '2', '2002-01-01', 1, 42, 42, 2, '2024-01-01', 2),
+  (3, '3', '2004-01-01', 1, 30, 30, 3, '2024-01-01', 3),
+  (4, '4', '2006-01-01', 1, 46, 46, 4, '2024-01-01', 4),
+  (5, '1', '2001-03-15', 2, 35, 35, 2, '2024-02-15', 5),
+  (6, '2', '2003-06-20', 2, 28, 28, 3, '2024-03-10', 6),
+  (7, '1', '2002-09-10', 3, 40, 40, 1, '2024-01-20', 7),
+  (8, '1', '2005-12-08', 4, 32, 32, 2, '2024-02-28', 8),
+  (9, '2', '2007-04-15', 4, 25, 25, 4, '2024-03-15', 9),
+  (10, '1', '2003-11-21', 5, 38, 38, 3, '2024-02-10', 10),
+  (11, '1', '2004-08-15', 6, 45, 45, 1, '2024-01-25', 11),
+  (12, '2', '2006-12-12', 6, 30, 30, 2, '2024-03-05', 12),
+  (13, '1', '2005-05-03', 7, 33, 33, 3, '2024-02-20', 13),
+  (14, '1', '2001-03-19', 8, 42, 42, 2, '2024-02-15', 14),
+  (15, '2', '2003-07-25', 8, 36, 36, 4, '2024-03-20', 15),
+  (1, '1', '2000-01-01', 1, 50, 50, 10, '2024-01-01', 1);
+
+-- ------------------------------------------------------------
+-- People
+-- ------------------------------------------------------------
+INSERT INTO public.people (id, person_name, phone, mobile, email, person_type_id, gender_id, spouse_id) VALUES
+  (1, 'Juan Pérez', '6041000001', '3001000001', 'juan.perez@email.com', 1, 1, 2),
+  (2, 'María Gómez', '6041000002', '3001000002', 'maria.gomez@email.com', 1, 2, 1),
+  (3, 'Carlos Rodríguez', '6041000003', '3001000003', 'carlos.rodriguez@email.com', 1, 1, 4),
+  (4, 'Ana Martínez', '6041000004', '3001000004', 'ana.martinez@email.com', 1, 2, 3),
+  (5, 'Pedro López', '6041000005', '3001000005', 'pedro.lopez@email.com', 1, 1, 6),
+  (6, 'Laura Torres', '6041000006', '3001000006', 'laura.torres@email.com', 1, 2, 5),
+  (7, 'Andrés Ramírez', '6041000007', '3001000007', 'andres.ramirez@email.com', 1, 1, 8),
+  (8, 'Paula Sánchez', '6041000008', '3001000008', 'paula.sanchez@email.com', 1, 2, 7),
+  (9, 'Jorge Castro', '6041000009', '3001000009', 'jorge.castro@email.com', 1, 1, 10),
+  (10, 'Diana Ruiz', '6041000010', '3001000010', 'diana.ruiz@email.com', 1, 2, 9),
+  (11, 'Miguel Herrera', '6041000011', '3001000011', 'miguel.herrera@email.com', 1, 1, 12),
+  (12, 'Sofía Mendoza', '6041000012', '3001000012', 'sofia.mendoza@email.com', 1, 2, 11),
+  (13, 'Ricardo Morales', '6041000013', '3001000013', 'ricardo.morales@email.com', 1, 1, 14),
+  (14, 'Claudia Jiménez', '6041000014', '3001000014', 'claudia.jimenez@email.com', 1, 2, 13),
+  (15, 'Felipe Vargas', '6041000015', '3001000015', 'felipe.vargas@email.com', 1, 1, 16),
+  (16, 'Natalia Castillo', '6041000016', '3001000016', 'natalia.castillo@email.com', 1, 2, 15),
+  (17, 'Oscar Romero', '6041000017', '3001000017', 'oscar.romero@email.com', 1, 1, 18),
+  (18, 'Verónica Peña', '6041000018', '3001000018', 'veronica.pena@email.com', 1, 2, 17),
+  (19, 'David Salazar', '6041000019', '3001000019', 'david.salazar@email.com', 1, 1, 20),
+  (20, 'Camila Ríos', '6041000020', '3001000020', 'camila.rios@email.com', 1, 2, 19),
+  (21, 'Julián Cárdenas', '6041000021', '3001000021', 'julian.cardenas@email.com', 1, 1, 22),
+  (22, 'Valentina Pineda', '6041000022', '3001000022', 'valentina.pineda@email.com', 1, 2, 21),
+  (23, 'Santiago Silva', '6041000023', '3001000023', 'santiago.silva@email.com', 1, 1, 24),
+  (24, 'Gabriela Ortega', '6041000024', '3001000024', 'gabriela.ortega@email.com', 1, 2, 23),
+  (25, 'Mauricio Navarro', '6041000025', '3001000025', 'mauricio.navarro@email.com', 1, 1, 26),
+  (26, 'Daniela Cardona', '6041000026', '3001000026', 'daniela.cardona@email.com', 1, 2, 25),
+  (27, 'Sebastián Arias', '6041000027', '3001000027', 'sebastian.arias@email.com', 1, 1, 28),
+  (28, 'Andrea Molina', '6041000028', '3001000028', 'andrea.molina@email.com', 1, 2, 27),
+  (29, 'Manuel Espinosa', '6041000029', '3001000029', 'manuel.espinosa@email.com', 1, 1, 30),
+  (30, 'Patricia Suárez', '6041000030', '3001000030', 'patricia.suarez@email.com', 1, 2, 29),
+  (31, 'Fernando Ríos', '6041000031', '3001000031', 'fernando.rios@email.com', 1, 1, 32),
+  (32, 'Marcela Vargas', '6041000032', '3001000032', 'marcela.vargas@email.com', 1, 2, 31),
+  (33, 'Héctor Gómez', '6041000033', '3001000033', 'hector.gomez@email.com', 1, 1, 34),
+  (34, 'Paula Jiménez', '6041000034', '3001000034', 'paula.jimenez@email.com', 1, 2, 33),
+  (35, 'Javier Torres', '6041000035', '3001000035', 'javier.torres@email.com', 1, 1, 36),
+  (36, 'Sandra Herrera', '6041000036', '3001000036', 'sandra.herrera@email.com', 1, 2, 35),
+  (37, 'Luis Castaño', '6041000037', '3001000037', 'luis.castano@email.com', 1, 1, 38),
+  (38, 'Carolina Zapata', '6041000038', '3001000038', 'carolina.zapata@email.com', 1, 2, 37),
+  (39, 'Martín Quintero', '6041000039', '3001000039', 'martin.quintero@email.com', 1, 1, 40),
+  (40, 'Lucía Restrepo', '6041000040', '3001000040', 'lucia.restrepo@email.com', 1, 2, 39),
+  (41, 'Pablo Betancur', '6041000041', '3001000041', 'pablo.betancur@email.com', 1, 1, 42),
+  (42, 'Adriana Montoya', '6041000042', '3001000042', 'adriana.montoya@email.com', 1, 2, 41),
+  (43, 'Sergio Hoyos', '6041000043', '3001000043', 'sergio.hoyos@email.com', 1, 1, 44),
+  (44, 'Beatriz Ospina', '6041000044', '3001000044', 'beatriz.ospina@email.com', 1, 2, 43),
+  (45, 'Rodrigo Zapata', '6041000045', '3001000045', 'rodrigo.zapata@email.com', 1, 1, 46),
+  (46, 'Cecilia Cardona', '6041000046', '3001000046', 'cecilia.cardona@email.com', 1, 2, 45),
+  (47, 'Gustavo Peña', '6041000047', '3001000047', 'gustavo.pena@email.com', 1, 1, 48),
+  (48, 'Silvia Salazar', '6041000048', '3001000048', 'silvia.salazar@email.com', 1, 2, 47),
+  (49, 'Alberto Mendoza', '6041000049', '3001000049', 'alberto.mendoza@email.com', 1, 1, 50),
+  (50, 'Rosa Cárdenas', '6041000050', '3001000050', 'rosa.cardenas@email.com', 1, 2, 49),
+  (51, 'Ramiro Ortega', '6041000051', '3001000051', 'ramiro.ortega@email.com', 1, 1, 52),
+  (52, 'Marta Silva', '6041000052', '3001000052', 'marta.silva@email.com', 1, 2, 51),
+  (53, 'Joaquín Navarro', '6041000053', '3001000053', 'joaquin.navarro@email.com', 1, 1, 54),
+  (54, 'Antonia Espinosa', '6041000054', '3001000054', 'antonia.espinosa@email.com', 1, 2, 53),
+  (55, 'Enrique Suárez', '6041000055', '3001000055', 'enrique.suarez@email.com', 1, 1, 56),
+  (56, 'Renata Arias', '6041000056', '3001000056', 'renata.arias@email.com', 1, 2, 55),
+  (57, 'Tomás Molina', '6041000057', '3001000057', 'tomas.molina@email.com', 1, 1, 58),
+  (58, 'Gabriela Ríos', '6041000058', '3001000058', 'gabriela.rios@email.com', 1, 2, 57),
+  (59, 'Samuel Pineda', '6041000059', '3001000059', 'samuel.pineda@email.com', 1, 1, 60),
+  (60, 'Valeria Cárdenas', '6041000060', '3001000060', 'valeria.cardenas@email.com', 1, 2, 59),
+  (61, 'Padre Álvaro Restrepo', '6041000061', '3001000061', 'alvaro.restrepo@email.com', 3, 1, NULL),
+  (62, 'Padre Jorge Giraldo', '6041000062', '3001000062', 'jorge.giraldo@email.com', 3, 1, NULL),
+  (63, 'Padre Luis Zapata', '6041000063', '3001000063', 'luis.zapata@email.com', 3, 1, NULL),
+  (64, 'Padre Mario Castaño', '6041000064', '3001000064', 'mario.castano@email.com', 3, 1, NULL),
+  (65, 'Padre Hernán Quintero', '6041000065', '3001000065', 'hernan.quintero@email.com', 3, 1, NULL),
+  (66, 'Padre Fabián Ospina', '6041000066', '3001000066', 'fabian.ospina@email.com', 3, 1, NULL),
+  (67, 'Padre Camilo Betancur', '6041000067', '3001000067', 'camilo.betancur@email.com', 3, 1, NULL),
+  (68, 'Padre Esteban Hoyos', '6041000068', '3001000068', 'esteban.hoyos@email.com', 3, 1, NULL),
+  (69, 'Padre Julián Restrepo', '6041000069', '3001000069', 'julian.restrepo@email.com', 3, 1, NULL),
+  (70, 'Padre Sergio Montoya', '6041000070', '3001000070', 'sergio.montoya@email.com', 3, 1, NULL),
+  (71, 'Padre Andrés Zapata', '6041000071', '3001000071', 'andres.zapata@email.com', 3, 1, NULL),
+  (72, 'Padre Diego Cárdenas', '6041000072', '3001000072', 'diego.cardenas@email.com', 3, 1, NULL),
+  (73, 'Padre Felipe Salazar', '6041000073', '3001000073', 'felipe.salazar@email.com', 3, 1, NULL),
+  (74, 'Padre Simón Ríos', '6041000074', '3001000074', 'simon.rios@email.com', 3, 1, NULL),
+  (75, 'Seminarista Juan Esteban', '6041000075', '3001000075', 'seminarista.juan@email.com', 4, 1, NULL),
+  (76, 'Seminarista Pablo López', '6041000076', '3001000076', 'seminarista.pablo@email.com', 4, 1, NULL),
+  (77, 'Seminarista Mateo Ruiz', '6041000077', '3001000077', 'seminarista.mateo@email.com', 4, 1, NULL),
+  (78, 'Seminarista Tomás Giraldo', '6041000078', '3001000078', 'seminarista.tomas@email.com', 4, 1, NULL),
+  (79, 'Seminarista Samuel Torres', '6041000079', '3001000079', 'seminarista.samuel@email.com', 4, 1, NULL),
+  (80, 'Seminarista Nicolás Ramírez', '6041000080', '3001000080', 'seminarista.nicolas@email.com', 4, 1, NULL),
+  (81, 'Seminarista David Castro', '6041000081', '3001000081', 'seminarista.david@email.com', 4, 1, NULL),
+  (82, 'Seminarista Daniel Salazar', '6041000082', '3001000082', 'seminarista.daniel@email.com', 4, 1, NULL),
+  (83, 'Seminarista Emiliano Peña', '6041000083', '3001000083', 'seminarista.emiliano@email.com', 4, 1, NULL),
+  (84, 'Seminarista Simón Vargas', '6041000084', '3001000084', 'seminarista.simon@email.com', 4, 1, NULL),
+  (85, 'Hermana Lucía Restrepo', '6041000085', '3001000085', 'hermana.lucia@email.com', 6, 2, NULL),
+  (86, 'Hermana Teresa Zapata', '6041000086', '3001000086', 'hermana.teresa@email.com', 6, 2, NULL),
+  (87, 'Hermana Rosa Castaño', '6041000087', '3001000087', 'hermana.rosa@email.com', 6, 2, NULL),
+  (88, 'Hermana Carmen Quintero', '6041000088', '3001000088', 'hermana.carmen@email.com', 6, 2, NULL),
+  (89, 'Hermana Gloria Ospina', '6041000089', '3001000089', 'hermana.gloria@email.com', 6, 2, NULL),
+  (90, 'Hermana Patricia Betancur', '6041000090', '3001000090', 'hermana.patricia@email.com', 6, 2, NULL),
+  (91, 'Hermana Sandra Hoyos', '6041000091', '3001000091', 'hermana.sandra@email.com', 6, 2, NULL),
+  (92, 'Hermana Adriana Restrepo', '6041000092', '3001000092', 'hermana.adriana@email.com', 6, 2, NULL),
+  (93, 'Hermana Marcela Montoya', '6041000093', '3001000093', 'hermana.marcela@email.com', 6, 2, NULL),
+  (94, 'Hermana Carolina Zapata', '6041000094', '3001000094', 'hermana.carolina@email.com', 6, 2, NULL),
+  (95, 'José Viudo', '6041000095', '3001000095', 'jose.viudo@email.com', 7, 1, NULL),
+  (96, 'Marta Viuda', '6041000096', '3001000096', 'marta.viuda@email.com', 7, 2, NULL),
+  (97, 'Alberto Viudo', '6041000097', '3001000097', 'alberto.viudo@email.com', 7, 1, NULL),
+  (98, 'Rosa Viuda', '6041000098', '3001000098', 'rosa.viuda@email.com', 7, 2, NULL),
+  (99, 'Enrique Viudo', '6041000099', '3001000099', 'enrique.viudo@email.com', 7, 1, NULL),
+  (100, 'Clara Viuda', '6041000100', '3001000100', 'clara.viuda@email.com', 7, 2, NULL),
+  (101, 'Ramiro Viudo', '6041000101', '3001000101', 'ramiro.viudo@email.com', 7, 1, NULL),
+  (102, 'Beatriz Viuda', '6041000102', '3001000102', 'beatriz.viuda@email.com', 7, 2, NULL),
+  (103, 'Gustavo Viudo', '6041000103', '3001000103', 'gustavo.viudo@email.com', 7, 1, NULL),
+  (104, 'Elena Viuda', '6041000104', '3001000104', 'elena.viuda@email.com', 7, 2, NULL),
+  (105, 'Santiago Soltero', '6041000105', '3001000105', 'santiago.soltero@email.com', 2, 1, NULL),
+  (106, 'Valeria Soltera', '6041000106', '3001000106', 'valeria.soltera@email.com', 2, 2, NULL),
+  (107, 'Tomás Soltero', '6041000107', '3001000107', 'tomas.soltero@email.com', 2, 1, NULL),
+  (108, 'Isabella Soltera', '6041000108', '3001000108', 'isabella.soltera@email.com', 2, 2, NULL),
+  (109, 'Emilio Soltero', '6041000109', '3001000109', 'emilio.soltero@email.com', 2, 1, NULL),
+  (110, 'Mariana Soltera', '6041000110', '3001000110', 'mariana.soltera@email.com', 2, 2, NULL),
+  (111, 'Alejandro Soltero', '6041000111', '3001000111', 'alejandro.soltero@email.com', 2, 1, NULL),
+  (112, 'Juliana Soltera', '6041000112', '3001000112', 'juliana.soltera@email.com', 2, 2, NULL),
+  (113, 'Esteban Soltero', '6041000113', '3001000113', 'esteban.soltero@email.com', 2, 1, NULL),
+  (114, 'Daniela Soltera', '6041000114', '3001000114', 'daniela.soltera@email.com', 2, 2, NULL),
+  (115, 'Nicolás Soltero', '6041000115', '3001000115', 'nicolas.soltero@email.com', 2, 1, NULL),
+  (116, 'Sara Soltera', '6041000116', '3001000116', 'sara.soltera@email.com', 2, 2, NULL),
+  (117, 'Diogenes Albeiro Soltero', '6041000117', '3001000117', 'diogenes.albeiro@email.com', 2, 1, NULL),
+  (118, 'Valentina Soltera', '6041000118', '3001000118', 'valentina2.soltera@email.com', 2, 2, NULL),
+  (119, 'Martín Soltero', '6041000119', '3001000119', 'martin.soltero@email.com', 2, 1, NULL),
+  (120, 'Camila Soltera', '6041000120', '3001000120', 'camila2.soltera@email.com', 2, 2, NULL),
+  (121, 'Samuel Soltero', '6041000121', '3001000121', 'samuel.soltero@email.com', 2, 1, NULL),
+  (122, 'Alejandra Soltera', '6041000122', '3001000122', 'alejandra.soltera@email.com', 2, 2, NULL),
+  (123, 'Roberto Soltero', '6041000123', '3001000123', 'roberto.soltero@email.com', 2, 1, NULL),
+  (124, 'Carmen Soltera', '6041000124', '3001000124', 'carmen.soltera@email.com', 2, 2, NULL),
+  (125, 'Hugo Soltero', '6041000125', '3001000125', 'hugo.soltero@email.com', 2, 1, NULL),
+  (126, 'Catalina Soltera', '6041000126', '3001000126', 'catalina.soltera@email.com', 2, 2, NULL),
+  (127, 'Ignacio Soltero', '6041000127', '3001000127', 'ignacio.soltero@email.com', 2, 1, NULL),
+  (128, 'Elena Soltera', '6041000128', '3001000128', 'elena.soltera@email.com', 2, 2, NULL),
+  (129, 'Rafael Soltero', '6041000129', '3001000129', 'rafael.soltero@email.com', 2, 1, NULL),
+  (130, 'Beatriz Soltera', '6041000130', '3001000130', 'beatriz.soltera@email.com', 2, 2, NULL),
+  (131, 'Víctor Soltero', '6041000131', '3001000131', 'victor.soltero@email.com', 2, 1, NULL),
+  (132, 'Cristina Soltera', '6041000132', '3001000132', 'cristina.soltera@email.com', 2, 2, NULL),
+  (133, 'Adrián Soltero', '6041000133', '3001000133', 'adrian.soltero@email.com', 2, 1, NULL),
+  (134, 'Dolores Soltera', '6041000134', '3001000134', 'dolores.soltera@email.com', 2, 2, NULL),
+  (135, 'Eduardo Soltero', '6041000135', '3001000135', 'eduardo.soltero@email.com', 2, 1, NULL),
+  (136, 'Esperanza Soltera', '6041000136', '3001000136', 'esperanza.soltera@email.com', 2, 2, NULL),
+  (137, 'Óscar Soltero', '6041000137', '3001000137', 'oscar2.soltero@email.com', 2, 1, NULL),
+  (138, 'Fernanda Soltera', '6041000138', '3001000138', 'fernanda.soltera@email.com', 2, 2, NULL),
+  (139, 'Leonardo Soltero', '6041000139', '3001000139', 'leonardo.soltero@email.com', 2, 1, NULL),
+  (140, 'Gloria Soltera', '6041000140', '3001000140', 'gloria.soltera@email.com', 2, 2, NULL),
+  (141, 'Cristian Soltero', '6041000141', '3001000141', 'cristian.soltero@email.com', 2, 1, NULL),
+  (142, 'Inés Soltera', '6041000142', '3001000142', 'ines.soltera@email.com', 2, 2, NULL),
+  (143, 'Fernando Soltero', '6041000143', '3001000143', 'fernando2.soltero@email.com', 2, 1, NULL),
+  (144, 'Natalia Soltera', '6041000144', '3001000144', 'natalia2.soltera@email.com', 2, 2, NULL),
+  (145, 'Rodrigo Soltero', '6041000145', '3001000145', 'rodrigo2.soltero@email.com', 2, 1, NULL),
+  (146, 'Julia Soltera', '6041000146', '3001000146', 'julia.soltera@email.com', 2, 2, NULL),
+  (147, 'Mauricio Soltero', '6041000147', '3001000147', 'mauricio2.soltero@email.com', 2, 1, NULL),
+  (148, 'Lorena Soltera', '6041000148', '3001000148', 'lorena.soltera@email.com', 2, 2, NULL),
+  (149, 'Gonzalo Soltero', '6041000149', '3001000149', 'gonzalo.soltero@email.com', 2, 1, NULL),
+  (150, 'Mónica Soltera', '6041000150', '3001000150', 'monica.soltera@email.com', 2, 2, NULL),
+  (151, 'Patricio Soltero', '6041000151', '3001000151', 'patricio.soltero@email.com', 2, 1, NULL),
+  (152, 'Olga Soltera', '6041000152', '3001000152', 'olga.soltera@email.com', 2, 2, NULL),
+  (153, 'Francisco Soltero', '6041000153', '3001000153', 'francisco2.soltero@email.com', 2, 1, NULL),
+  (154, 'Patricia Soltera', '6041000154', '3001000154', 'patricia2.soltera@email.com', 2, 2, NULL),
+  (155, 'Antonio Soltero', '6041000155', '3001000155', 'antonio2.soltero@email.com', 2, 1, NULL),
+  (156, 'Raquel Soltera', '6041000156', '3001000156', 'raquel.soltera@email.com', 2, 2, NULL),
+  (157, 'César Soltero', '6041000157', '3001000157', 'cesar.soltero@email.com', 2, 1, NULL),
+  (158, 'Sofía Soltera', '6041000158', '3001000158', 'sofia2.soltera@email.com', 2, 2, NULL),
+  (159, 'Ricardo Soltero', '6041000159', '3001000159', 'ricardo2.soltero@email.com', 2, 1, NULL),
+  (160, 'Teresa Soltera', '6041000160', '3001000160', 'teresa.soltera@email.com', 2, 2, NULL),
+  (161, 'Alberto Soltero', '6041000161', '3001000161', 'alberto2.soltero@email.com', 2, 1, NULL),
+  (162, 'Ursula Soltera', '6041000162', '3001000162', 'ursula.soltera@email.com', 2, 2, NULL),
+  (163, 'Manuel Soltero', '6041000163', '3001000163', 'manuel2.soltero@email.com', 2, 1, NULL),
+  (164, 'Victoria Soltera', '6041000164', '3001000164', 'victoria.soltera@email.com', 2, 2, NULL),
+  (165, 'Rubén Soltero', '6041000165', '3001000165', 'ruben.soltero@email.com', 2, 1, NULL),
+  (166, 'Ximena Soltera', '6041000166', '3001000166', 'ximena.soltera@email.com', 2, 2, NULL),
+  (167, 'Héctor Soltero', '6041000167', '3001000167', 'hector2.soltero@email.com', 2, 1, NULL),
+  (168, 'Yolanda Soltera', '6041000168', '3001000168', 'yolanda.soltera@email.com', 2, 2, NULL),
+  (169, 'Mario Soltero', '6041000169', '3001000169', 'mario2.soltero@email.com', 2, 1, NULL),
+  (170, 'Zulema Soltera', '6041000170', '3001000170', 'zulema.soltera@email.com', 2, 2, NULL),
+  (171, 'Eugenio Soltero', '6041000171', '3001000171', 'eugenio.soltero@email.com', 2, 1, NULL),
+  (172, 'Alicia Soltera', '6041000172', '3001000172', 'alicia.soltera@email.com', 2, 2, NULL),
+  (173, 'Armando Soltero', '6041000173', '3001000173', 'armando.soltero@email.com', 2, 1, NULL),
+  (174, 'Bárbara Soltera', '6041000174', '3001000174', 'barbara.soltera@email.com', 2, 2, NULL),
+  (175, 'Bernardo Soltero', '6041000175', '3001000175', 'bernardo.soltero@email.com', 2, 1, NULL),
+  (176, 'Claudia Soltera', '6041000176', '3001000176', 'claudia2.soltera@email.com', 2, 2, NULL),
+  (177, 'Ernesto Soltero', '6041000177', '3001000177', 'ernesto.soltero@email.com', 2, 1, NULL),
+  (178, 'Diana Soltera', '6041000178', '3001000178', 'diana2.soltera@email.com', 2, 2, NULL),
+  (179, 'Arturo Soltero', '6041000179', '3001000179', 'arturo.soltero@email.com', 2, 1, NULL),
+  (180, 'Pedro Viudo', '6041000180', '3001000180', 'pedro.viudo@email.com', 7, 1, NULL),
+  (181, 'Lucía Viuda', '6041000181', '3001000181', 'lucia2.viuda@email.com', 7, 2, NULL),
+  (182, 'Javier Viudo', '6041000182', '3001000182', 'javier.viudo@email.com', 7, 1, NULL),
+  (183, 'Marina Viuda', '6041000183', '3001000183', 'marina.viuda@email.com', 7, 2, NULL),
+  (184, 'Héctor Viudo', '6041000184', '3001000184', 'hector.viudo@email.com', 7, 1, NULL),
+  (185, 'Mercedes Viuda', '6041000185', '3001000185', 'mercedes.viuda@email.com', 7, 2, NULL),
+  (186, 'Germán Viudo', '6041000186', '3001000186', 'german.viudo@email.com', 7, 1, NULL),
+  (187, 'Cecilia Viuda', '6041000187', '3001000187', 'cecilia.viuda@email.com', 7, 2, NULL),
+  (188, 'Alfonso Viudo', '6041000188', '3001000188', 'alfonso.viudo@email.com', 7, 1, NULL),
+  (189, 'Margarita Viuda', '6041000189', '3001000189', 'margarita.viuda@email.com', 7, 2, NULL),
+  (190, 'Raúl Viudo', '6041000190', '3001000190', 'raul.viudo@email.com', 7, 1, NULL),
+  (191, 'Francisca Viuda', '6041000191', '3001000191', 'francisca.viuda@email.com', 7, 2, NULL),
+  (192, 'Fernando Viudo', '6041000192', '3001000192', 'fernando.viudo@email.com', 7, 1, NULL),
+  (193, 'Carmen Viuda', '6041000193', '3001000193', 'carmen2.viuda@email.com', 7, 2, NULL),
+  (194, 'Pablo Viudo', '6041000194', '3001000194', 'pablo.viudo@email.com', 7, 1, NULL),
+  (195, 'Gloria Viuda', '6041000195', '3001000195', 'gloria2.viuda@email.com', 7, 2, NULL),
+  (196, 'Rubén Viudo', '6041000196', '3001000196', 'ruben.viudo@email.com', 7, 1, NULL),
+  (197, 'Silvia Viuda', '6041000197', '3001000197', 'silvia.viuda@email.com', 7, 2, NULL),
+  (198, 'Mario Viudo', '6041000198', '3001000198', 'mario.viudo@email.com', 7, 1, NULL),
+  (199, 'Camila Viuda', '6041000199', '3001000199', 'camila.viuda@email.com', 7, 2, NULL),
+  (200, 'Jorge Viudo', '6041000200', '3001000200', 'jorge.viudo@email.com', 7, 1, NULL);
+
+-- ------------------------------------------------------------
+-- Team types
+-- ------------------------------------------------------------
+INSERT INTO public.team_types (id, name, order_num) VALUES
+  (1, 'Catequistas de la Nación', 1),
+  (2, 'Itinerantes', 2),
+  (3, 'Catequistas', 3),
+  (4, 'Responsables', 4);
+
+-- ------------------------------------------------------------
+-- Teams
+-- ------------------------------------------------------------
+INSERT INTO public.teams (id, name, team_type_id, community_id) VALUES
+  (1, 'Equipo Responsables Comunidad 1', 4, 1),
+  (2, 'Equipo Catequistas 1 Comunidad 1', 3, 1),
+  (3, 'Equipo Catequistas 2 Comunidad 1', 3, 1),
+  (4, 'Equipo Responsables Comunidad 2', 4, 2),
+  (5, 'Equipo Catequistas Comunidad 2', 3, 2),
+  (6, 'Equipo Responsables Comunidad 3', 4, 3),
+  (7, 'Equipo Catequistas Comunidad 3', 3, 3),
+  (8, 'Equipo Responsables Comunidad 4', 4, 4),
+  (9, 'Equipo Catequistas Comunidad 4', 3, 4),
+  (10, 'Equipo de Responsables - Comunidad 1', 4, 5);
+
+-- ------------------------------------------------------------
+-- Belongs
+-- ------------------------------------------------------------
+INSERT INTO public.belongs (id, person_id, community_id, team_id, is_responsible_for_the_team) VALUES
+  (7, 76, 1, 1, false),
+  (8, 1, 1, 2, true),
+  (9, 2, 1, 2, true),
+  (10, 5, 1, 2, false),
+  (11, 6, 1, 2, false),
+  (12, 9, 1, 2, false),
+  (13, 10, 1, 2, false),
+  (14, 78, 1, 2, false),
+  (15, 7, 1, 3, true),
+  (16, 8, 1, 3, true),
+  (17, 11, 1, 3, false),
+  (18, 12, 1, 3, false),
+  (19, 79, 1, 3, false),
+  (20, 81, 1, 3, false),
+  (22, 21, 2, 4, true),
+  (23, 22, 2, 4, true),
+  (24, 23, 2, 4, false),
+  (25, 24, 2, 4, false),
+  (26, 25, 2, 4, false),
+  (27, 26, 2, 4, false),
+  (28, 88, 2, 4, false),
+  (29, 21, 2, 5, true),
+  (30, 22, 2, 5, true),
+  (31, 25, 2, 5, false),
+  (32, 26, 2, 5, false),
+  (33, 89, 2, 5, false),
+  (34, 91, 2, 5, false),
+  (35, 35, 3, 6, true),
+  (36, 36, 3, 6, true),
+  (37, 37, 3, 6, false),
+  (38, 38, 3, 6, false),
+  (39, 100, 3, 6, false),
+  (40, 35, 3, 7, true),
+  (41, 36, 3, 7, true),
+  (42, 39, 3, 7, false),
+  (43, 40, 3, 7, false),
+  (44, 101, 3, 7, false),
+  (45, 103, 3, 7, false),
+  (46, 45, 4, 8, true),
+  (47, 46, 4, 8, true),
+  (48, 47, 4, 8, false),
+  (49, 48, 4, 8, false),
+  (50, 128, 4, 8, false),
+  (51, 45, 4, 9, true),
+  (52, 46, 4, 9, true),
+  (53, 49, 4, 9, false),
+  (54, 50, 4, 9, false),
+  (55, 129, 4, 9, false),
+  (56, 131, 4, 9, false),
+  (1, 1, 1, 1, false),
+  (2, 2, 1, 1, false),
+  (5, 5, 1, 1, false),
+  (6, 6, 1, 1, false),
+  (3, 3, 1, 1, true),
+  (4, 4, 1, 1, true);
+
+-- ------------------------------------------------------------
+-- Brothers
+-- ------------------------------------------------------------
+INSERT INTO public.brothers (id, person_id, community_id) VALUES
+  (1, 1, 1),
+  (2, 2, 1),
+  (3, 3, 1),
+  (4, 4, 1),
+  (5, 5, 1),
+  (6, 6, 1),
+  (7, 7, 1),
+  (8, 8, 1),
+  (9, 9, 1),
+  (10, 10, 1),
+  (11, 11, 1),
+  (12, 12, 1),
+  (13, 13, 1),
+  (14, 14, 1),
+  (15, 15, 1),
+  (16, 16, 1),
+  (17, 17, 1),
+  (18, 18, 1),
+  (19, 19, 1),
+  (20, 20, 1),
+  (21, 61, 1),
+  (22, 63, 1),
+  (23, 65, 1),
+  (24, 67, 1),
+  (25, 69, 1),
+  (26, 71, 1),
+  (27, 73, 1),
+  (28, 105, 1),
+  (29, 106, 1),
+  (30, 85, 1),
+  (31, 75, 1),
+  (32, 95, 1),
+  (33, 107, 1),
+  (34, 108, 1),
+  (35, 86, 1),
+  (36, 76, 1),
+  (37, 96, 1),
+  (38, 109, 1),
+  (39, 110, 1),
+  (40, 87, 1),
+  (41, 77, 1),
+  (42, 97, 1),
+  (43, 111, 1),
+  (44, 112, 1),
+  (45, 88, 1),
+  (46, 78, 1),
+  (47, 98, 1),
+  (48, 113, 1),
+  (49, 114, 1),
+  (51, 21, 2),
+  (52, 22, 2),
+  (53, 23, 2),
+  (54, 24, 2),
+  (55, 25, 2),
+  (56, 26, 2),
+  (57, 27, 2),
+  (58, 28, 2),
+  (59, 29, 2),
+  (60, 30, 2),
+  (61, 31, 2),
+  (62, 32, 2),
+  (63, 33, 2),
+  (64, 34, 2),
+  (65, 62, 2),
+  (66, 64, 2),
+  (67, 115, 2),
+  (68, 116, 2),
+  (69, 90, 2),
+  (70, 79, 2),
+  (71, 99, 2),
+  (72, 117, 2),
+  (73, 118, 2),
+  (74, 91, 2),
+  (75, 80, 2),
+  (76, 100, 2),
+  (77, 119, 2),
+  (78, 120, 2),
+  (79, 92, 2),
+  (80, 81, 2),
+  (81, 101, 2),
+  (82, 121, 2),
+  (83, 122, 2),
+  (84, 93, 2),
+  (85, 82, 2),
+  (86, 102, 2),
+  (87, 123, 2),
+  (88, 124, 2),
+  (89, 94, 2),
+  (90, 83, 2),
+  (91, 103, 2),
+  (92, 125, 2),
+  (93, 126, 2),
+  (94, 35, 3),
+  (95, 36, 3),
+  (96, 37, 3),
+  (97, 38, 3),
+  (98, 39, 3),
+  (99, 40, 3),
+  (100, 41, 3),
+  (101, 42, 3),
+  (102, 43, 3),
+  (103, 44, 3),
+  (104, 127, 3),
+  (105, 128, 3),
+  (106, 95, 3),
+  (107, 84, 3),
+  (108, 104, 3),
+  (109, 129, 3),
+  (110, 130, 3),
+  (111, 96, 3),
+  (112, 85, 3),
+  (113, 105, 3),
+  (114, 131, 3),
+  (115, 132, 3),
+  (116, 97, 3),
+  (117, 86, 3),
+  (118, 106, 3),
+  (119, 133, 3),
+  (120, 134, 3),
+  (121, 98, 3),
+  (122, 87, 3),
+  (123, 107, 3),
+  (124, 45, 4),
+  (125, 46, 4),
+  (126, 47, 4),
+  (127, 48, 4),
+  (128, 49, 4),
+  (129, 50, 4),
+  (130, 51, 4),
+  (131, 52, 4),
+  (132, 53, 4),
+  (133, 54, 4),
+  (134, 55, 4),
+  (135, 56, 4),
+  (136, 57, 4),
+  (137, 58, 4),
+  (138, 59, 4),
+  (139, 60, 4),
+  (140, 66, 4),
+  (141, 140, 4),
+  (142, 141, 4),
+  (143, 142, 4),
+  (144, 143, 4),
+  (145, 144, 4),
+  (146, 145, 4),
+  (147, 146, 4),
+  (148, 147, 4),
+  (149, 148, 4),
+  (150, 149, 4),
+  (151, 150, 4),
+  (152, 151, 4),
+  (153, 152, 4),
+  (154, 153, 4),
+  (155, 154, 4),
+  (156, 155, 4),
+  (157, 156, 4),
+  (158, 157, 4),
+  (159, 158, 4),
+  (160, 159, 4),
+  (161, 160, 4),
+  (162, 161, 4),
+  (163, 162, 4),
+  (164, 163, 4),
+  (165, 164, 4),
+  (166, 165, 4),
+  (167, 166, 4),
+  (168, 167, 4),
+  (169, 168, 4),
+  (170, 169, 4),
+  (171, 170, 4),
+  (172, 171, 4),
+  (173, 172, 4),
+  (174, 173, 4),
+  (175, 174, 4),
+  (176, 175, 4),
+  (177, 176, 4),
+  (178, 177, 4),
+  (179, 178, 4),
+  (180, 179, 4),
+  (181, 180, 4),
+  (182, 181, 4),
+  (183, 182, 4),
+  (184, 183, 4),
+  (185, 184, 4),
+  (186, 185, 4),
+  (187, 186, 4),
+  (188, 187, 4),
+  (189, 188, 4),
+  (190, 189, 4),
+  (191, 190, 4),
+  (192, 191, 4),
+  (193, 192, 4),
+  (194, 193, 4),
+  (195, 194, 4),
+  (196, 195, 4),
+  (197, 196, 4),
+  (198, 197, 4),
+  (199, 198, 4),
+  (200, 199, 4),
+  (201, 135, 1);
+
+-- ------------------------------------------------------------
+-- Community step log
+-- ------------------------------------------------------------
+INSERT INTO public.community_step_log (id, community_id, step_way_id, date_of_step, principal_catechist_name, outcome, notes) VALUES
+  (1, 1, 1, '2024-01-15', 'Juan Pérez', true, 'Catequesis iniciales: nacieron 15 hermanos, convivencia seminario. Faltan 3 por hacer convivencia.'),
+  (2, 1, 2, '2024-02-20', 'María González', true, 'Primer escrutinio: asistieron 12 hermanos, 3 no asistieron.'),
+  (3, 2, 1, '2024-01-20', 'Carlos Rodríguez', true, 'Catequesis iniciales: nacieron 18 hermanos, convivencia seminario. Faltan 2 por hacer convivencia.'),
+  (4, 2, 2, '2024-02-25', 'Ana Martínez', true, 'Primer escrutinio: asistieron 16 hermanos, 2 no asistieron.'),
+  (5, 3, 1, '2024-01-25', 'Pedro López', true, 'Catequesis iniciales: nacieron 12 hermanos, convivencia seminario. Faltan 4 por hacer convivencia.'),
+  (6, 3, 3, '2024-03-10', 'Laura Sánchez', true, 'Shemá Israel: 8 hermanos participaron, 4 ausentes.'),
+  (7, 4, 1, '2024-02-01', 'Miguel Herrera', true, 'Catequesis iniciales: nacieron 20 hermanos, convivencia seminario. Faltan 1 por hacer convivencia.'),
+  (8, 4, 2, '2024-03-05', 'Carmen Ruiz', true, 'Primer escrutinio: asistieron 19 hermanos, 1 no asistió.'),
+  (9, 1, 3, '2024-03-15', 'Roberto Díaz', true, 'Shemá Israel: 10 hermanos participaron, 2 ausentes.'),
+  (10, 2, 3, '2024-03-20', 'Isabel Morales', true, 'Shemá Israel: 14 hermanos participaron, 2 ausentes.');
+
+-- ------------------------------------------------------------
+-- Parish teams
+-- ------------------------------------------------------------
+INSERT INTO public.parish_teams (id, parish_id, team_id) VALUES
+  (1, 1, 1),
+  (2, 1, 2),
+  (3, 1, 3),
+  (4, 1, 4),
+  (5, 1, 5),
+  (6, 1, 6),
+  (7, 1, 7),
+  (8, 1, 8),
+  (9, 1, 9);
+
+-- ------------------------------------------------------------
+-- Priests
+-- ------------------------------------------------------------
+INSERT INTO public.priests (id, person_id, is_parish_priest, parish_id) VALUES
+  (1, 61, true, 1),
+  (2, 62, false, 1),
+  (3, 63, false, 1),
+  (4, 64, true, 2),
+  (5, 65, false, 2),
+  (6, 66, true, 3),
+  (7, 67, true, 4),
+  (8, 68, false, 4),
+  (9, 69, true, 5),
+  (10, 70, true, 6),
+  (11, 71, false, 6),
+  (12, 72, true, 7),
+  (13, 73, true, 8),
+  (14, 74, false, 8);
+
+-- ------------------------------------------------------------
+-- Reset identity sequences to max(id) so future inserts work normally
+-- ------------------------------------------------------------
+select setval(pg_get_serial_sequence('public.countries', 'id'), coalesce((select max(id) from public.countries), 0), true);
+select setval(pg_get_serial_sequence('public.states', 'id'), coalesce((select max(id) from public.states), 0), true);
+select setval(pg_get_serial_sequence('public.cities', 'id'), coalesce((select max(id) from public.cities), 0), true);
+select setval(pg_get_serial_sequence('public.parishes', 'id'), coalesce((select max(id) from public.parishes), 0), true);
+select setval(pg_get_serial_sequence('public.step_ways', 'id'), coalesce((select max(id) from public.step_ways), 0), true);
+select setval(pg_get_serial_sequence('public.communities', 'id'), coalesce((select max(id) from public.communities), 0), true);
+select setval(pg_get_serial_sequence('public.people', 'id'), coalesce((select max(id) from public.people), 0), true);
+select setval(pg_get_serial_sequence('public.team_types', 'id'), coalesce((select max(id) from public.team_types), 0), true);
+select setval(pg_get_serial_sequence('public.teams', 'id'), coalesce((select max(id) from public.teams), 0), true);
+select setval(pg_get_serial_sequence('public.belongs', 'id'), coalesce((select max(id) from public.belongs), 0), true);
+select setval(pg_get_serial_sequence('public.brothers', 'id'), coalesce((select max(id) from public.brothers), 0), true);
+select setval(pg_get_serial_sequence('public.community_step_log', 'id'), coalesce((select max(id) from public.community_step_log), 0), true);
+select setval(pg_get_serial_sequence('public.parish_teams', 'id'), coalesce((select max(id) from public.parish_teams), 0), true);
+select setval(pg_get_serial_sequence('public.priests', 'id'), coalesce((select max(id) from public.priests), 0), true);
+
+commit;
 
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 15.8
--- Dumped by pg_dump version 15.8
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Data for Name: audit_log_entries; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-INSERT INTO "auth"."audit_log_entries" ("instance_id", "id", "payload", "created_at", "ip_address") VALUES
-	('00000000-0000-0000-0000-000000000000', 'c98ac0b9-011b-4504-8d13-995a320b959a', '{"action":"user_signedup","actor_id":"11c45931-5252-4ebb-b8ea-fa5fe218de03","actor_name":"admin","actor_username":"admin@neo.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"email"}}', '2025-11-10 02:24:40.62676+00', ''),
-	('00000000-0000-0000-0000-000000000000', '8681ac5c-9bad-4fc8-90be-235ae87ddf30', '{"action":"login","actor_id":"11c45931-5252-4ebb-b8ea-fa5fe218de03","actor_name":"admin","actor_username":"admin@neo.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-11-10 02:24:40.633934+00', ''),
-	('00000000-0000-0000-0000-000000000000', '297d10cf-614b-420b-8e23-671717596022', '{"action":"token_refreshed","actor_id":"11c45931-5252-4ebb-b8ea-fa5fe218de03","actor_name":"admin","actor_username":"admin@neo.com","actor_via_sso":false,"log_type":"token"}', '2025-11-11 01:41:10.556685+00', ''),
-	('00000000-0000-0000-0000-000000000000', '27206604-d239-4a3f-b2c7-231e4336c77f', '{"action":"token_revoked","actor_id":"11c45931-5252-4ebb-b8ea-fa5fe218de03","actor_name":"admin","actor_username":"admin@neo.com","actor_via_sso":false,"log_type":"token"}', '2025-11-11 01:41:10.560356+00', ''),
-	('00000000-0000-0000-0000-000000000000', '51148419-e928-4e7e-972c-16b65fc200d6', '{"action":"token_refreshed","actor_id":"11c45931-5252-4ebb-b8ea-fa5fe218de03","actor_name":"admin","actor_username":"admin@neo.com","actor_via_sso":false,"log_type":"token"}', '2025-11-11 01:41:10.582902+00', ''),
-	('00000000-0000-0000-0000-000000000000', '80f3111c-6dea-4c9f-81ae-2f956fb6f30b', '{"action":"token_refreshed","actor_id":"11c45931-5252-4ebb-b8ea-fa5fe218de03","actor_name":"admin","actor_username":"admin@neo.com","actor_via_sso":false,"log_type":"token"}', '2025-11-11 01:41:15.69975+00', ''),
-	('00000000-0000-0000-0000-000000000000', 'd061879d-8d6f-4ba8-9fff-648a8085d09a', '{"action":"token_refreshed","actor_id":"11c45931-5252-4ebb-b8ea-fa5fe218de03","actor_name":"admin","actor_username":"admin@neo.com","actor_via_sso":false,"log_type":"token"}', '2025-11-11 02:39:45.015895+00', ''),
-	('00000000-0000-0000-0000-000000000000', 'ce9752e4-3b6c-483c-a049-c4c9313a0a70', '{"action":"token_revoked","actor_id":"11c45931-5252-4ebb-b8ea-fa5fe218de03","actor_name":"admin","actor_username":"admin@neo.com","actor_via_sso":false,"log_type":"token"}', '2025-11-11 02:39:45.01768+00', '');
-
-
---
--- Data for Name: flow_state; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-
-
---
--- Data for Name: users; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-INSERT INTO "auth"."users" ("instance_id", "id", "aud", "role", "email", "encrypted_password", "email_confirmed_at", "invited_at", "confirmation_token", "confirmation_sent_at", "recovery_token", "recovery_sent_at", "email_change_token_new", "email_change", "email_change_sent_at", "last_sign_in_at", "raw_app_meta_data", "raw_user_meta_data", "is_super_admin", "created_at", "updated_at", "phone", "phone_confirmed_at", "phone_change", "phone_change_token", "phone_change_sent_at", "email_change_token_current", "email_change_confirm_status", "banned_until", "reauthentication_token", "reauthentication_sent_at", "is_sso_user", "deleted_at", "is_anonymous") VALUES
-	('00000000-0000-0000-0000-000000000000', '11c45931-5252-4ebb-b8ea-fa5fe218de03', 'authenticated', 'authenticated', 'admin@neo.com', '$2a$10$0VpXf180Ii5FjwKJoX7Kke186RzhFsxrTSwKXx7FfncVGIoH8Gcs6', '2025-11-10 02:24:40.627782+00', NULL, '', NULL, '', NULL, '', '', NULL, '2025-11-10 02:24:40.634809+00', '{"provider": "email", "providers": ["email"]}', '{"sub": "11c45931-5252-4ebb-b8ea-fa5fe218de03", "email": "admin@neo.com", "full_name": "admin", "email_verified": true, "phone_verified": false}', NULL, '2025-11-10 02:24:40.612808+00', '2025-11-11 02:39:45.022632+00', NULL, NULL, '', '', NULL, '', 0, NULL, '', NULL, false, NULL, false);
-
-
---
--- Data for Name: identities; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-INSERT INTO "auth"."identities" ("provider_id", "user_id", "identity_data", "provider", "last_sign_in_at", "created_at", "updated_at", "id") VALUES
-	('11c45931-5252-4ebb-b8ea-fa5fe218de03', '11c45931-5252-4ebb-b8ea-fa5fe218de03', '{"sub": "11c45931-5252-4ebb-b8ea-fa5fe218de03", "email": "admin@neo.com", "full_name": "admin", "email_verified": false, "phone_verified": false}', 'email', '2025-11-10 02:24:40.622981+00', '2025-11-10 02:24:40.623013+00', '2025-11-10 02:24:40.623013+00', '81d135c1-aa98-4a98-b5c3-112e0fb505a6');
-
-
---
--- Data for Name: instances; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-
-
---
--- Data for Name: sessions; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-INSERT INTO "auth"."sessions" ("id", "user_id", "created_at", "updated_at", "factor_id", "aal", "not_after", "refreshed_at", "user_agent", "ip", "tag") VALUES
-	('fe3db39c-e8d6-4dbd-8dc0-f64c6d0a6499', '11c45931-5252-4ebb-b8ea-fa5fe218de03', '2025-11-10 02:24:40.634913+00', '2025-11-11 02:39:45.026368+00', NULL, 'aal1', NULL, '2025-11-11 02:39:45.02633', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '172.21.0.1', NULL);
-
-
---
--- Data for Name: mfa_amr_claims; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-INSERT INTO "auth"."mfa_amr_claims" ("session_id", "created_at", "updated_at", "authentication_method", "id") VALUES
-	('fe3db39c-e8d6-4dbd-8dc0-f64c6d0a6499', '2025-11-10 02:24:40.639548+00', '2025-11-10 02:24:40.639548+00', 'password', 'd0d80883-8eca-4a25-8df8-050dbc9526a6');
-
-
---
--- Data for Name: mfa_factors; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-
-
---
--- Data for Name: mfa_challenges; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-
-
---
--- Data for Name: one_time_tokens; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-
-
---
--- Data for Name: refresh_tokens; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-INSERT INTO "auth"."refresh_tokens" ("instance_id", "id", "token", "user_id", "revoked", "created_at", "updated_at", "parent", "session_id") VALUES
-	('00000000-0000-0000-0000-000000000000', 1, '6nlkm2qe22je', '11c45931-5252-4ebb-b8ea-fa5fe218de03', true, '2025-11-10 02:24:40.636566+00', '2025-11-11 01:41:10.561686+00', NULL, 'fe3db39c-e8d6-4dbd-8dc0-f64c6d0a6499'),
-	('00000000-0000-0000-0000-000000000000', 2, 'vnkuxe5fnakn', '11c45931-5252-4ebb-b8ea-fa5fe218de03', true, '2025-11-11 01:41:10.56313+00', '2025-11-11 02:39:45.018729+00', '6nlkm2qe22je', 'fe3db39c-e8d6-4dbd-8dc0-f64c6d0a6499'),
-	('00000000-0000-0000-0000-000000000000', 3, 'r52nbn34zddz', '11c45931-5252-4ebb-b8ea-fa5fe218de03', false, '2025-11-11 02:39:45.020619+00', '2025-11-11 02:39:45.020619+00', 'vnkuxe5fnakn', 'fe3db39c-e8d6-4dbd-8dc0-f64c6d0a6499');
-
-
---
--- Data for Name: sso_providers; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-
-
---
--- Data for Name: saml_providers; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-
-
---
--- Data for Name: saml_relay_states; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-
-
---
--- Data for Name: sso_domains; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
---
-
-
-
---
--- Data for Name: countries; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."countries" ("id", "name", "code") VALUES
-	(1, 'Colombia', 'CO');
-
-
---
--- Data for Name: states; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."states" ("id", "name", "country_id") VALUES
-	(1, 'Amazonas', 1),
-	(2, 'Antioquia', 1),
-	(3, 'Arauca', 1),
-	(4, 'Atlántico', 1),
-	(5, 'Bolívar', 1),
-	(6, 'Boyacá', 1),
-	(7, 'Caldas', 1),
-	(8, 'Caquetá', 1),
-	(9, 'Casanare', 1),
-	(10, 'Cauca', 1),
-	(11, 'Cesar', 1),
-	(12, 'Chocó', 1),
-	(13, 'Córdoba', 1),
-	(14, 'Cundinamarca', 1),
-	(15, 'Guainía', 1),
-	(16, 'Guaviare', 1),
-	(17, 'Huila', 1),
-	(18, 'La Guajira', 1),
-	(19, 'Magdalena', 1),
-	(20, 'Meta', 1),
-	(21, 'Nariño', 1),
-	(22, 'Norte de Santander', 1),
-	(23, 'Putumayo', 1),
-	(24, 'Quindío', 1),
-	(25, 'Risaralda', 1),
-	(26, 'San Andrés y Providencia', 1),
-	(27, 'Santander', 1),
-	(28, 'Sucre', 1),
-	(29, 'Tolima', 1),
-	(30, 'Valle del Cauca', 1),
-	(31, 'Vaupés', 1),
-	(32, 'Vichada', 1);
-
-
---
--- Data for Name: cities; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."cities" ("id", "name", "country_id", "state_id") VALUES
-	(1, 'Leticia', 1, 1),
-	(2, 'Medellín', 1, 2),
-	(3, 'Arauca', 1, 3),
-	(4, 'Barranquilla', 1, 4),
-	(5, 'Cartagena de Indias', 1, 5),
-	(6, 'Tunja', 1, 6),
-	(7, 'Manizales', 1, 7),
-	(8, 'Florencia', 1, 8),
-	(9, 'Yopal', 1, 9),
-	(10, 'Popayán', 1, 10),
-	(11, 'Valledupar', 1, 11),
-	(12, 'Quibdó', 1, 12),
-	(13, 'Montería', 1, 13),
-	(14, 'Bogotá', 1, 14),
-	(15, 'Inírida', 1, 15),
-	(16, 'San José del Guaviare', 1, 16),
-	(17, 'Neiva', 1, 17),
-	(18, 'Riohacha', 1, 18),
-	(19, 'Santa Marta', 1, 19),
-	(20, 'Villavicencio', 1, 20),
-	(21, 'Pasto', 1, 21),
-	(22, 'Cúcuta', 1, 22),
-	(23, 'Mocoa', 1, 23),
-	(24, 'Armenia', 1, 24),
-	(25, 'Pereira', 1, 25),
-	(26, 'San Andrés', 1, 26),
-	(27, 'Bucaramanga', 1, 27),
-	(28, 'Sincelejo', 1, 28),
-	(29, 'Ibagué', 1, 29),
-	(30, 'Cali', 1, 30),
-	(31, 'Mitú', 1, 31),
-	(32, 'Puerto Carreño', 1, 32);
-
-
---
--- Data for Name: parishes; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."parishes" ("id", "name", "diocese", "address", "phone", "email", "city_id", "country_id", "state_id") VALUES
-	(1, 'Parroquia La Visitación', 'Diócesis de Medellín', 'Calle 12 #35-21, Medellín', '3065874400', 'pquia.visitacion@iglesia.org', 2, 1, 2),
-	(2, 'Parroquia Santa María de los Ángeles', 'Diócesis de Medellín', 'Carrera 43A #18-60, Medellín', '3065874401', 'sma.angeles@iglesia.org', 2, 1, 2),
-	(3, 'Parroquia La Balbanera', 'Diócesis de Medellín', 'Calle 30 #65-50, Medellín', '3065874402', 'balbanera@iglesia.org', 2, 1, 2),
-	(4, 'Parroquia Santuario Niño Jesús de Praga', 'Diócesis de Medellín', 'Carrera 50 #49-30, Medellín', '3065874403', 'ninojesus.praga@iglesia.org', 2, 1, 2),
-	(5, 'Parroquia Nuestra Señora del Sagrado Corazón', 'Diócesis de Medellín', 'Calle 45 #80-20, Medellín', '3065874404', 'ns.sagradocorazon@iglesia.org', 2, 1, 2),
-	(6, 'Parroquia María Madre Admirable', 'Diócesis de Medellín', 'Carrera 70 #32-15, Medellín', '3065874405', 'madre.admirable@iglesia.org', 2, 1, 2),
-	(7, 'Parroquia El Señor de las Misericordias', 'Diócesis de Medellín', 'Calle 50 #40-10, Medellín', '3065874406', 'senor.misericordias@iglesia.org', 2, 1, 2),
-	(8, 'Parroquia San José de El Poblado', 'Diócesis de Medellín', 'Carrera 43A #9-50, Medellín', '3065874407', 'san.jose.poblado@iglesia.org', 2, 1, 2),
-	(9, 'Parroquia San Joaquín', 'Diócesis de Medellín', 'Calle 42 #68-20, Medellín', '3065874408', 'san.joaquin@iglesia.org', 2, 1, 2),
-	(10, 'Parroquia San Cayetano', 'Diócesis de Medellín', 'Carrera 65 #48-30, Medellín', '3065874409', 'san.cayetano@iglesia.org', 2, 1, 2),
-	(11, 'Parroquia San Juan Bosco', 'Diócesis de Medellín', 'Calle 44 #80-15, Medellín', '3065874410', 'san.juanbosco@iglesia.org', 2, 1, 2),
-	(12, 'Parroquia San Antonio de Padua', 'Diócesis de Medellín', 'Carrera 52 #49-20, Medellín', '3065874411', 'san.antonio.padua@iglesia.org', 2, 1, 2),
-	(13, 'Parroquia Nuestra Señora de Chiquinquirá', 'Diócesis de Medellín', 'Calle 54 #80-30, Medellín', '3065874412', 'ns.chiquinquira@iglesia.org', 2, 1, 2),
-	(14, 'Parroquia Nuestra Señora de Belén', 'Diócesis de Medellín', 'Carrera 76 #32-20, Medellín', '3065874413', 'ns.belen@iglesia.org', 2, 1, 2),
-	(15, 'Parroquia Nuestra Señora del Rosario', 'Diócesis de Medellín', 'Calle 51 #50-10, Medellín', '3065874414', 'ns.rosario@iglesia.org', 2, 1, 2),
-	(16, 'Parroquia Nuestra Señora de la Candelaria', 'Diócesis de Medellín', 'Carrera 50 #51-30, Medellín', '3065874415', 'ns.candelaria@iglesia.org', 2, 1, 2),
-	(17, 'Parroquia Nuestra Señora de Fátima', 'Diócesis de Medellín', 'Calle 60 #80-40, Medellín', '3065874416', 'ns.fatima@iglesia.org', 2, 1, 2),
-	(18, 'Parroquia Nuestra Señora de Guadalupe', 'Diócesis de Medellín', 'Carrera 65 #30-50, Medellín', '3065874417', 'ns.guadalupe@iglesia.org', 2, 1, 2),
-	(19, 'Parroquia Nuestra Señora de las Lajas', 'Diócesis de Medellín', 'Calle 70 #80-50, Medellín', '3065874418', 'ns.lajas@iglesia.org', 2, 1, 2),
-	(20, 'Parroquia Nuestra Señora de Lourdes', 'Diócesis de Medellín', 'Carrera 80 #32-60, Medellín', '3065874419', 'ns.lourdes@iglesia.org', 2, 1, 2);
-
-
---
--- Data for Name: step_ways; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."step_ways" ("id", "name", "order_num") VALUES
-	(1, 'Catequesis iniciales', 1),
-	(2, '1º Escrutinio Bautismal', 2),
-	(3, 'Shemá Israel', 3),
-	(4, '2º Escrutinio Bautismal', 4),
-	(5, '1ª Iniciación a la Oración', 5),
-	(6, 'Traditio Symboli', 6),
-	(7, 'Retraditio Symboli', 7),
-	(8, 'Redditio Symboli', 8),
-	(9, '2ª Iniciación a la Oración: Padrenuestro', 9),
-	(10, '3º Escrutinio Bautismal', 10),
-	(11, 'Renovación Promesas Bautismales', 11);
-
-
---
--- Data for Name: communities; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."communities" ("id", "number", "born_date", "parish_id", "born_brothers", "actual_brothers", "step_way_id", "last_step_way_date", "cathechist_team_id") VALUES
-	(2, '2', '2002-01-01', 1, 42, 42, 2, '2024-01-01', 2),
-	(3, '3', '2004-01-01', 1, 30, 30, 3, '2024-01-01', 3),
-	(4, '4', '2006-01-01', 1, 46, 46, 4, '2024-01-01', 4),
-	(5, '1', '2001-03-15', 2, 35, 35, 2, '2024-02-15', 5),
-	(6, '2', '2003-06-20', 2, 28, 28, 3, '2024-03-10', 6),
-	(7, '1', '2002-09-10', 3, 40, 40, 1, '2024-01-20', 7),
-	(8, '1', '2005-12-08', 4, 32, 32, 2, '2024-02-28', 8),
-	(9, '2', '2007-04-15', 4, 25, 25, 4, '2024-03-15', 9),
-	(10, '1', '2003-11-21', 5, 38, 38, 3, '2024-02-10', 10),
-	(11, '1', '2004-08-15', 6, 45, 45, 1, '2024-01-25', 11),
-	(12, '2', '2006-12-12', 6, 30, 30, 2, '2024-03-05', 12),
-	(13, '1', '2005-05-03', 7, 33, 33, 3, '2024-02-20', 13),
-	(14, '1', '2001-03-19', 8, 42, 42, 2, '2024-02-15', 14),
-	(15, '2', '2003-07-25', 8, 36, 36, 4, '2024-03-20', 15),
-	(1, '1', '2000-01-01', 1, 50, 50, 10, '2024-01-01', 1);
-
-
---
--- Data for Name: people; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."people" ("id", "person_name", "phone", "mobile", "email", "person_type_id", "gender_id", "spouse_id") VALUES
-	(1, 'Juan Pérez', '6041000001', '3001000001', 'juan.perez@email.com', 1, 1, 2),
-	(2, 'María Gómez', '6041000002', '3001000002', 'maria.gomez@email.com', 1, 2, 1),
-	(3, 'Carlos Rodríguez', '6041000003', '3001000003', 'carlos.rodriguez@email.com', 1, 1, 4),
-	(4, 'Ana Martínez', '6041000004', '3001000004', 'ana.martinez@email.com', 1, 2, 3),
-	(5, 'Pedro López', '6041000005', '3001000005', 'pedro.lopez@email.com', 1, 1, 6),
-	(6, 'Laura Torres', '6041000006', '3001000006', 'laura.torres@email.com', 1, 2, 5),
-	(7, 'Andrés Ramírez', '6041000007', '3001000007', 'andres.ramirez@email.com', 1, 1, 8),
-	(8, 'Paula Sánchez', '6041000008', '3001000008', 'paula.sanchez@email.com', 1, 2, 7),
-	(9, 'Jorge Castro', '6041000009', '3001000009', 'jorge.castro@email.com', 1, 1, 10),
-	(10, 'Diana Ruiz', '6041000010', '3001000010', 'diana.ruiz@email.com', 1, 2, 9),
-	(11, 'Miguel Herrera', '6041000011', '3001000011', 'miguel.herrera@email.com', 1, 1, 12),
-	(12, 'Sofía Mendoza', '6041000012', '3001000012', 'sofia.mendoza@email.com', 1, 2, 11),
-	(13, 'Ricardo Morales', '6041000013', '3001000013', 'ricardo.morales@email.com', 1, 1, 14),
-	(14, 'Claudia Jiménez', '6041000014', '3001000014', 'claudia.jimenez@email.com', 1, 2, 13),
-	(15, 'Felipe Vargas', '6041000015', '3001000015', 'felipe.vargas@email.com', 1, 1, 16),
-	(16, 'Natalia Castillo', '6041000016', '3001000016', 'natalia.castillo@email.com', 1, 2, 15),
-	(17, 'Oscar Romero', '6041000017', '3001000017', 'oscar.romero@email.com', 1, 1, 18),
-	(18, 'Verónica Peña', '6041000018', '3001000018', 'veronica.pena@email.com', 1, 2, 17),
-	(19, 'David Salazar', '6041000019', '3001000019', 'david.salazar@email.com', 1, 1, 20),
-	(20, 'Camila Ríos', '6041000020', '3001000020', 'camila.rios@email.com', 1, 2, 19),
-	(21, 'Julián Cárdenas', '6041000021', '3001000021', 'julian.cardenas@email.com', 1, 1, 22),
-	(22, 'Valentina Pineda', '6041000022', '3001000022', 'valentina.pineda@email.com', 1, 2, 21),
-	(23, 'Santiago Silva', '6041000023', '3001000023', 'santiago.silva@email.com', 1, 1, 24),
-	(24, 'Gabriela Ortega', '6041000024', '3001000024', 'gabriela.ortega@email.com', 1, 2, 23),
-	(25, 'Mauricio Navarro', '6041000025', '3001000025', 'mauricio.navarro@email.com', 1, 1, 26),
-	(26, 'Daniela Cardona', '6041000026', '3001000026', 'daniela.cardona@email.com', 1, 2, 25),
-	(27, 'Sebastián Arias', '6041000027', '3001000027', 'sebastian.arias@email.com', 1, 1, 28),
-	(28, 'Andrea Molina', '6041000028', '3001000028', 'andrea.molina@email.com', 1, 2, 27),
-	(29, 'Manuel Espinosa', '6041000029', '3001000029', 'manuel.espinosa@email.com', 1, 1, 30),
-	(30, 'Patricia Suárez', '6041000030', '3001000030', 'patricia.suarez@email.com', 1, 2, 29),
-	(31, 'Fernando Ríos', '6041000031', '3001000031', 'fernando.rios@email.com', 1, 1, 32),
-	(32, 'Marcela Vargas', '6041000032', '3001000032', 'marcela.vargas@email.com', 1, 2, 31),
-	(33, 'Héctor Gómez', '6041000033', '3001000033', 'hector.gomez@email.com', 1, 1, 34),
-	(34, 'Paula Jiménez', '6041000034', '3001000034', 'paula.jimenez@email.com', 1, 2, 33),
-	(35, 'Javier Torres', '6041000035', '3001000035', 'javier.torres@email.com', 1, 1, 36),
-	(36, 'Sandra Herrera', '6041000036', '3001000036', 'sandra.herrera@email.com', 1, 2, 35),
-	(37, 'Luis Castaño', '6041000037', '3001000037', 'luis.castano@email.com', 1, 1, 38),
-	(38, 'Carolina Zapata', '6041000038', '3001000038', 'carolina.zapata@email.com', 1, 2, 37),
-	(39, 'Martín Quintero', '6041000039', '3001000039', 'martin.quintero@email.com', 1, 1, 40),
-	(40, 'Lucía Restrepo', '6041000040', '3001000040', 'lucia.restrepo@email.com', 1, 2, 39),
-	(41, 'Pablo Betancur', '6041000041', '3001000041', 'pablo.betancur@email.com', 1, 1, 42),
-	(42, 'Adriana Montoya', '6041000042', '3001000042', 'adriana.montoya@email.com', 1, 2, 41),
-	(43, 'Sergio Hoyos', '6041000043', '3001000043', 'sergio.hoyos@email.com', 1, 1, 44),
-	(44, 'Beatriz Ospina', '6041000044', '3001000044', 'beatriz.ospina@email.com', 1, 2, 43),
-	(45, 'Rodrigo Zapata', '6041000045', '3001000045', 'rodrigo.zapata@email.com', 1, 1, 46),
-	(46, 'Cecilia Cardona', '6041000046', '3001000046', 'cecilia.cardona@email.com', 1, 2, 45),
-	(47, 'Gustavo Peña', '6041000047', '3001000047', 'gustavo.pena@email.com', 1, 1, 48),
-	(48, 'Silvia Salazar', '6041000048', '3001000048', 'silvia.salazar@email.com', 1, 2, 47),
-	(49, 'Alberto Mendoza', '6041000049', '3001000049', 'alberto.mendoza@email.com', 1, 1, 50),
-	(50, 'Rosa Cárdenas', '6041000050', '3001000050', 'rosa.cardenas@email.com', 1, 2, 49),
-	(51, 'Ramiro Ortega', '6041000051', '3001000051', 'ramiro.ortega@email.com', 1, 1, 52),
-	(52, 'Marta Silva', '6041000052', '3001000052', 'marta.silva@email.com', 1, 2, 51),
-	(53, 'Joaquín Navarro', '6041000053', '3001000053', 'joaquin.navarro@email.com', 1, 1, 54),
-	(54, 'Antonia Espinosa', '6041000054', '3001000054', 'antonia.espinosa@email.com', 1, 2, 53),
-	(55, 'Enrique Suárez', '6041000055', '3001000055', 'enrique.suarez@email.com', 1, 1, 56),
-	(56, 'Renata Arias', '6041000056', '3001000056', 'renata.arias@email.com', 1, 2, 55),
-	(57, 'Tomás Molina', '6041000057', '3001000057', 'tomas.molina@email.com', 1, 1, 58),
-	(58, 'Gabriela Ríos', '6041000058', '3001000058', 'gabriela.rios@email.com', 1, 2, 57),
-	(59, 'Samuel Pineda', '6041000059', '3001000059', 'samuel.pineda@email.com', 1, 1, 60),
-	(60, 'Valeria Cárdenas', '6041000060', '3001000060', 'valeria.cardenas@email.com', 1, 2, 59),
-	(61, 'Padre Álvaro Restrepo', '6041000061', '3001000061', 'alvaro.restrepo@email.com', 3, 1, NULL),
-	(62, 'Padre Jorge Giraldo', '6041000062', '3001000062', 'jorge.giraldo@email.com', 3, 1, NULL),
-	(63, 'Padre Luis Zapata', '6041000063', '3001000063', 'luis.zapata@email.com', 3, 1, NULL),
-	(64, 'Padre Mario Castaño', '6041000064', '3001000064', 'mario.castano@email.com', 3, 1, NULL),
-	(65, 'Padre Hernán Quintero', '6041000065', '3001000065', 'hernan.quintero@email.com', 3, 1, NULL),
-	(66, 'Padre Fabián Ospina', '6041000066', '3001000066', 'fabian.ospina@email.com', 3, 1, NULL),
-	(67, 'Padre Camilo Betancur', '6041000067', '3001000067', 'camilo.betancur@email.com', 3, 1, NULL),
-	(68, 'Padre Esteban Hoyos', '6041000068', '3001000068', 'esteban.hoyos@email.com', 3, 1, NULL),
-	(69, 'Padre Julián Restrepo', '6041000069', '3001000069', 'julian.restrepo@email.com', 3, 1, NULL),
-	(70, 'Padre Sergio Montoya', '6041000070', '3001000070', 'sergio.montoya@email.com', 3, 1, NULL),
-	(71, 'Padre Andrés Zapata', '6041000071', '3001000071', 'andres.zapata@email.com', 3, 1, NULL),
-	(72, 'Padre Diego Cárdenas', '6041000072', '3001000072', 'diego.cardenas@email.com', 3, 1, NULL),
-	(73, 'Padre Felipe Salazar', '6041000073', '3001000073', 'felipe.salazar@email.com', 3, 1, NULL),
-	(74, 'Padre Simón Ríos', '6041000074', '3001000074', 'simon.rios@email.com', 3, 1, NULL),
-	(75, 'Seminarista Juan Esteban', '6041000075', '3001000075', 'seminarista.juan@email.com', 4, 1, NULL),
-	(76, 'Seminarista Pablo López', '6041000076', '3001000076', 'seminarista.pablo@email.com', 4, 1, NULL),
-	(77, 'Seminarista Mateo Ruiz', '6041000077', '3001000077', 'seminarista.mateo@email.com', 4, 1, NULL),
-	(78, 'Seminarista Tomás Giraldo', '6041000078', '3001000078', 'seminarista.tomas@email.com', 4, 1, NULL),
-	(79, 'Seminarista Samuel Torres', '6041000079', '3001000079', 'seminarista.samuel@email.com', 4, 1, NULL),
-	(80, 'Seminarista Nicolás Ramírez', '6041000080', '3001000080', 'seminarista.nicolas@email.com', 4, 1, NULL),
-	(81, 'Seminarista David Castro', '6041000081', '3001000081', 'seminarista.david@email.com', 4, 1, NULL),
-	(82, 'Seminarista Daniel Salazar', '6041000082', '3001000082', 'seminarista.daniel@email.com', 4, 1, NULL),
-	(83, 'Seminarista Emiliano Peña', '6041000083', '3001000083', 'seminarista.emiliano@email.com', 4, 1, NULL),
-	(84, 'Seminarista Simón Vargas', '6041000084', '3001000084', 'seminarista.simon@email.com', 4, 1, NULL),
-	(85, 'Hermana Lucía Restrepo', '6041000085', '3001000085', 'hermana.lucia@email.com', 6, 2, NULL),
-	(86, 'Hermana Teresa Zapata', '6041000086', '3001000086', 'hermana.teresa@email.com', 6, 2, NULL),
-	(87, 'Hermana Rosa Castaño', '6041000087', '3001000087', 'hermana.rosa@email.com', 6, 2, NULL),
-	(88, 'Hermana Carmen Quintero', '6041000088', '3001000088', 'hermana.carmen@email.com', 6, 2, NULL),
-	(89, 'Hermana Gloria Ospina', '6041000089', '3001000089', 'hermana.gloria@email.com', 6, 2, NULL),
-	(90, 'Hermana Patricia Betancur', '6041000090', '3001000090', 'hermana.patricia@email.com', 6, 2, NULL),
-	(91, 'Hermana Sandra Hoyos', '6041000091', '3001000091', 'hermana.sandra@email.com', 6, 2, NULL),
-	(92, 'Hermana Adriana Restrepo', '6041000092', '3001000092', 'hermana.adriana@email.com', 6, 2, NULL),
-	(93, 'Hermana Marcela Montoya', '6041000093', '3001000093', 'hermana.marcela@email.com', 6, 2, NULL),
-	(94, 'Hermana Carolina Zapata', '6041000094', '3001000094', 'hermana.carolina@email.com', 6, 2, NULL),
-	(95, 'José Viudo', '6041000095', '3001000095', 'jose.viudo@email.com', 7, 1, NULL),
-	(96, 'Marta Viuda', '6041000096', '3001000096', 'marta.viuda@email.com', 7, 2, NULL),
-	(97, 'Alberto Viudo', '6041000097', '3001000097', 'alberto.viudo@email.com', 7, 1, NULL),
-	(98, 'Rosa Viuda', '6041000098', '3001000098', 'rosa.viuda@email.com', 7, 2, NULL),
-	(99, 'Enrique Viudo', '6041000099', '3001000099', 'enrique.viudo@email.com', 7, 1, NULL),
-	(100, 'Clara Viuda', '6041000100', '3001000100', 'clara.viuda@email.com', 7, 2, NULL),
-	(101, 'Ramiro Viudo', '6041000101', '3001000101', 'ramiro.viudo@email.com', 7, 1, NULL),
-	(102, 'Beatriz Viuda', '6041000102', '3001000102', 'beatriz.viuda@email.com', 7, 2, NULL),
-	(103, 'Gustavo Viudo', '6041000103', '3001000103', 'gustavo.viudo@email.com', 7, 1, NULL),
-	(104, 'Elena Viuda', '6041000104', '3001000104', 'elena.viuda@email.com', 7, 2, NULL),
-	(105, 'Santiago Soltero', '6041000105', '3001000105', 'santiago.soltero@email.com', 2, 1, NULL),
-	(106, 'Valeria Soltera', '6041000106', '3001000106', 'valeria.soltera@email.com', 2, 2, NULL),
-	(107, 'Tomás Soltero', '6041000107', '3001000107', 'tomas.soltero@email.com', 2, 1, NULL),
-	(108, 'Isabella Soltera', '6041000108', '3001000108', 'isabella.soltera@email.com', 2, 2, NULL),
-	(109, 'Emilio Soltero', '6041000109', '3001000109', 'emilio.soltero@email.com', 2, 1, NULL),
-	(110, 'Mariana Soltera', '6041000110', '3001000110', 'mariana.soltera@email.com', 2, 2, NULL),
-	(111, 'Alejandro Soltero', '6041000111', '3001000111', 'alejandro.soltero@email.com', 2, 1, NULL),
-	(112, 'Juliana Soltera', '6041000112', '3001000112', 'juliana.soltera@email.com', 2, 2, NULL),
-	(113, 'Esteban Soltero', '6041000113', '3001000113', 'esteban.soltero@email.com', 2, 1, NULL),
-	(114, 'Daniela Soltera', '6041000114', '3001000114', 'daniela.soltera@email.com', 2, 2, NULL),
-	(115, 'Nicolás Soltero', '6041000115', '3001000115', 'nicolas.soltero@email.com', 2, 1, NULL),
-	(116, 'Sara Soltera', '6041000116', '3001000116', 'sara.soltera@email.com', 2, 2, NULL),
-	(117, 'Diogenes Albeiro Soltero', '6041000117', '3001000117', 'diogenes.albeiro@email.com', 2, 1, NULL),
-	(118, 'Valentina Soltera', '6041000118', '3001000118', 'valentina2.soltera@email.com', 2, 2, NULL),
-	(119, 'Martín Soltero', '6041000119', '3001000119', 'martin.soltero@email.com', 2, 1, NULL),
-	(120, 'Camila Soltera', '6041000120', '3001000120', 'camila2.soltera@email.com', 2, 2, NULL),
-	(121, 'Samuel Soltero', '6041000121', '3001000121', 'samuel.soltero@email.com', 2, 1, NULL),
-	(122, 'Alejandra Soltera', '6041000122', '3001000122', 'alejandra.soltera@email.com', 2, 2, NULL),
-	(123, 'Roberto Soltero', '6041000123', '3001000123', 'roberto.soltero@email.com', 2, 1, NULL),
-	(124, 'Carmen Soltera', '6041000124', '3001000124', 'carmen.soltera@email.com', 2, 2, NULL),
-	(125, 'Hugo Soltero', '6041000125', '3001000125', 'hugo.soltero@email.com', 2, 1, NULL),
-	(126, 'Catalina Soltera', '6041000126', '3001000126', 'catalina.soltera@email.com', 2, 2, NULL),
-	(127, 'Ignacio Soltero', '6041000127', '3001000127', 'ignacio.soltero@email.com', 2, 1, NULL),
-	(128, 'Elena Soltera', '6041000128', '3001000128', 'elena.soltera@email.com', 2, 2, NULL),
-	(129, 'Rafael Soltero', '6041000129', '3001000129', 'rafael.soltero@email.com', 2, 1, NULL),
-	(130, 'Beatriz Soltera', '6041000130', '3001000130', 'beatriz.soltera@email.com', 2, 2, NULL),
-	(131, 'Víctor Soltero', '6041000131', '3001000131', 'victor.soltero@email.com', 2, 1, NULL),
-	(132, 'Cristina Soltera', '6041000132', '3001000132', 'cristina.soltera@email.com', 2, 2, NULL),
-	(133, 'Adrián Soltero', '6041000133', '3001000133', 'adrian.soltero@email.com', 2, 1, NULL),
-	(134, 'Dolores Soltera', '6041000134', '3001000134', 'dolores.soltera@email.com', 2, 2, NULL),
-	(135, 'Eduardo Soltero', '6041000135', '3001000135', 'eduardo.soltero@email.com', 2, 1, NULL),
-	(136, 'Esperanza Soltera', '6041000136', '3001000136', 'esperanza.soltera@email.com', 2, 2, NULL),
-	(137, 'Óscar Soltero', '6041000137', '3001000137', 'oscar2.soltero@email.com', 2, 1, NULL),
-	(138, 'Fernanda Soltera', '6041000138', '3001000138', 'fernanda.soltera@email.com', 2, 2, NULL),
-	(139, 'Leonardo Soltero', '6041000139', '3001000139', 'leonardo.soltero@email.com', 2, 1, NULL),
-	(140, 'Gloria Soltera', '6041000140', '3001000140', 'gloria.soltera@email.com', 2, 2, NULL),
-	(141, 'Cristian Soltero', '6041000141', '3001000141', 'cristian.soltero@email.com', 2, 1, NULL),
-	(142, 'Inés Soltera', '6041000142', '3001000142', 'ines.soltera@email.com', 2, 2, NULL),
-	(143, 'Fernando Soltero', '6041000143', '3001000143', 'fernando2.soltero@email.com', 2, 1, NULL),
-	(144, 'Natalia Soltera', '6041000144', '3001000144', 'natalia2.soltera@email.com', 2, 2, NULL),
-	(145, 'Rodrigo Soltero', '6041000145', '3001000145', 'rodrigo2.soltero@email.com', 2, 1, NULL),
-	(146, 'Julia Soltera', '6041000146', '3001000146', 'julia.soltera@email.com', 2, 2, NULL),
-	(147, 'Mauricio Soltero', '6041000147', '3001000147', 'mauricio2.soltero@email.com', 2, 1, NULL),
-	(148, 'Lorena Soltera', '6041000148', '3001000148', 'lorena.soltera@email.com', 2, 2, NULL),
-	(149, 'Gonzalo Soltero', '6041000149', '3001000149', 'gonzalo.soltero@email.com', 2, 1, NULL),
-	(150, 'Mónica Soltera', '6041000150', '3001000150', 'monica.soltera@email.com', 2, 2, NULL),
-	(151, 'Patricio Soltero', '6041000151', '3001000151', 'patricio.soltero@email.com', 2, 1, NULL),
-	(152, 'Olga Soltera', '6041000152', '3001000152', 'olga.soltera@email.com', 2, 2, NULL),
-	(153, 'Francisco Soltero', '6041000153', '3001000153', 'francisco2.soltero@email.com', 2, 1, NULL),
-	(154, 'Patricia Soltera', '6041000154', '3001000154', 'patricia2.soltera@email.com', 2, 2, NULL),
-	(155, 'Antonio Soltero', '6041000155', '3001000155', 'antonio2.soltero@email.com', 2, 1, NULL),
-	(156, 'Raquel Soltera', '6041000156', '3001000156', 'raquel.soltera@email.com', 2, 2, NULL),
-	(157, 'César Soltero', '6041000157', '3001000157', 'cesar.soltero@email.com', 2, 1, NULL),
-	(158, 'Sofía Soltera', '6041000158', '3001000158', 'sofia2.soltera@email.com', 2, 2, NULL),
-	(159, 'Ricardo Soltero', '6041000159', '3001000159', 'ricardo2.soltero@email.com', 2, 1, NULL),
-	(160, 'Teresa Soltera', '6041000160', '3001000160', 'teresa.soltera@email.com', 2, 2, NULL),
-	(161, 'Alberto Soltero', '6041000161', '3001000161', 'alberto2.soltero@email.com', 2, 1, NULL),
-	(162, 'Ursula Soltera', '6041000162', '3001000162', 'ursula.soltera@email.com', 2, 2, NULL),
-	(163, 'Manuel Soltero', '6041000163', '3001000163', 'manuel2.soltero@email.com', 2, 1, NULL),
-	(164, 'Victoria Soltera', '6041000164', '3001000164', 'victoria.soltera@email.com', 2, 2, NULL),
-	(165, 'Rubén Soltero', '6041000165', '3001000165', 'ruben.soltero@email.com', 2, 1, NULL),
-	(166, 'Ximena Soltera', '6041000166', '3001000166', 'ximena.soltera@email.com', 2, 2, NULL),
-	(167, 'Héctor Soltero', '6041000167', '3001000167', 'hector2.soltero@email.com', 2, 1, NULL),
-	(168, 'Yolanda Soltera', '6041000168', '3001000168', 'yolanda.soltera@email.com', 2, 2, NULL),
-	(169, 'Mario Soltero', '6041000169', '3001000169', 'mario2.soltero@email.com', 2, 1, NULL),
-	(170, 'Zulema Soltera', '6041000170', '3001000170', 'zulema.soltera@email.com', 2, 2, NULL),
-	(171, 'Eugenio Soltero', '6041000171', '3001000171', 'eugenio.soltero@email.com', 2, 1, NULL),
-	(172, 'Alicia Soltera', '6041000172', '3001000172', 'alicia.soltera@email.com', 2, 2, NULL),
-	(173, 'Armando Soltero', '6041000173', '3001000173', 'armando.soltero@email.com', 2, 1, NULL),
-	(174, 'Bárbara Soltera', '6041000174', '3001000174', 'barbara.soltera@email.com', 2, 2, NULL),
-	(175, 'Bernardo Soltero', '6041000175', '3001000175', 'bernardo.soltero@email.com', 2, 1, NULL),
-	(176, 'Claudia Soltera', '6041000176', '3001000176', 'claudia2.soltera@email.com', 2, 2, NULL),
-	(177, 'Ernesto Soltero', '6041000177', '3001000177', 'ernesto.soltero@email.com', 2, 1, NULL),
-	(178, 'Diana Soltera', '6041000178', '3001000178', 'diana2.soltera@email.com', 2, 2, NULL),
-	(179, 'Arturo Soltero', '6041000179', '3001000179', 'arturo.soltero@email.com', 2, 1, NULL),
-	(180, 'Pedro Viudo', '6041000180', '3001000180', 'pedro.viudo@email.com', 7, 1, NULL),
-	(181, 'Lucía Viuda', '6041000181', '3001000181', 'lucia2.viuda@email.com', 7, 2, NULL),
-	(182, 'Javier Viudo', '6041000182', '3001000182', 'javier.viudo@email.com', 7, 1, NULL),
-	(183, 'Marina Viuda', '6041000183', '3001000183', 'marina.viuda@email.com', 7, 2, NULL),
-	(184, 'Héctor Viudo', '6041000184', '3001000184', 'hector.viudo@email.com', 7, 1, NULL),
-	(185, 'Mercedes Viuda', '6041000185', '3001000185', 'mercedes.viuda@email.com', 7, 2, NULL),
-	(186, 'Germán Viudo', '6041000186', '3001000186', 'german.viudo@email.com', 7, 1, NULL),
-	(187, 'Cecilia Viuda', '6041000187', '3001000187', 'cecilia.viuda@email.com', 7, 2, NULL),
-	(188, 'Alfonso Viudo', '6041000188', '3001000188', 'alfonso.viudo@email.com', 7, 1, NULL),
-	(189, 'Margarita Viuda', '6041000189', '3001000189', 'margarita.viuda@email.com', 7, 2, NULL),
-	(190, 'Raúl Viudo', '6041000190', '3001000190', 'raul.viudo@email.com', 7, 1, NULL),
-	(191, 'Francisca Viuda', '6041000191', '3001000191', 'francisca.viuda@email.com', 7, 2, NULL),
-	(192, 'Fernando Viudo', '6041000192', '3001000192', 'fernando.viudo@email.com', 7, 1, NULL),
-	(193, 'Carmen Viuda', '6041000193', '3001000193', 'carmen2.viuda@email.com', 7, 2, NULL),
-	(194, 'Pablo Viudo', '6041000194', '3001000194', 'pablo.viudo@email.com', 7, 1, NULL),
-	(195, 'Gloria Viuda', '6041000195', '3001000195', 'gloria2.viuda@email.com', 7, 2, NULL),
-	(196, 'Rubén Viudo', '6041000196', '3001000196', 'ruben.viudo@email.com', 7, 1, NULL),
-	(197, 'Silvia Viuda', '6041000197', '3001000197', 'silvia.viuda@email.com', 7, 2, NULL),
-	(198, 'Mario Viudo', '6041000198', '3001000198', 'mario.viudo@email.com', 7, 1, NULL),
-	(199, 'Camila Viuda', '6041000199', '3001000199', 'camila.viuda@email.com', 7, 2, NULL),
-	(200, 'Jorge Viudo', '6041000200', '3001000200', 'jorge.viudo@email.com', 7, 1, NULL);
-
-
---
--- Data for Name: team_types; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."team_types" ("id", "name", "order_num") VALUES
-	(1, 'Catequistas de la Nación', 1),
-	(2, 'Itinerantes', 2),
-	(3, 'Catequistas', 3),
-	(4, 'Responsables', 4);
-
-
---
--- Data for Name: teams; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."teams" ("id", "name", "team_type_id", "community_id") VALUES
-	(1, 'Equipo Responsables Comunidad 1', 4, 1),
-	(2, 'Equipo Catequistas 1 Comunidad 1', 3, 1),
-	(3, 'Equipo Catequistas 2 Comunidad 1', 3, 1),
-	(4, 'Equipo Responsables Comunidad 2', 4, 2),
-	(5, 'Equipo Catequistas Comunidad 2', 3, 2),
-	(6, 'Equipo Responsables Comunidad 3', 4, 3),
-	(7, 'Equipo Catequistas Comunidad 3', 3, 3),
-	(8, 'Equipo Responsables Comunidad 4', 4, 4),
-	(9, 'Equipo Catequistas Comunidad 4', 3, 4),
-	(10, 'Equipo de Responsables - Comunidad 1', 4, 5);
-
-
---
--- Data for Name: belongs; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."belongs" ("id", "person_id", "community_id", "team_id", "is_responsible_for_the_team") VALUES
-	(7, 76, 1, 1, false),
-	(8, 1, 1, 2, true),
-	(9, 2, 1, 2, true),
-	(10, 5, 1, 2, false),
-	(11, 6, 1, 2, false),
-	(12, 9, 1, 2, false),
-	(13, 10, 1, 2, false),
-	(14, 78, 1, 2, false),
-	(15, 7, 1, 3, true),
-	(16, 8, 1, 3, true),
-	(17, 11, 1, 3, false),
-	(18, 12, 1, 3, false),
-	(19, 79, 1, 3, false),
-	(20, 81, 1, 3, false),
-	(22, 21, 2, 4, true),
-	(23, 22, 2, 4, true),
-	(24, 23, 2, 4, false),
-	(25, 24, 2, 4, false),
-	(26, 25, 2, 4, false),
-	(27, 26, 2, 4, false),
-	(28, 88, 2, 4, false),
-	(29, 21, 2, 5, true),
-	(30, 22, 2, 5, true),
-	(31, 25, 2, 5, false),
-	(32, 26, 2, 5, false),
-	(33, 89, 2, 5, false),
-	(34, 91, 2, 5, false),
-	(35, 35, 3, 6, true),
-	(36, 36, 3, 6, true),
-	(37, 37, 3, 6, false),
-	(38, 38, 3, 6, false),
-	(39, 100, 3, 6, false),
-	(40, 35, 3, 7, true),
-	(41, 36, 3, 7, true),
-	(42, 39, 3, 7, false),
-	(43, 40, 3, 7, false),
-	(44, 101, 3, 7, false),
-	(45, 103, 3, 7, false),
-	(46, 45, 4, 8, true),
-	(47, 46, 4, 8, true),
-	(48, 47, 4, 8, false),
-	(49, 48, 4, 8, false),
-	(50, 128, 4, 8, false),
-	(51, 45, 4, 9, true),
-	(52, 46, 4, 9, true),
-	(53, 49, 4, 9, false),
-	(54, 50, 4, 9, false),
-	(55, 129, 4, 9, false),
-	(56, 131, 4, 9, false),
-	(1, 1, 1, 1, false),
-	(2, 2, 1, 1, false),
-	(5, 5, 1, 1, false),
-	(6, 6, 1, 1, false),
-	(3, 3, 1, 1, true),
-	(4, 4, 1, 1, true);
-
-
---
--- Data for Name: brothers; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."brothers" ("id", "person_id", "community_id") VALUES
-	(1, 1, 1),
-	(2, 2, 1),
-	(3, 3, 1),
-	(4, 4, 1),
-	(5, 5, 1),
-	(6, 6, 1),
-	(7, 7, 1),
-	(8, 8, 1),
-	(9, 9, 1),
-	(10, 10, 1),
-	(11, 11, 1),
-	(12, 12, 1),
-	(13, 13, 1),
-	(14, 14, 1),
-	(15, 15, 1),
-	(16, 16, 1),
-	(17, 17, 1),
-	(18, 18, 1),
-	(19, 19, 1),
-	(20, 20, 1),
-	(21, 61, 1),
-	(22, 63, 1),
-	(23, 65, 1),
-	(24, 67, 1),
-	(25, 69, 1),
-	(26, 71, 1),
-	(27, 73, 1),
-	(28, 105, 1),
-	(29, 106, 1),
-	(30, 85, 1),
-	(31, 75, 1),
-	(32, 95, 1),
-	(33, 107, 1),
-	(34, 108, 1),
-	(35, 86, 1),
-	(36, 76, 1),
-	(37, 96, 1),
-	(38, 109, 1),
-	(39, 110, 1),
-	(40, 87, 1),
-	(41, 77, 1),
-	(42, 97, 1),
-	(43, 111, 1),
-	(44, 112, 1),
-	(45, 88, 1),
-	(46, 78, 1),
-	(47, 98, 1),
-	(48, 113, 1),
-	(49, 114, 1),
-	(51, 21, 2),
-	(52, 22, 2),
-	(53, 23, 2),
-	(54, 24, 2),
-	(55, 25, 2),
-	(56, 26, 2),
-	(57, 27, 2),
-	(58, 28, 2),
-	(59, 29, 2),
-	(60, 30, 2),
-	(61, 31, 2),
-	(62, 32, 2),
-	(63, 33, 2),
-	(64, 34, 2),
-	(65, 62, 2),
-	(66, 64, 2),
-	(67, 115, 2),
-	(68, 116, 2),
-	(69, 90, 2),
-	(70, 79, 2),
-	(71, 99, 2),
-	(72, 117, 2),
-	(73, 118, 2),
-	(74, 91, 2),
-	(75, 80, 2),
-	(76, 100, 2),
-	(77, 119, 2),
-	(78, 120, 2),
-	(79, 92, 2),
-	(80, 81, 2),
-	(81, 101, 2),
-	(82, 121, 2),
-	(83, 122, 2),
-	(84, 93, 2),
-	(85, 82, 2),
-	(86, 102, 2),
-	(87, 123, 2),
-	(88, 124, 2),
-	(89, 94, 2),
-	(90, 83, 2),
-	(91, 103, 2),
-	(92, 125, 2),
-	(93, 126, 2),
-	(94, 35, 3),
-	(95, 36, 3),
-	(96, 37, 3),
-	(97, 38, 3),
-	(98, 39, 3),
-	(99, 40, 3),
-	(100, 41, 3),
-	(101, 42, 3),
-	(102, 43, 3),
-	(103, 44, 3),
-	(104, 127, 3),
-	(105, 128, 3),
-	(106, 95, 3),
-	(107, 84, 3),
-	(108, 104, 3),
-	(109, 129, 3),
-	(110, 130, 3),
-	(111, 96, 3),
-	(112, 85, 3),
-	(113, 105, 3),
-	(114, 131, 3),
-	(115, 132, 3),
-	(116, 97, 3),
-	(117, 86, 3),
-	(118, 106, 3),
-	(119, 133, 3),
-	(120, 134, 3),
-	(121, 98, 3),
-	(122, 87, 3),
-	(123, 107, 3),
-	(124, 45, 4),
-	(125, 46, 4),
-	(126, 47, 4),
-	(127, 48, 4),
-	(128, 49, 4),
-	(129, 50, 4),
-	(130, 51, 4),
-	(131, 52, 4),
-	(132, 53, 4),
-	(133, 54, 4),
-	(134, 55, 4),
-	(135, 56, 4),
-	(136, 57, 4),
-	(137, 58, 4),
-	(138, 59, 4),
-	(139, 60, 4),
-	(140, 66, 4),
-	(141, 140, 4),
-	(142, 141, 4),
-	(143, 142, 4),
-	(144, 143, 4),
-	(145, 144, 4),
-	(146, 145, 4),
-	(147, 146, 4),
-	(148, 147, 4),
-	(149, 148, 4),
-	(150, 149, 4),
-	(151, 150, 4),
-	(152, 151, 4),
-	(153, 152, 4),
-	(154, 153, 4),
-	(155, 154, 4),
-	(156, 155, 4),
-	(157, 156, 4),
-	(158, 157, 4),
-	(159, 158, 4),
-	(160, 159, 4),
-	(161, 160, 4),
-	(162, 161, 4),
-	(163, 162, 4),
-	(164, 163, 4),
-	(165, 164, 4),
-	(166, 165, 4),
-	(167, 166, 4),
-	(168, 167, 4),
-	(169, 168, 4),
-	(170, 169, 4),
-	(171, 170, 4),
-	(172, 171, 4),
-	(173, 172, 4),
-	(174, 173, 4),
-	(175, 174, 4),
-	(176, 175, 4),
-	(177, 176, 4),
-	(178, 177, 4),
-	(179, 178, 4),
-	(180, 179, 4),
-	(181, 180, 4),
-	(182, 181, 4),
-	(183, 182, 4),
-	(184, 183, 4),
-	(185, 184, 4),
-	(186, 185, 4),
-	(187, 186, 4),
-	(188, 187, 4),
-	(189, 188, 4),
-	(190, 189, 4),
-	(191, 190, 4),
-	(192, 191, 4),
-	(193, 192, 4),
-	(194, 193, 4),
-	(195, 194, 4),
-	(196, 195, 4),
-	(197, 196, 4),
-	(198, 197, 4),
-	(199, 198, 4),
-	(200, 199, 4),
-	(201, 135, 1);
-
-
---
--- Data for Name: community_step_log; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."community_step_log" ("id", "community_id", "step_way_id", "date_of_step", "principal_catechist_name", "outcome", "notes") VALUES
-	(1, 1, 1, '2024-01-15', 'Juan Pérez', true, 'Catequesis iniciales: nacieron 15 hermanos, convivencia seminario. Faltan 3 por hacer convivencia.'),
-	(2, 1, 2, '2024-02-20', 'María González', true, 'Primer escrutinio: asistieron 12 hermanos, 3 no asistieron.'),
-	(3, 2, 1, '2024-01-20', 'Carlos Rodríguez', true, 'Catequesis iniciales: nacieron 18 hermanos, convivencia seminario. Faltan 2 por hacer convivencia.'),
-	(4, 2, 2, '2024-02-25', 'Ana Martínez', true, 'Primer escrutinio: asistieron 16 hermanos, 2 no asistieron.'),
-	(5, 3, 1, '2024-01-25', 'Pedro López', true, 'Catequesis iniciales: nacieron 12 hermanos, convivencia seminario. Faltan 4 por hacer convivencia.'),
-	(6, 3, 3, '2024-03-10', 'Laura Sánchez', true, 'Shemá Israel: 8 hermanos participaron, 4 ausentes.'),
-	(7, 4, 1, '2024-02-01', 'Miguel Herrera', true, 'Catequesis iniciales: nacieron 20 hermanos, convivencia seminario. Faltan 1 por hacer convivencia.'),
-	(8, 4, 2, '2024-03-05', 'Carmen Ruiz', true, 'Primer escrutinio: asistieron 19 hermanos, 1 no asistió.'),
-	(9, 1, 3, '2024-03-15', 'Roberto Díaz', true, 'Shemá Israel: 10 hermanos participaron, 2 ausentes.'),
-	(10, 2, 3, '2024-03-20', 'Isabel Morales', true, 'Shemá Israel: 14 hermanos participaron, 2 ausentes.');
-
-
---
--- Data for Name: parish_teams; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."parish_teams" ("id", "parish_id", "team_id") VALUES
-	(1, 1, 1),
-	(2, 1, 2),
-	(3, 1, 3),
-	(4, 1, 4),
-	(5, 1, 5),
-	(6, 1, 6),
-	(7, 1, 7),
-	(8, 1, 8),
-	(9, 1, 9);
-
-
---
--- Data for Name: priests; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."priests" ("id", "person_id", "is_parish_priest", "parish_id") VALUES
-	(1, 61, true, 1),
-	(2, 62, false, 1),
-	(3, 63, false, 1),
-	(4, 64, true, 2),
-	(5, 65, false, 2),
-	(6, 66, true, 3),
-	(7, 67, true, 4),
-	(8, 68, false, 4),
-	(9, 69, true, 5),
-	(10, 70, true, 6),
-	(11, 71, false, 6),
-	(12, 72, true, 7),
-	(13, 73, true, 8),
-	(14, 74, false, 8);
-
-
---
--- Data for Name: profiles; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO "public"."profiles" ("id", "updated_at", "username", "full_name", "avatar_url", "website") VALUES
-	('11c45931-5252-4ebb-b8ea-fa5fe218de03', NULL, NULL, 'admin', NULL, NULL);
-
-
---
--- Data for Name: buckets; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
---
-
-
---
--- Data for Name: objects; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
---
-
-
-
---
--- Data for Name: s3_multipart_uploads; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
---
-
-
-
---
--- Data for Name: s3_multipart_uploads_parts; Type: TABLE DATA; Schema: storage; Owner: supabase_storage_admin
---
-
-
-
---
--- Data for Name: hooks; Type: TABLE DATA; Schema: supabase_functions; Owner: supabase_functions_admin
---
-
-
-
---
--- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: supabase_auth_admin
---
-
-SELECT pg_catalog.setval('"auth"."refresh_tokens_id_seq"', 3, true);
-
-
---
--- Name: belongs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."belongs_id_seq"', 56, true);
-
-
---
--- Name: brothers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."brothers_id_seq"', 202, true);
-
-
---
--- Name: cities_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."cities_id_seq"', 32, true);
-
-
---
--- Name: communities_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."communities_id_seq"', 15, true);
-
-
---
--- Name: community_step_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."community_step_log_id_seq"', 10, true);
-
-
---
--- Name: countries_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."countries_id_seq"', 1, true);
-
-
---
--- Name: parish_teams_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."parish_teams_id_seq"', 9, true);
-
-
---
--- Name: parishes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."parishes_id_seq"', 20, true);
-
-
---
--- Name: people_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."people_id_seq"', 200, true);
-
-
---
--- Name: priests_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."priests_id_seq"', 14, true);
-
-
---
--- Name: states_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."states_id_seq"', 32, true);
-
-
---
--- Name: step_ways_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."step_ways_id_seq"', 11, true);
-
-
---
--- Name: team_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."team_types_id_seq"', 4, true);
-
-
---
--- Name: teams_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."teams_id_seq"', 42, true);
-
-
---
--- Name: hooks_id_seq; Type: SEQUENCE SET; Schema: supabase_functions; Owner: supabase_functions_admin
---
-
-SELECT pg_catalog.setval('"supabase_functions"."hooks_id_seq"', 1, false);
-
-
---
--- PostgreSQL database dump complete
---
 
-RESET ALL;
