@@ -148,7 +148,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
             <FileText className="w-4 h-4" />
             Bitácora
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 print-hidden">
             <Button
               variant="outline"
               size="2"
@@ -219,7 +219,8 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
       </CardHeader>
       
       <CardContent className="flex-1">
-        <div>
+        {/* Vista normal (pantalla) - solo muestra los primeros 2 */}
+        <div className="print-hidden">
           <div className="space-y-3">
             {displayedLogs.length === 0 ? (
               <div className="text-center py-6 text-gray-500">
@@ -251,18 +252,44 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
                       </Button>
                     </div>
                   </div>
-                  
+
                   {/* Comentario debajo */}
                   {entry.notes && (
                     <div className="text-xs text-gray-700">
                       <p className="line-clamp-2">{entry.notes}</p>
                     </div>
                   )}
-                  
+
                 </div>
               ))
             )}
           </div>
+        </div>
+
+        {/* Vista de impresión - muestra TODOS los registros en tabla compacta */}
+        <div className="hidden print:block">
+          {stepLogs.length === 0 ? (
+            <p className="text-sm text-gray-500">No hay entradas en la bitácora</p>
+          ) : (
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-1 px-2 font-semibold">Fecha</th>
+                  <th className="text-left py-1 px-2 font-semibold">Paso</th>
+                  <th className="text-left py-1 px-2 font-semibold">Notas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stepLogs.map((entry) => (
+                  <tr key={entry.id} className="border-b border-gray-200">
+                    <td className="py-1 px-2 whitespace-nowrap">{formatDate(entry.date_of_step)}</td>
+                    <td className="py-1 px-2 whitespace-nowrap">{entry.step_way?.name || '-'}</td>
+                    <td className="py-1 px-2">{entry.notes || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </CardContent>
 

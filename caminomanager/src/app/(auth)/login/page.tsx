@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { loginAction } from "./actions";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export default function LoginPage() {
     async function checkAuth() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (user) {
         // Si ya está autenticado, redirigir a la página solicitada o principal
         const redirectTo = searchParams.get('redirectTo') || '/';
@@ -43,11 +43,11 @@ export default function LoginPage() {
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
-    
+
     try {
       const redirectTo = searchParams.get('redirectTo') || '/';
       formData.append('redirectTo', redirectTo);
-      
+
       const result = await loginAction(formData);
       if (result?.error) {
         setError(result.error);
@@ -111,7 +111,7 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Ingresando..." : "Ingresar"}
             </Button>
-            
+
             <div className="text-center text-sm text-gray-600">
               ¿No tienes una cuenta?{" "}
               <Link href="/signup" className="text-blue-600 hover:text-blue-800 underline">
@@ -125,3 +125,19 @@ export default function LoginPage() {
   );
 }
 
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-100">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando...</p>
+          </div>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
+  );
+}

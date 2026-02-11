@@ -168,7 +168,79 @@ Ten en cuenta la siguiente informacion al momento de generar la semilla:
   
 
 ## Supabase
-Para iniciar el ambiente local, cd a la carpeta supabase y ejecutar npx supabase start. Para actualizar supabase corra el siguiente comando: npm update supabase --save-dev
+
+Para iniciar el ambiente local, cd a la carpeta supabase y ejecutar `npx supabase start`.
+
+### Actualización de Supabase
+
+Este proyecto usa tres paquetes de Supabase que se actualizan de forma independiente:
+
+| Paquete | Ubicación | Propósito |
+|---|---|---|
+| `supabase` | `./package.json` (raíz) | CLI: desarrollo local, migraciones, imágenes Docker |
+| `@supabase/supabase-js` | `./caminomanager/package.json` | Cliente JavaScript para consultas, auth, storage |
+| `@supabase/ssr` | `./caminomanager/package.json` | Utilidades SSR para Next.js (cookies, sesiones) |
+
+#### Paso 1: Detener el entorno local
+
+```bash
+cd supabase
+npx supabase stop
+```
+
+#### Paso 2: Actualizar el CLI de Supabase
+
+Desde la **raíz** del proyecto:
+
+```bash
+npm update supabase --save-dev
+```
+
+Para saltar a la última versión disponible (incluso si excede el rango del `^`):
+
+```bash
+npm install supabase@latest --save-dev
+```
+
+#### Paso 3: Actualizar los paquetes del cliente
+
+Desde la carpeta **caminomanager**:
+
+```bash
+cd caminomanager
+npm update @supabase/supabase-js @supabase/ssr
+```
+
+Para instalar las últimas versiones:
+
+```bash
+cd caminomanager
+npm install @supabase/supabase-js@latest @supabase/ssr@latest
+```
+
+#### Paso 4: Reiniciar el entorno local
+
+Al reiniciar, el CLI descargará las nuevas imágenes Docker si hay actualizaciones:
+
+```bash
+cd supabase
+npx supabase start
+```
+
+> **Nota**: La primera vez después de actualizar el CLI puede tomar más tiempo porque descarga nuevas imágenes Docker de los servicios (PostgreSQL, GoTrue, PostgREST, etc.).
+
+#### Paso 5: Verificar
+
+- Comprobar que el Studio local funcione: http://localhost:54323
+- Comprobar que la app Next.js conecte correctamente: http://localhost:3000
+- Ejecutar `npx supabase status` para ver las versiones de los servicios locales
+
+#### Notas importantes
+
+- **Revisar release notes**: Antes de actualizar, revisa los [changelogs de Supabase](https://github.com/supabase/supabase/releases) para identificar cambios de ruptura (breaking changes).
+- **`npm update` vs `npm install @latest`**: `npm update` respeta el rango de versión en `package.json` (ej: `^2.22.12` solo actualiza dentro de `2.x.x`). `npm install @latest` instala la última versión disponible sin importar el rango.
+- **Orden recomendado**: Siempre actualiza el CLI primero, luego los paquetes del cliente, ya que el CLI controla las imágenes Docker del entorno local.
+- **Migraciones**: Si una actualización mayor del CLI cambia el formato de `config.toml` o el comportamiento de migraciones, consulta la [guía de migración de Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started).
 
 ### Inicializacion del proyecto local
 - npx supabase init
@@ -260,3 +332,7 @@ Estoy construyendo una aplicación para el manejo de las comunidades neocatecume
 Desde una maquina que no tenga Docker Desktop es necesario modificar el etc/host manualmente para incluir una entrada como la siguiente:
 IP de windows host.docker.internal
 
+## Reemplaza 'tu-user-uuid' con el UUID del usuario que será admin
+UPDATE public.profiles 
+SET role = 'admin' 
+WHERE id = 'tu-user-uuid';

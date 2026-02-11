@@ -53,12 +53,13 @@ export default function CatechistTeamsReport() {
       const processedData: CatechistTeamData[] = teamsData
         ?.filter(team => {
           // Filtrar solo equipos de catequistas, excluir responsables
-          return team.team_types?.name === 'Catequistas';
+          const teamType = Array.isArray(team.team_types) ? team.team_types[0] : team.team_types;
+          return teamType?.name === 'Catequistas';
         })
         ?.map(team => {
-          const community = team.communities;
-          const parish = community?.parishes;
-          const city = parish?.cities;
+          const community = Array.isArray(team.communities) ? team.communities[0] : team.communities;
+          const parish = Array.isArray(community?.parishes) ? community?.parishes[0] : community?.parishes;
+          const city = Array.isArray(parish?.cities) ? parish?.cities[0] : parish?.cities;
           
           // Encontrar el responsable del equipo
           const responsible = team.belongs?.find(belong => belong.is_responsible_for_the_team);
@@ -71,12 +72,12 @@ export default function CatechistTeamsReport() {
           return {
             team_id: team.id,
             team_name: teamName,
-            team_type: team.team_types?.name || 'N/A',
+            team_type: (Array.isArray(team.team_types) ? team.team_types[0] : team.team_types)?.name || 'N/A',
             community_number: community?.number || 'N/A',
             parish_name: parish?.name || 'N/A',
             city_name: city?.name || 'N/A',
             members_count: team.belongs?.length || 0,
-            responsible_name: responsible?.people?.person_name || 'Sin asignar'
+            responsible_name: (Array.isArray(responsible?.people) ? responsible?.people[0] : responsible?.people)?.person_name || 'Sin asignar'
           };
         }) || [];
 

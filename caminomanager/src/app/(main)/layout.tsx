@@ -21,11 +21,15 @@ export default async function MainLayout({
 
   return (
     <Theme accentColor="amber" grayColor="mauve" panelBackground="solid">
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex flex-col h-screen">
-          <Header userEmail={user.email} title="ComunidadCat" />
-          <main className="flex-1 overflow-y-auto p-6">
+      <div className="flex h-screen bg-gray-50 print:block print:h-auto print:bg-white">
+        <div className="print-hidden">
+          <Sidebar />
+        </div>
+        <div className="flex-1 flex flex-col h-screen print:block print:h-auto">
+          <div className="print-hidden">
+            <Header userEmail={user.email} title="ComunidadCat" />
+          </div>
+          <main className="flex-1 overflow-y-auto p-6 print:p-0 print:overflow-visible">
             {children}
           </main>
         </div>

@@ -325,6 +325,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
             onClick={() => setShowDeleteDialog(true)}
             disabled={deletingTeam || deletingId !== null || removingResponsibleId !== null || assigningResponsibleId !== null}
             title="Eliminar equipo completo"
+            className="print-hidden"
           >
             <Trash2 className="h-4 w-4" />
             {deletingTeam ? 'Eliminando...' : 'Eliminar Equipo'}
@@ -349,7 +350,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Celular</TableHead>
-                <TableHead>Acciones</TableHead>
+                <TableHead className="print-hidden">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -419,7 +420,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                     <TableCell>
                       {member.mobile || '-'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="print-hidden">
                       <div className="flex gap-2">
                         {member.isResponsible ? (
                           <Button

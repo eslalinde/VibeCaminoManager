@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__avalanche-wiki__search_docs",
+      "Bash(npm run build:*)",
+      "Bash(find:*)",
+      "Bash(npx next build:*)"
+    ]
+  }
+}

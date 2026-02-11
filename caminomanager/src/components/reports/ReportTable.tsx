@@ -84,7 +84,7 @@ export function ReportTable({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/protected/reports">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="1">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver
             </Button>

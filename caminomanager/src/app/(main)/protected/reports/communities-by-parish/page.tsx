@@ -53,7 +53,7 @@ export default function CommunitiesByParishReport() {
           parish_id: parish.id,
           parish_name: parish.name,
           diocese: parish.diocese || 'No especificado',
-          city_name: parish.cities?.name || 'N/A',
+          city_name: (Array.isArray(parish.cities) ? parish.cities[0] : parish.cities)?.name || 'N/A',
           communities_count: communities.length,
           total_brothers: totalBrothers,
           avg_brothers_per_community: avgBrothers

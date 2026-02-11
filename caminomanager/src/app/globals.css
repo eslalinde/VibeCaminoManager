@@ -173,3 +173,87 @@ input[type="date"].date-input::-moz-calendar-picker-indicator,
   cursor: pointer;
   z-index: 1;
 }
+
+/* ===== Estilos de impresión - Ficha de Comunidad (Hoja Oficio) ===== */
+@media print {
+  @page {
+    size: legal portrait; /* 8.5" x 13" */
+    margin: 1.5cm;
+  }
+
+  /* Ocultar elementos no imprimibles */
+  .print-hidden,
+  .no-print,
+  [data-radix-dialog-overlay],
+  [data-radix-dialog-content] {
+    display: none !important;
+  }
+
+  /* Reset del body */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Contenedor principal de impresión - una sola columna */
+  .print-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Secciones de impresión */
+  .print-section {
+    break-inside: avoid;
+    margin-bottom: 0.4cm;
+    border: 1px solid #ccc !important;
+    padding: 0.3cm !important;
+    box-shadow: none !important;
+  }
+
+  /* Título de la ficha */
+  .print-title {
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.3cm;
+    border: none !important;
+  }
+
+  .print-subtitle {
+    font-size: 11pt;
+    text-align: center;
+    color: #555;
+    margin-bottom: 0.5cm;
+  }
+
+  /* Tablas compactas */
+  .print-section table {
+    font-size: 9pt;
+    width: 100%;
+  }
+
+  .print-section table th,
+  .print-section table td {
+    padding: 2px 6px !important;
+  }
+
+  /* Badges legibles en impresión */
+  .print-section [data-slot="badge"] {
+    border: 1px solid #999 !important;
+    background: white !important;
+    color: black !important;
+    font-size: 8pt;
+  }
+
+  /* Cards sin sombra */
+  .print-section [data-slot="card"] {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+}

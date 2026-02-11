@@ -129,7 +129,7 @@ export interface QueryParams {
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'number' | 'select' | 'textarea';
+  type: 'text' | 'email' | 'number' | 'select' | 'textarea' | 'date';
   required?: boolean;
   maxLength?: number;
   minLength?: number;

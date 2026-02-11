@@ -18,7 +18,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
             gcTime: 5 * 60_000, // 5 min en cache
             refetchOnWindowFocus: false,
             retry: 1,
-            keepPreviousData: true,
+            placeholderData: (previousData: unknown) => previousData,
           },
           mutations: {
             retry: 1,

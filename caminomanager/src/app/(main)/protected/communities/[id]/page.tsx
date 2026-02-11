@@ -10,7 +10,7 @@ import { CommunityStepLogCompact } from '@/components/crud/CommunityStepLogCompa
 import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { communityConfig } from '@/config/entities';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Printer } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Community } from '@/types/database';
 
@@ -126,10 +126,10 @@ export default function CommunityDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 print-container">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-4 mb-4 print-hidden">
           <Button
             variant="outline"
             size="2"
@@ -139,40 +139,50 @@ export default function CommunityDetailPage() {
             <ArrowLeft className="h-4 w-4" />
             Regresar a Comunidades
           </Button>
+          <Button
+            variant="outline"
+            size="2"
+            onClick={() => window.print()}
+            className="flex items-center gap-2"
+          >
+            <Printer className="h-4 w-4" />
+            Imprimir Ficha
+          </Button>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-gray-900 print-title">
           Comunidad {community?.number || 'Cargando...'}
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-600 mt-2 print-subtitle">
           {community?.parish?.name || 'Parroquia no especificada'}
         </p>
       </div>
 
-      {/* Main Content - 50/50 Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Main Content - 50/50 Split (single column on print) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print-container">
         {/* Left: Community Info + Teams */}
         <div className="space-y-6">
           {/* Community Info */}
-          <div>
+          <div className="print-section">
             <CommunityInfo community={community} loading={loading} onEdit={handleEdit} />
           </div>
 
           {/* Responsables Team */}
-          <div className="h-80">
+          <div className="h-80 print:h-auto">
             {teams.responsables.length > 0 ? (
               teams.responsables.map((team) => (
-                <TeamSection
-                  key={team.id || `responsable-${Math.random()}`}
-                  team={team}
-                  members={team.id ? teamMembers[team.id] || [] : []}
-                  parishes={team.id ? teamParishes[team.id] || [] : []}
-                  loading={loading}
-                  communityId={communityId}
-                  onDelete={refreshCommunity}
-                />
+                <div key={team.id || `responsable-${Math.random()}`} className="print-section">
+                  <TeamSection
+                    team={team}
+                    members={team.id ? teamMembers[team.id] || [] : []}
+                    parishes={team.id ? teamParishes[team.id] || [] : []}
+                    loading={loading}
+                    communityId={communityId}
+                    onDelete={refreshCommunity}
+                  />
+                </div>
               ))
             ) : (
-              <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 print-hidden">
                 <div className="text-center space-y-4">
                   <p className="text-gray-500 text-lg">No hay equipo de responsables</p>
                   <p className="text-gray-400 text-sm">Crea el equipo de responsables para comenzar</p>
@@ -194,7 +204,7 @@ export default function CommunityDetailPage() {
             {teams.catequistas.length > 0 ? (
               <>
                 {teams.catequistas.map((team, index) => (
-                  <div key={team.id || `catequista-${index}`}>
+                  <div key={team.id || `catequista-${index}`} className="print-section">
                     <TeamSection
                       team={team}
                       members={team.id ? teamMembers[team.id] || [] : []}
@@ -206,7 +216,7 @@ export default function CommunityDetailPage() {
                     />
                   </div>
                 ))}
-                <div className="flex justify-center pt-2">
+                <div className="flex justify-center pt-2 print-hidden">
                   <Button
                     onClick={handleCreateCatequistasTeam}
                     variant="outline"
@@ -219,7 +229,7 @@ export default function CommunityDetailPage() {
                 </div>
               </>
             ) : (
-              <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 print-hidden">
                 <div className="text-center space-y-4">
                   <p className="text-gray-500 text-lg">No hay equipos de catequistas</p>
                   <p className="text-gray-400 text-sm">Crea el primer equipo de catequistas para comenzar</p>
@@ -236,21 +246,21 @@ export default function CommunityDetailPage() {
             )}
           </div>
         </div>
-        
+
         {/* Right: Step Log + Brothers List */}
         <div className="space-y-4">
           {/* Step Log */}
-          <div>
-            <CommunityStepLogCompact 
-              communityId={communityId} 
-              communityNumber={community?.number || ''} 
+          <div className="print-section">
+            <CommunityStepLogCompact
+              communityId={communityId}
+              communityNumber={community?.number || ''}
             />
           </div>
-          
+
           {/* Brothers List */}
-          <div className="flex-1">
-            <BrothersList 
-              brothers={mergedBrothers} 
+          <div className="flex-1 print-hidden">
+            <BrothersList
+              brothers={mergedBrothers}
               loading={loading}
               communityId={communityId}
               teamMembers={teamMembers}
