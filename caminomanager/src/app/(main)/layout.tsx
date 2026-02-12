@@ -19,15 +19,22 @@ export default async function MainLayout({
     redirect("/login");
   }
 
+  // Fetch user's profile to get full_name
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .single();
+
   return (
     <Theme accentColor="amber" grayColor="mauve" panelBackground="solid">
-      <div className="flex h-screen bg-gray-50 print:block print:h-auto print:bg-white">
+      <div className="flex h-screen bg-amber-50/40 print:block print:h-auto print:bg-white">
         <div className="print-hidden">
           <Sidebar />
         </div>
         <div className="flex-1 flex flex-col h-screen print:block print:h-auto">
           <div className="print-hidden">
-            <Header userEmail={user.email} title="ComunidadCat" />
+            <Header userEmail={user.email} userName={profile?.full_name} title="ComunidadCat" />
           </div>
           <main className="flex-1 overflow-y-auto p-6 print:p-0 print:overflow-visible">
             {children}

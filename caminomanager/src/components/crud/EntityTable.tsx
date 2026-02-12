@@ -119,19 +119,25 @@ export function EntityTable<T extends BaseEntity>({
                 ))}
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button 
-                      size="1" 
-                      variant="solid" 
-                      radius="small" 
-                      onClick={() => onEdit(item)}
+                    <Button
+                      size="1"
+                      variant="solid"
+                      radius="small"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        onRowClick ? onRowClick(item) : onEdit(item);
+                      }}
                     >
                       Editar
                     </Button>
-                    <Button 
-                      size="1" 
-                      variant="outline" 
-                      radius="small" 
-                      onClick={() => handleDelete(item.id)}
+                    <Button
+                      size="1"
+                      variant="outline"
+                      radius="small"
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        handleDelete(item.id);
+                      }}
                     >
                       Eliminar
                     </Button>

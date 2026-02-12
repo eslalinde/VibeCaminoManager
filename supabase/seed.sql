@@ -133,22 +133,22 @@ INSERT INTO public.step_ways (id, name, order_num) VALUES
 -- ------------------------------------------------------------
 -- Communities
 -- ------------------------------------------------------------
-INSERT INTO public.communities (id, number, born_date, parish_id, born_brothers, actual_brothers, step_way_id, last_step_way_date, cathechist_team_id) VALUES
-  (2, '2', '2002-01-01', 1, 42, 42, 2, '2024-01-01', 2),
-  (3, '3', '2004-01-01', 1, 30, 30, 3, '2024-01-01', 3),
-  (4, '4', '2006-01-01', 1, 46, 46, 4, '2024-01-01', 4),
-  (5, '1', '2001-03-15', 2, 35, 35, 2, '2024-02-15', 5),
-  (6, '2', '2003-06-20', 2, 28, 28, 3, '2024-03-10', 6),
-  (7, '1', '2002-09-10', 3, 40, 40, 1, '2024-01-20', 7),
-  (8, '1', '2005-12-08', 4, 32, 32, 2, '2024-02-28', 8),
-  (9, '2', '2007-04-15', 4, 25, 25, 4, '2024-03-15', 9),
-  (10, '1', '2003-11-21', 5, 38, 38, 3, '2024-02-10', 10),
-  (11, '1', '2004-08-15', 6, 45, 45, 1, '2024-01-25', 11),
-  (12, '2', '2006-12-12', 6, 30, 30, 2, '2024-03-05', 12),
-  (13, '1', '2005-05-03', 7, 33, 33, 3, '2024-02-20', 13),
-  (14, '1', '2001-03-19', 8, 42, 42, 2, '2024-02-15', 14),
-  (15, '2', '2003-07-25', 8, 36, 36, 4, '2024-03-20', 15),
-  (1, '1', '2000-01-01', 1, 50, 50, 10, '2024-01-01', 1);
+INSERT INTO public.communities (id, number, born_date, parish_id, born_brothers, actual_brothers, step_way_id, last_step_way_date) VALUES
+  (2, '2', '2002-01-01', 1, 42, 42, 2, '2024-01-01'),
+  (3, '3', '2004-01-01', 1, 30, 30, 3, '2024-01-01'),
+  (4, '4', '2006-01-01', 1, 46, 46, 4, '2024-01-01'),
+  (5, '1', '2001-03-15', 2, 35, 35, 2, '2024-02-15'),
+  (6, '2', '2003-06-20', 2, 28, 28, 3, '2024-03-10'),
+  (7, '1', '2002-09-10', 3, 40, 40, 1, '2024-01-20'),
+  (8, '1', '2005-12-08', 4, 32, 32, 2, '2024-02-28'),
+  (9, '2', '2007-04-15', 4, 25, 25, 4, '2024-03-15'),
+  (10, '1', '2003-11-21', 5, 38, 38, 3, '2024-02-10'),
+  (11, '1', '2004-08-15', 6, 45, 45, 1, '2024-01-25'),
+  (12, '2', '2006-12-12', 6, 30, 30, 2, '2024-03-05'),
+  (13, '1', '2005-05-03', 7, 33, 33, 3, '2024-02-20'),
+  (14, '1', '2001-03-19', 8, 42, 42, 2, '2024-02-15'),
+  (15, '2', '2003-07-25', 8, 36, 36, 4, '2024-03-20'),
+  (1, '1', '2000-01-01', 1, 50, 50, 10, '2024-01-01');
 
 -- ------------------------------------------------------------
 -- People
@@ -377,7 +377,14 @@ INSERT INTO public.teams (id, name, team_type_id, community_id) VALUES
   (7, 'Equipo Catequistas Comunidad 3', 3, 3),
   (8, 'Equipo Responsables Comunidad 4', 4, 4),
   (9, 'Equipo Catequistas Comunidad 4', 3, 4),
-  (10, 'Equipo de Responsables - Comunidad 1', 4, 5);
+  (10, 'Equipo de Responsables - Comunidad 1', 4, 5),
+  (11, 'Equipo de Catequistas de la Nación', 3, NULL);
+
+-- Assign default catechist teams (team_type_id = 3) to communities
+UPDATE public.communities SET cathechist_team_id = 2 WHERE id = 1;  -- Equipo Catequistas 1 Comunidad 1
+UPDATE public.communities SET cathechist_team_id = 5 WHERE id = 2;  -- Equipo Catequistas Comunidad 2
+UPDATE public.communities SET cathechist_team_id = 7 WHERE id = 3;  -- Equipo Catequistas Comunidad 3
+UPDATE public.communities SET cathechist_team_id = 9 WHERE id = 4;  -- Equipo Catequistas Comunidad 4
 
 -- ------------------------------------------------------------
 -- Belongs

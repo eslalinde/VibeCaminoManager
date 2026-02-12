@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Community, Brother, Team, Belongs, Person, Parish } from '@/types/database';
+import { Community, Brother, Team, Belongs, Person, Parish, CommunityStepLog } from '@/types/database';
 
 export interface CommunityData {
   community: Community | null;
@@ -11,6 +11,7 @@ export interface CommunityData {
   };
   teamMembers: Record<number, Belongs[]>;
   teamParishes: Record<number, Parish[]>;
+  stepLogs: CommunityStepLog[];
   loading: boolean;
   error: string | null;
 }
@@ -33,6 +34,7 @@ export function useCommunityData(communityId: number): CommunityData & {
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamMembers, setTeamMembers] = useState<Record<number, Belongs[]>>({});
   const [teamParishes, setTeamParishes] = useState<Record<number, Parish[]>>({});
+  const [stepLogs, setStepLogs] = useState<CommunityStepLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +53,17 @@ export function useCommunityData(communityId: number): CommunityData & {
         .select(`
           *,
           parish:parishes(*),
-          step_way:step_ways(*)
+          step_way:step_ways(*),
+          cathechist_team:teams!cathechist_team_id(
+            *,
+            belongs(
+              is_responsible_for_the_team,
+              person:people(person_name)
+            ),
+            parish_teams(
+              parish:parishes(name)
+            )
+          )
         `)
         .eq('id', communityId)
         .single();
@@ -131,15 +143,28 @@ export function useCommunityData(communityId: number): CommunityData & {
         });
       }
 
+      // Fetch step logs
+      const { data: stepLogsData, error: stepLogsError } = await supabase
+        .from('community_step_log')
+        .select(`
+          *,
+          step_way:step_ways(*)
+        `)
+        .eq('community_id', communityId)
+        .order('id', { ascending: false });
+
+      if (stepLogsError) throw stepLogsError;
+
       setCommunity(communityData);
       setBrothers(brothersData || []);
       setTeams(teamsData || []);
       setTeamMembers(membersByTeam);
       setTeamParishes(parishesByTeam);
+      setStepLogs(stepLogsData || []);
 
-    } catch (err) {
-      console.error('Error fetching community data:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } catch (err: any) {
+      console.error('Error fetching community data:', JSON.stringify(err));
+      setError(err?.message || (typeof err === 'string' ? err : 'Error desconocido'));
     } finally {
       setLoading(false);
     }
@@ -249,6 +274,7 @@ export function useCommunityData(communityId: number): CommunityData & {
     teams: groupedTeams,
     teamMembers,
     teamParishes,
+    stepLogs,
     loading,
     error,
     mergedBrothers,

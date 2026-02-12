@@ -136,6 +136,71 @@ export function useAllParishOptions() {
   });
 }
 
+// Hook específico para equipos de catequistas (con responsables y parroquias en una sola query)
+export function useCathechistTeamOptions() {
+  const supabase = useMemo(() => createClient(), []);
+  const [options, setOptions] = useState<{ value: string | number; label: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchOptions = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: queryError } = await supabase
+        .from('teams')
+        .select(`
+          id,
+          name,
+          belongs(
+            is_responsible_for_the_team,
+            person:people(person_name)
+          ),
+          parish_teams(
+            parish:parishes(name)
+          )
+        `)
+        .eq('team_type_id', 3)
+        .eq('belongs.is_responsible_for_the_team', true)
+        .order('name', { ascending: true });
+
+      if (queryError) throw queryError;
+
+      const formattedOptions = (data || []).map((team: any) => {
+        const responsibles = (team.belongs || [])
+          .map((b: any) => b.person?.person_name)
+          .filter(Boolean);
+
+        const parishes = (team.parish_teams || [])
+          .map((pt: any) => pt.parish?.name)
+          .filter(Boolean);
+
+        // Construir label descriptivo: "Juan, María - Pquia La Visitación"
+        const parts: string[] = [];
+        if (responsibles.length > 0) parts.push(responsibles.join(', '));
+        if (parishes.length > 0) parts.push(parishes.join(', '));
+
+        const label = parts.length > 0 ? parts.join(' - ') : team.name;
+
+        return { value: team.id, label };
+      });
+
+      setOptions(formattedOptions);
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar los equipos de catequistas');
+      console.error('Error fetching catechist team options:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOptions();
+  }, []);
+
+  return { options, loading, error, refetch: fetchOptions };
+}
+
 // Hook específico para personas (para cónyuges)
 export function usePeopleOptions(excludeId?: number) {
   const filters: Record<string, any> = {};

@@ -174,11 +174,11 @@ input[type="date"].date-input::-moz-calendar-picker-indicator,
   z-index: 1;
 }
 
-/* ===== Estilos de impresión - Ficha de Comunidad (Hoja Oficio) ===== */
+/* ===== Estilos de impresion - Reporte Profesional de Comunidad ===== */
 @media print {
   @page {
-    size: legal portrait; /* 8.5" x 13" */
-    margin: 1.5cm;
+    size: legal portrait;
+    margin: 2.5cm;
   }
 
   /* Ocultar elementos no imprimibles */
@@ -194,12 +194,13 @@ input[type="date"].date-input::-moz-calendar-picker-indicator,
     background: white !important;
     color: black !important;
     font-size: 11pt;
+    line-height: 1.4;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* Contenedor principal de impresión - una sola columna */
-  .print-container {
+  /* === Reporte profesional === */
+  .print-report {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -207,53 +208,151 @@ input[type="date"].date-input::-moz-calendar-picker-indicator,
     margin: 0 !important;
   }
 
-  /* Secciones de impresión */
-  .print-section {
-    break-inside: avoid;
-    margin-bottom: 0.4cm;
-    border: 1px solid #ccc !important;
-    padding: 0.3cm !important;
-    box-shadow: none !important;
-  }
-
-  /* Título de la ficha */
-  .print-title {
-    font-size: 16pt;
-    font-weight: bold;
+  .print-report-header {
     text-align: center;
     margin-bottom: 0.3cm;
-    border: none !important;
   }
 
-  .print-subtitle {
-    font-size: 11pt;
-    text-align: center;
+  .print-report-title {
+    font-size: 18pt;
+    font-weight: bold;
+    margin: 0 0 0.15cm 0;
+    color: black;
+  }
+
+  .print-report-parish {
+    font-size: 12pt;
     color: #555;
-    margin-bottom: 0.5cm;
+    margin: 0;
   }
 
-  /* Tablas compactas */
-  .print-section table {
+  .print-divider {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 0.35cm 0;
+  }
+
+  .print-report-section {
+    break-inside: avoid;
+    margin-bottom: 0.1cm;
+  }
+
+  .print-report-section-title {
+    font-size: 14pt;
+    font-weight: 600;
+    margin: 0 0 0.25cm 0;
+    color: #222;
+  }
+
+  /* Info grid: 2 columnas */
+  .print-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.15cm 0.6cm;
+  }
+
+  .print-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.02cm;
+  }
+
+  .print-info-label {
     font-size: 9pt;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .print-info-value {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #111;
+  }
+
+  /* Tablas limpias */
+  .print-table {
     width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin-top: 0.15cm;
   }
 
-  .print-section table th,
-  .print-section table td {
-    padding: 2px 6px !important;
+  .print-table thead tr {
+    background-color: #f5f5f5 !important;
   }
 
-  /* Badges legibles en impresión */
-  .print-section [data-slot="badge"] {
-    border: 1px solid #999 !important;
-    background: white !important;
-    color: black !important;
-    font-size: 8pt;
+  .print-table th {
+    text-align: left;
+    padding: 0.12cm 0.25cm;
+    font-weight: 600;
+    font-size: 9pt;
+    color: #444;
+    border-bottom: 1px solid #ccc;
   }
 
-  /* Cards sin sombra */
-  .print-section [data-slot="card"] {
-    box-shadow: none !important;
-    border: 1px solid #ddd !important;
+  .print-table td {
+    padding: 0.1cm 0.25cm;
+    border-bottom: 1px solid #eee;
+    color: #222;
+  }
+
+  .print-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Sub-bloques de equipos */
+  .print-team-block {
+    margin-bottom: 0.3cm;
+    break-inside: avoid;
+  }
+
+  .print-team-block:last-child {
+    margin-bottom: 0;
+  }
+
+  .print-team-subtitle {
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0 0 0.05cm 0;
+    color: #333;
+  }
+
+  .print-team-parishes {
+    font-size: 10pt;
+    color: #666;
+    font-style: italic;
+    margin: 0 0 0.1cm 0;
+  }
+
+  .print-badge-responsible {
+    font-weight: 600;
+    font-size: 9pt;
+    color: #2a7d2a;
+  }
+
+  .print-catechist-list {
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #222;
+    margin: 0;
+  }
+
+  .print-empty-text {
+    font-size: 10pt;
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 0.15cm 0;
+  }
+
+  /* Footer */
+  .print-footer {
+    margin-top: 0.6cm;
+    padding-top: 0.25cm;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 9pt;
+    color: #999;
   }
 }

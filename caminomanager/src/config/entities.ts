@@ -437,6 +437,14 @@ export const communityConfig: EntityConfig<Community> = {
       type: 'date',
       required: false,
       placeholder: 'Seleccione la fecha'
+    },
+    {
+      name: 'cathechist_team_id',
+      label: 'Equipo de Catequistas',
+      type: 'select',
+      required: false,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione un equipo de catequistas'
     }
   ],
   searchFields: ['number', 'parish'],
@@ -454,6 +462,12 @@ export const communityConfig: EntityConfig<Community> = {
       tableName: 'step_ways',
       displayField: 'name',
       alias: 'step_way'
+    },
+    {
+      foreignKey: 'cathechist_team_id',
+      tableName: 'teams',
+      displayField: 'name',
+      alias: 'cathechist_team'
     }
   ]
 };
@@ -495,6 +509,17 @@ export const communityStepLogConfig: EntityConfig<CommunityStepLog> = {
       placeholder: 'Ingrese el nombre del catequista'
     },
     {
+      name: 'outcome',
+      label: 'Estado',
+      type: 'select',
+      required: false,
+      options: [
+        { value: 'true', label: 'Cerrada' },
+        { value: 'false', label: 'Abierta' }
+      ],
+      placeholder: 'Seleccione el estado del paso'
+    },
+    {
       name: 'notes',
       label: 'Notas',
       type: 'textarea',
@@ -504,7 +529,7 @@ export const communityStepLogConfig: EntityConfig<CommunityStepLog> = {
   ],
   searchFields: ['principal_catechist_name', 'notes'],
   sortableFields: ['date_of_step', 'principal_catechist_name'],
-  defaultSort: { field: 'date_of_step', asc: false },
+  defaultSort: { field: 'id', asc: false },
   foreignKeys: [
     {
       foreignKey: 'community_id',

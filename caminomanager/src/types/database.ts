@@ -72,6 +72,7 @@ export interface Community extends BaseEntity {
   // Relations
   parish?: Parish;
   step_way?: StepWay;
+  cathechist_team?: Team;
 }
 
 export interface Brother extends BaseEntity {
@@ -80,16 +81,24 @@ export interface Brother extends BaseEntity {
   person?: Person;
 }
 
+export interface Priest extends BaseEntity {
+  person_id: number;
+  is_parish_priest: boolean;
+  parish_id: number;
+  person?: Person;
+  parish?: Parish;
+}
+
 export interface Team extends BaseEntity {
   name: string;
   team_type_id: number;
-  community_id: number;
+  community_id: number | null;
   team_type?: TeamType;
 }
 
 export interface Belongs extends BaseEntity {
   person_id: number;
-  community_id: number;
+  community_id: number | null;
   team_id: number;
   is_responsible_for_the_team: boolean;
   person?: Person;

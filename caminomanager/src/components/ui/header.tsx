@@ -7,6 +7,7 @@ import "@radix-ui/themes/styles.css";
 
 interface HeaderProps {
   userEmail?: string;
+  userName?: string;
   title?: string;
 }
 
@@ -20,7 +21,7 @@ function getInitials(email?: string) {
   );
 }
 
-export default function Header({ userEmail, title }: HeaderProps) {
+export default function Header({ userEmail, userName, title }: HeaderProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -54,7 +55,7 @@ export default function Header({ userEmail, title }: HeaderProps) {
   }, [menuOpen]);
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-sm border-b h-16 flex items-center px-4 justify-between">
+    <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-amber-100 h-16 flex items-center px-4 justify-between">
       <div className="font-semibold text-xl text-gray-900 dark:text-white">
         {title ? title : null}
       </div>
@@ -62,20 +63,27 @@ export default function Header({ userEmail, title }: HeaderProps) {
         <DropdownMenu.Root open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenu.Trigger asChild>
             <button
-              className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center cursor-pointer border-2 border-gray-300 dark:border-gray-600 focus:outline-none"
+              className="flex items-center gap-2 rounded-full px-1 py-1 cursor-pointer focus:outline-none hover:bg-amber-50 dark:hover:bg-gray-800 transition-colors"
               aria-label="Abrir menú de usuario"
             >
-              <span className="text-gray-700 dark:text-gray-200 font-bold text-lg">
-                {getInitials(userEmail)}
-              </span>
+              {userName && (
+                <span className="text-sm text-gray-700 dark:text-gray-200 font-medium pl-2 hidden sm:inline">
+                  {userName}
+                </span>
+              )}
+              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-gray-700 flex items-center justify-center border-2 border-amber-300 dark:border-gray-600">
+                <span className="text-amber-800 dark:text-gray-200 font-bold text-lg">
+                  {getInitials(userEmail)}
+                </span>
+              </div>
             </button>
           </DropdownMenu.Trigger>
-          <DropdownMenu.Content align="end" sideOffset={8} className="min-w-[200px] rounded-md bg-white dark:bg-gray-900 p-2 shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+          <DropdownMenu.Content align="end" sideOffset={8} className="min-w-[200px] rounded-lg bg-white dark:bg-gray-900 p-2 shadow-lg border border-gray-200 dark:border-gray-700 z-50">
             <DropdownMenu.Label className="px-2 py-1.5 text-xs text-gray-500 dark:text-gray-400 font-semibold">Cuenta</DropdownMenu.Label>
             <DropdownMenu.Item asChild>
               <Link
                 href="/protected/account"
-                className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer hover:bg-amber-50 dark:hover:bg-gray-800"
                 onClick={() => setMenuOpen(false)}
               >
                 <UserIcon className="w-4 h-4" />
@@ -85,7 +93,7 @@ export default function Header({ userEmail, title }: HeaderProps) {
             <DropdownMenu.Separator className="my-2 h-px bg-gray-200 dark:bg-gray-700" />
             <DropdownMenu.Item asChild>
               <button
-                className="flex items-center gap-2 w-full px-2 py-2 rounded-md cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 w-full px-2 py-2 rounded-md cursor-pointer hover:bg-amber-50 dark:hover:bg-gray-800"
                 onClick={() => {
                   toggleDarkMode();
                   setMenuOpen(false);
@@ -102,7 +110,7 @@ export default function Header({ userEmail, title }: HeaderProps) {
                     type="checkbox"
                     checked={darkMode}
                     readOnly
-                    className="accent-blue-600"
+                    className="accent-amber-600"
                   />
                 </span>
               </button>
@@ -121,7 +129,7 @@ export default function Header({ userEmail, title }: HeaderProps) {
                         'Content-Type': 'application/json',
                       },
                     });
-                    
+
                     if (response.ok) {
                       // Redirect to login page
                       window.location.href = '/login';

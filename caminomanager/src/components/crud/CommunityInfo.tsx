@@ -40,6 +40,27 @@ export function CommunityInfo({ community, loading, onEdit }: CommunityInfoProps
     );
   }
 
+  // Construir label del equipo de catequistas asignado
+  const catechistTeamLabel = (() => {
+    const team = community?.cathechist_team as any;
+    if (!team) return null;
+
+    const responsibles = (team.belongs || [])
+      .filter((b: any) => b.is_responsible_for_the_team)
+      .map((b: any) => b.person?.person_name)
+      .filter(Boolean);
+
+    const parishes = (team.parish_teams || [])
+      .map((pt: any) => pt.parish?.name)
+      .filter(Boolean);
+
+    const parts: string[] = [];
+    if (responsibles.length > 0) parts.push(responsibles.join(', '));
+    if (parishes.length > 0) parts.push(parishes.join(', '));
+
+    return parts.length > 0 ? parts.join(' - ') : team.name;
+  })();
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'No especificada';
     return new Date(dateString).toLocaleDateString('es-CO');
@@ -79,17 +100,7 @@ export function CommunityInfo({ community, loading, onEdit }: CommunityInfoProps
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Número</label>
-            <p className="text-sm font-semibold text-gray-900">{community.number}</p>
-          </div>
-          
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hermanos Actuales</label>
-            <p className="text-sm font-semibold text-gray-700">{community.actual_brothers || 'No especificado'}</p>
-          </div>
-          
+        <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha de Nacimiento</label>
             <p className="text-sm text-gray-700">
@@ -101,26 +112,34 @@ export function CommunityInfo({ community, loading, onEdit }: CommunityInfoProps
               )}
             </p>
           </div>
-          
+
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hermanos Iniciales</label>
             <p className="text-sm text-gray-700">{community.born_brothers || 'No especificado'}</p>
           </div>
-          
-          <div className="space-y-1 col-span-2">
-            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Parroquia</label>
-            <p className="text-sm text-gray-700">{community.parish?.name || 'No especificada'}</p>
-          </div>
-          
+
+          <div />
+
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Etapa Actual</label>
             <p className="text-sm text-gray-700">{community.step_way?.name || 'No especificada'}</p>
           </div>
-          
+
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Fecha Última Etapa</label>
             <p className="text-sm text-gray-700">{formatDate(community.last_step_way_date)}</p>
           </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hermanos Actuales</label>
+            <p className="text-sm font-semibold text-gray-700">{community.actual_brothers || 'No especificado'}</p>
+          </div>
+
+          <div className="space-y-1 col-span-3">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Equipo de Catequistas</label>
+            <p className="text-sm text-gray-700">{catechistTeamLabel || 'No asignado'}</p>
+          </div>
+
         </div>
       </CardContent>
     </Card>

@@ -13,7 +13,7 @@ import {
 import { Theme } from '@radix-ui/themes';
 import { Team, Belongs, Parish } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
-import { Trash2, UserMinus, Crown } from 'lucide-react';
+import { Trash2, UserMinus, Crown, UserPlus } from 'lucide-react';
 
 interface TeamSectionProps {
   team: Team;
@@ -21,11 +21,12 @@ interface TeamSectionProps {
   parishes: Parish[];
   loading?: boolean;
   teamNumber?: number;
-  communityId: number;
+  communityId: number | null;
   onDelete?: () => void;
+  onAddMember?: () => void;
 }
 
-export function TeamSection({ team, members, parishes, loading, teamNumber, communityId, onDelete }: TeamSectionProps) {
+export function TeamSection({ team, members, parishes, loading, teamNumber, communityId, onDelete, onAddMember }: TeamSectionProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [removingResponsibleId, setRemovingResponsibleId] = useState<string | null>(null);
   const [assigningResponsibleId, setAssigningResponsibleId] = useState<string | null>(null);
@@ -141,7 +142,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
   // Verificar si ya existe un responsable en el equipo
   const hasResponsible = mergedMembers.some(member => member.isResponsible);
 
-  const handleDelete = async (member: { id: string; name: string; personIds: number[] }) => {
+  const handleDelete = async (member: { id: string; name: string; personIds: number[]; belongsIds: number[] }) => {
     if (!window.confirm(`¿Estás seguro de que deseas eliminar a ${member.name} de este equipo?`)) {
       return;
     }
@@ -149,17 +150,18 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
     setDeletingId(member.id);
     try {
       const supabase = createClient();
-      
-      // Delete all belongs records for all person IDs in this merged member
-      for (const personId of member.personIds) {
-        const { error } = await supabase
+
+      // Delete belongs records directly by their IDs
+      if (member.belongsIds.length > 0) {
+        const { error, count } = await supabase
           .from('belongs')
-          .delete()
-          .eq('person_id', personId)
-          .eq('team_id', team.id)
-          .eq('community_id', communityId);
+          .delete({ count: 'exact' })
+          .in('id', member.belongsIds);
 
         if (error) throw error;
+        if (count === 0) {
+          throw new Error('No tienes permisos para eliminar miembros del equipo. Contacta al administrador.');
+        }
       }
 
       // Refresh the community data
@@ -221,7 +223,6 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
           .from('belongs')
           .select('id')
           .eq('team_id', team.id)
-          .eq('community_id', communityId)
           .eq('is_responsible_for_the_team', true);
 
         if (fetchError) throw fetchError;
@@ -279,8 +280,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       const { error: belongsError } = await supabase
         .from('belongs')
         .delete()
-        .eq('team_id', team.id)
-        .eq('community_id', communityId);
+        .eq('team_id', team.id);
 
       if (belongsError) throw belongsError;
 
@@ -317,19 +317,33 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{getTeamTitle()}</CardTitle>
-          <Button
-            size="1"
-            variant="outline"
-            radius="small"
-            color="red"
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={deletingTeam || deletingId !== null || removingResponsibleId !== null || assigningResponsibleId !== null}
-            title="Eliminar equipo completo"
-            className="print-hidden"
-          >
-            <Trash2 className="h-4 w-4" />
-            {deletingTeam ? 'Eliminando...' : 'Eliminar Equipo'}
-          </Button>
+          <div className="flex items-center gap-2 print-hidden">
+            {onAddMember && (
+              <Button
+                size="1"
+                variant="outline"
+                radius="small"
+                onClick={onAddMember}
+                disabled={deletingTeam || deletingId !== null}
+                title="Agregar miembro al equipo"
+              >
+                <UserPlus className="h-4 w-4" />
+                Agregar
+              </Button>
+            )}
+            <Button
+              size="1"
+              variant="outline"
+              radius="small"
+              color="red"
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={deletingTeam || deletingId !== null || removingResponsibleId !== null || assigningResponsibleId !== null}
+              title="Eliminar equipo completo"
+            >
+              <Trash2 className="h-4 w-4" />
+              {deletingTeam ? 'Eliminando...' : 'Eliminar Equipo'}
+            </Button>
+          </div>
         </div>
         {team.team_type_id === 3 && parishes.length > 0 && (
           <div className="mt-2">

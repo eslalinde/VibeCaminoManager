@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCommunityData } from '@/hooks/useCommunityData';
 import { CommunityInfo } from '@/components/crud/CommunityInfo';
 import { BrothersList } from '@/components/crud/BrothersList';
 import { TeamSection } from '@/components/crud/TeamSection';
 import { CommunityStepLogCompact } from '@/components/crud/CommunityStepLogCompact';
+import { CommunityPrintView } from '@/components/crud/CommunityPrintView';
 import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { communityConfig } from '@/config/entities';
+import { SelectBrotherForTeamModal } from '@/components/crud/SelectBrotherForTeamModal';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Plus, Printer } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
@@ -20,6 +22,7 @@ export default function CommunityDetailPage() {
   const communityId = parseInt(params.id as string);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [addToTeamId, setAddToTeamId] = useState<number | null>(null);
   
   const {
     community,
@@ -27,10 +30,22 @@ export default function CommunityDetailPage() {
     teams,
     teamMembers,
     teamParishes,
+    stepLogs,
     loading,
     error,
     refreshCommunity
   } = useCommunityData(communityId);
+
+  // Construir nombre de catequistas responsables del equipo por defecto
+  const defaultCatechistName = useMemo(() => {
+    const team = community?.cathechist_team as any;
+    if (!team?.belongs) return '';
+    const names = team.belongs
+      .filter((b: any) => b.is_responsible_for_the_team)
+      .map((b: any) => b.person?.person_name)
+      .filter(Boolean);
+    return names.join(' y ');
+  }, [community?.cathechist_team]);
 
   const handleEdit = () => {
     setIsEditModalOpen(true);
@@ -38,16 +53,21 @@ export default function CommunityDetailPage() {
 
   const handleSave = async (data: Omit<Community, 'id' | 'created_at' | 'updated_at'>) => {
     if (!community?.id) return;
-    
+
     setIsSaving(true);
     try {
       const supabase = createClient();
-      const { error: updateError } = await supabase
+      const { data: updatedRows, error: updateError } = await supabase
         .from('communities')
         .update(data)
-        .eq('id', community.id);
+        .eq('id', community.id)
+        .select();
 
       if (updateError) throw updateError;
+
+      if (!updatedRows || updatedRows.length === 0) {
+        throw new Error('No tienes permisos para editar comunidades. Contacta al administrador para que te asigne el rol de contributor o admin.');
+      }
 
       // Refrescar los datos de la comunidad
       await refreshCommunity();
@@ -115,6 +135,24 @@ export default function CommunityDetailPage() {
     }
   };
 
+  const handleAddBrotherToTeam = async (personIds: number[]) => {
+    if (!addToTeamId) return;
+    const supabase = createClient();
+
+    for (const personId of personIds) {
+      const { error } = await supabase.from('belongs').insert({
+        person_id: personId,
+        team_id: addToTeamId,
+        community_id: communityId,
+        is_responsible_for_the_team: false,
+      });
+
+      if (error) throw error;
+    }
+
+    await refreshCommunity();
+  };
+
   if (error) {
     return (
       <div className="container mx-auto p-6">
@@ -126,150 +164,167 @@ export default function CommunityDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6 print-container">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-4 mb-4 print-hidden">
-          <Button
-            variant="outline"
-            size="2"
-            onClick={() => router.push('/protected/communities')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Regresar a Comunidades
-          </Button>
-          <Button
-            variant="outline"
-            size="2"
-            onClick={() => window.print()}
-            className="flex items-center gap-2"
-          >
-            <Printer className="h-4 w-4" />
-            Imprimir Ficha
-          </Button>
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Screen view - hidden when printing */}
+      <div className="print:hidden">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              size="2"
+              onClick={() => router.push('/protected/communities')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Regresar a Comunidades
+            </Button>
+            <Button
+              variant="outline"
+              size="2"
+              onClick={() => window.print()}
+              className="flex items-center gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              Imprimir Ficha
+            </Button>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Comunidad {community?.number || 'Cargando...'}
+          </h1>
+          <p className="text-gray-600 mt-2">
+            {community?.parish?.name || 'Parroquia no especificada'}
+          </p>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 print-title">
-          Comunidad {community?.number || 'Cargando...'}
-        </h1>
-        <p className="text-gray-600 mt-2 print-subtitle">
-          {community?.parish?.name || 'Parroquia no especificada'}
-        </p>
-      </div>
 
-      {/* Main Content - 50/50 Split (single column on print) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 print-container">
-        {/* Left: Community Info + Teams */}
-        <div className="space-y-6">
-          {/* Community Info */}
-          <div className="print-section">
-            <CommunityInfo community={community} loading={loading} onEdit={handleEdit} />
-          </div>
+        {/* Main Content - 50/50 Split */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Community Info + Teams */}
+          <div className="space-y-6">
+            {/* Community Info */}
+            <div>
+              <CommunityInfo community={community} loading={loading} onEdit={handleEdit} />
+            </div>
 
-          {/* Responsables Team */}
-          <div className="h-80 print:h-auto">
-            {teams.responsables.length > 0 ? (
-              teams.responsables.map((team) => (
-                <div key={team.id || `responsable-${Math.random()}`} className="print-section">
-                  <TeamSection
-                    team={team}
-                    members={team.id ? teamMembers[team.id] || [] : []}
-                    parishes={team.id ? teamParishes[team.id] || [] : []}
-                    loading={loading}
-                    communityId={communityId}
-                    onDelete={refreshCommunity}
-                  />
-                </div>
-              ))
-            ) : (
-              <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 print-hidden">
-                <div className="text-center space-y-4">
-                  <p className="text-gray-500 text-lg">No hay equipo de responsables</p>
-                  <p className="text-gray-400 text-sm">Crea el equipo de responsables para comenzar</p>
-                  <Button
-                    onClick={handleCreateResponsablesTeam}
-                    className="flex items-center gap-2"
-                    disabled={loading}
-                  >
-                    <Plus className="h-4 w-4" />
-                    Crear Equipo de Responsables
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Catequistas Teams */}
-          <div className="space-y-4">
-            {teams.catequistas.length > 0 ? (
-              <>
-                {teams.catequistas.map((team, index) => (
-                  <div key={team.id || `catequista-${index}`} className="print-section">
+            {/* Responsables Team */}
+            <div className="h-80">
+              {teams.responsables.length > 0 ? (
+                teams.responsables.map((team) => (
+                  <div key={team.id || `responsable-${Math.random()}`}>
                     <TeamSection
                       team={team}
                       members={team.id ? teamMembers[team.id] || [] : []}
                       parishes={team.id ? teamParishes[team.id] || [] : []}
                       loading={loading}
-                      teamNumber={index + 1}
                       communityId={communityId}
                       onDelete={refreshCommunity}
+                      onAddMember={() => setAddToTeamId(team.id!)}
                     />
                   </div>
-                ))}
-                <div className="flex justify-center pt-2 print-hidden">
-                  <Button
-                    onClick={handleCreateCatequistasTeam}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    disabled={loading}
-                  >
-                    <Plus className="h-4 w-4" />
-                    Agregar Equipo de Catequistas
-                  </Button>
+                ))
+              ) : (
+                <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                  <div className="text-center space-y-4">
+                    <p className="text-gray-500 text-lg">No hay equipo de responsables</p>
+                    <p className="text-gray-400 text-sm">Crea el equipo de responsables para comenzar</p>
+                    <Button
+                      onClick={handleCreateResponsablesTeam}
+                      className="flex items-center gap-2"
+                      disabled={loading}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Crear Equipo de Responsables
+                    </Button>
+                  </div>
                 </div>
-              </>
-            ) : (
-              <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 print-hidden">
-                <div className="text-center space-y-4">
-                  <p className="text-gray-500 text-lg">No hay equipos de catequistas</p>
-                  <p className="text-gray-400 text-sm">Crea el primer equipo de catequistas para comenzar</p>
-                  <Button
-                    onClick={handleCreateCatequistasTeam}
-                    className="flex items-center gap-2"
-                    disabled={loading}
-                  >
-                    <Plus className="h-4 w-4" />
-                    Crear Equipo de Catequistas
-                  </Button>
+              )}
+            </div>
+
+            {/* Catequistas Teams */}
+            <div className="space-y-4">
+              {teams.catequistas.length > 0 ? (
+                <>
+                  {teams.catequistas.map((team, index) => (
+                    <div key={team.id || `catequista-${index}`}>
+                      <TeamSection
+                        team={team}
+                        members={team.id ? teamMembers[team.id] || [] : []}
+                        parishes={team.id ? teamParishes[team.id] || [] : []}
+                        loading={loading}
+                        teamNumber={index + 1}
+                        communityId={communityId}
+                        onDelete={refreshCommunity}
+                        onAddMember={() => setAddToTeamId(team.id!)}
+                      />
+                    </div>
+                  ))}
+                  <div className="flex justify-center pt-2">
+                    <Button
+                      onClick={handleCreateCatequistasTeam}
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      disabled={loading}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Agregar Equipo de Catequistas
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                  <div className="text-center space-y-4">
+                    <p className="text-gray-500 text-lg">No hay equipos de catequistas</p>
+                    <p className="text-gray-400 text-sm">Crea el primer equipo de catequistas para comenzar</p>
+                    <Button
+                      onClick={handleCreateCatequistasTeam}
+                      className="flex items-center gap-2"
+                      disabled={loading}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Crear Equipo de Catequistas
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right: Step Log + Brothers List */}
-        <div className="space-y-4">
-          {/* Step Log */}
-          <div className="print-section">
-            <CommunityStepLogCompact
-              communityId={communityId}
-              communityNumber={community?.number || ''}
-            />
+              )}
+            </div>
           </div>
 
-          {/* Brothers List */}
-          <div className="flex-1 print-hidden">
-            <BrothersList
-              brothers={mergedBrothers}
-              loading={loading}
-              communityId={communityId}
-              teamMembers={teamMembers}
-              onDelete={refreshCommunity}
-              onAdd={refreshCommunity}
-            />
+          {/* Right: Step Log + Brothers List */}
+          <div className="space-y-4">
+            {/* Step Log */}
+            <div>
+              <CommunityStepLogCompact
+                communityId={communityId}
+                communityNumber={community?.number || ''}
+                onStepLogAdded={refreshCommunity}
+                defaultCatechistName={defaultCatechistName}
+                actualBrothers={community?.actual_brothers}
+              />
+            </div>
+
+            {/* Brothers List */}
+            <div className="flex-1">
+              <BrothersList
+                brothers={mergedBrothers}
+                loading={loading}
+                communityId={communityId}
+                teamMembers={teamMembers}
+                onDelete={refreshCommunity}
+                onAdd={refreshCommunity}
+              />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Print view - only visible when printing */}
+      <CommunityPrintView
+        community={community}
+        teams={teams}
+        teamMembers={teamMembers}
+        teamParishes={teamParishes}
+        stepLogs={stepLogs}
+      />
 
       {/* Modal de edición */}
       <DynamicEntityModal
@@ -280,6 +335,15 @@ export default function CommunityDetailPage() {
         fields={communityConfig.fields}
         title="Editar Comunidad"
         loading={isSaving}
+      />
+
+      {/* Modal para agregar hermano a equipo */}
+      <SelectBrotherForTeamModal
+        open={addToTeamId !== null}
+        onClose={() => setAddToTeamId(null)}
+        onSelect={handleAddBrotherToTeam}
+        brothers={mergedBrothers}
+        teamMembers={addToTeamId ? teamMembers[addToTeamId] || [] : []}
       />
     </div>
   );

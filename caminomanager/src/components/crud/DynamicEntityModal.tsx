@@ -26,6 +26,7 @@ import {
   useParishOptions,
   useAllParishOptions,
   usePeopleOptions,
+  useCathechistTeamOptions,
   useEntityOptions,
 } from "@/hooks/useEntityOptions";
 
@@ -73,10 +74,11 @@ export function DynamicEntityModal<T extends BaseEntity>({
     ? useParishOptions(formData.city_id)
     : useAllParishOptions();
   const { options: peopleOptions, loading: peopleLoading } = usePeopleOptions(initial?.id);
-  const { options: stepWayOptions } = useEntityOptions({ 
+  const { options: stepWayOptions } = useEntityOptions({
     tableName: 'step_ways',
     orderBy: { field: 'order_num', asc: true }
   });
+  const { options: cathechistTeamOptions } = useCathechistTeamOptions();
 
   useEffect(() => {
     if (open) {
@@ -230,15 +232,15 @@ export function DynamicEntityModal<T extends BaseEntity>({
     // Preparar datos con tipos correctos
     const preparedData = { ...formData };
     fields.forEach(field => {
+      const val = preparedData[field.name];
+      const isEmpty = val === '' || val === null || val === undefined;
+
       if (field.name.includes('_id')) {
-        if (preparedData[field.name] === '' || preparedData[field.name] === null || preparedData[field.name] === undefined) {
-          // For optional fields, convert empty values to null
-          // For required fields, this will be caught by validation
-          preparedData[field.name] = null;
-        } else {
-          // Convert valid IDs to numbers
-          preparedData[field.name] = parseInt(preparedData[field.name], 10);
-        }
+        preparedData[field.name] = isEmpty ? null : parseInt(val, 10);
+      } else if (field.type === 'number') {
+        preparedData[field.name] = isEmpty ? null : Number(val);
+      } else if (field.type === 'date') {
+        preparedData[field.name] = isEmpty ? null : val;
       }
     });
 
@@ -246,8 +248,9 @@ export function DynamicEntityModal<T extends BaseEntity>({
 
     try {
       await onSave(preparedData as Omit<T, "id" | "created_at" | "updated_at">);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving entity:", error);
+      alert(error?.message || 'Error al guardar. Por favor, intenta de nuevo.');
     }
   };
 
@@ -298,6 +301,8 @@ export function DynamicEntityModal<T extends BaseEntity>({
         return peopleOptions && peopleOptions.length > 0 ? peopleOptions : [];
       case "step_way_id":
         return stepWayOptions && stepWayOptions.length > 0 ? stepWayOptions : [];
+      case "cathechist_team_id":
+        return cathechistTeamOptions && cathechistTeamOptions.length > 0 ? cathechistTeamOptions : [];
       default:
         console.log(`❌ Field ${fieldName} has no options`);
         return fieldName.includes("_id") ? [] : undefined;

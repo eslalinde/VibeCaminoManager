@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useCrud } from '@/hooks/useCrud';
 import { CommunityStepLog as CommunityStepLogType } from '@/types/database';
-import { Calendar, FileText, ChevronDown, ChevronUp, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { Calendar, FileText, ChevronDown, ChevronUp, ExternalLink, Plus, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { communityStepLogConfig } from '@/config/entities';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -17,9 +17,12 @@ import { createClient } from '@/utils/supabase/client';
 interface CommunityStepLogCompactProps {
   communityId: number;
   communityNumber: string;
+  onStepLogAdded?: () => void;
+  defaultCatechistName?: string;
+  actualBrothers?: number;
 }
 
-export function CommunityStepLogCompact({ communityId, communityNumber }: CommunityStepLogCompactProps) {
+export function CommunityStepLogCompact({ communityId, communityNumber, onStepLogAdded, defaultCatechistName, actualBrothers }: CommunityStepLogCompactProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -40,7 +43,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
   const { data: stepLogs, loading, count, fetchData, create, delete: deleteEntry } = useCrud<CommunityStepLogType>({
     tableName: 'community_step_log',
     searchFields: ['principal_catechist_name', 'notes'],
-    defaultSort: { field: 'date_of_step', asc: false },
+    defaultSort: { field: 'id', asc: false },
     pageSize: 10, // Usar un pageSize fijo más grande
     foreignKeys
   });
@@ -58,18 +61,66 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
     return new Date(dateString).toLocaleDateString('es-CO');
   };
 
+  const getOutcomeBadge = (outcome?: boolean) => {
+    if (outcome === true) {
+      return <Badge variant="default" className="bg-green-100 text-green-800 text-xs"><CheckCircle className="w-3 h-3 mr-1" />Cerrada</Badge>;
+    } else if (outcome === false) {
+      return <Badge variant="default" className="bg-yellow-100 text-yellow-800 text-xs"><XCircle className="w-3 h-3 mr-1" />Abierta</Badge>;
+    }
+    return null;
+  };
+
   const handleAddEntry = async (data: any) => {
     setIsSaving(true);
     try {
-      // Asegurar que el community_id esté establecido
+      // Extraer campo virtual brothers_count
+      const brothersCount = data.brothers_count ? parseInt(data.brothers_count, 10) : null;
+      delete data.brothers_count;
+
+      // Anexar hermanos a las notas si se proporcionó
+      if (brothersCount) {
+        data.notes = data.notes
+          ? `${data.notes}\nHermanos: ${brothersCount}`
+          : `Hermanos: ${brothersCount}`;
+      }
+
+      // Convertir outcome de string a boolean
+      const outcomeValue = data.outcome === 'true' ? true : data.outcome === 'false' ? false : null;
+
       const entryData: Omit<CommunityStepLogType, 'id' | 'created_at' | 'updated_at'> = {
         ...data,
         community_id: communityId,
+        outcome: outcomeValue,
       };
-      
+
       await create(entryData);
+
+      // Preparar actualización de la comunidad
+      const communityUpdate: Record<string, any> = {};
+
+      // Si el paso está "Cerrada" y tiene step_way_id, actualizar etapa
+      if (outcomeValue === true && data.step_way_id) {
+        communityUpdate.step_way_id = parseInt(data.step_way_id, 10);
+        communityUpdate.last_step_way_date = data.date_of_step || new Date().toISOString().split('T')[0];
+      }
+
+      // Actualizar hermanos actuales si se proporcionó
+      if (brothersCount) {
+        communityUpdate.actual_brothers = brothersCount;
+      }
+
+      // Hacer un solo update a la comunidad si hay algo que actualizar
+      if (Object.keys(communityUpdate).length > 0) {
+        const supabase = createClient();
+        await supabase
+          .from('communities')
+          .update(communityUpdate)
+          .eq('id', communityId);
+
+        onStepLogAdded?.();
+      }
+
       setIsAddModalOpen(false);
-      // Refrescar los datos
       await fetchData({ filters: { community_id: communityId } });
     } catch (error) {
       console.error('Error adding step log entry:', error);
@@ -79,9 +130,19 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
     }
   };
 
-  // Preparar los campos del formulario, excluyendo community_id ya que se pre-llena
+  // Preparar los campos del formulario, excluyendo community_id y agregando hermanos (virtual)
   const formFields = useMemo(() => {
-    return communityStepLogConfig.fields.filter(field => field.name !== 'community_id');
+    const fields = communityStepLogConfig.fields.filter(field => field.name !== 'community_id');
+    // Insertar campo virtual de hermanos antes de notas
+    const notesIndex = fields.findIndex(f => f.name === 'notes');
+    fields.splice(notesIndex >= 0 ? notesIndex : fields.length, 0, {
+      name: 'brothers_count',
+      label: 'Hermanos Actuales',
+      type: 'number',
+      required: false,
+      placeholder: 'Número de hermanos actuales',
+    });
+    return fields;
   }, []);
 
   const handleDeleteClick = (entryId: number) => {
@@ -189,6 +250,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
                             {entry.step_way && (
                               <Badge variant="outline">{entry.step_way.name}</Badge>
                             )}
+                            {getOutcomeBadge(entry.outcome)}
                           </div>
                           <Button
                             variant="outline"
@@ -240,6 +302,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
                       {entry.step_way && (
                         <Badge variant="outline" className="text-xs">{entry.step_way.name}</Badge>
                       )}
+                      {getOutcomeBadge(entry.outcome)}
                       <Button
                         variant="ghost"
                         size="2"
@@ -276,6 +339,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
                 <tr className="border-b">
                   <th className="text-left py-1 px-2 font-semibold">Fecha</th>
                   <th className="text-left py-1 px-2 font-semibold">Paso</th>
+                  <th className="text-left py-1 px-2 font-semibold">Estado</th>
                   <th className="text-left py-1 px-2 font-semibold">Notas</th>
                 </tr>
               </thead>
@@ -284,6 +348,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
                   <tr key={entry.id} className="border-b border-gray-200">
                     <td className="py-1 px-2 whitespace-nowrap">{formatDate(entry.date_of_step)}</td>
                     <td className="py-1 px-2 whitespace-nowrap">{entry.step_way?.name || '-'}</td>
+                    <td className="py-1 px-2 whitespace-nowrap">{entry.outcome === true ? 'Cerrada' : entry.outcome === false ? 'Abierta' : '-'}</td>
                     <td className="py-1 px-2">{entry.notes || '-'}</td>
                   </tr>
                 ))}
@@ -300,6 +365,8 @@ export function CommunityStepLogCompact({ communityId, communityNumber }: Commun
         onSave={handleAddEntry}
         initial={{
           date_of_step: new Date().toISOString().split('T')[0],
+          principal_catechist_name: defaultCatechistName || '',
+          brothers_count: actualBrothers || '',
         } as any}
         fields={formFields}
         title="Agregar Registro a la Bitácora"

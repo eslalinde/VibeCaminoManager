@@ -38,7 +38,7 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
   const { data: stepLogs, loading, create, fetchData } = useCrud<CommunityStepLogType>({
     tableName: 'community_step_log',
     searchFields: ['principal_catechist_name', 'notes'],
-    defaultSort: { field: 'date_of_step', asc: false },
+    defaultSort: { field: 'id', asc: false },
     foreignKeys
   });
 
@@ -74,9 +74,9 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
 
   const getOutcomeBadge = (outcome?: boolean) => {
     if (outcome === true) {
-      return <Badge variant="default" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Exitoso</Badge>;
+      return <Badge variant="default" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Cerrada</Badge>;
     } else if (outcome === false) {
-      return <Badge variant="destructive" className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />No exitoso</Badge>;
+      return <Badge variant="destructive" className="bg-yellow-100 text-yellow-800"><XCircle className="w-3 h-3 mr-1" />Abierta</Badge>;
     }
     return <Badge variant="secondary">Sin resultado</Badge>;
   };
@@ -166,7 +166,7 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="outcome">Resultado</Label>
+                <Label htmlFor="outcome">Estado</Label>
                 <Select
                   value={newEntry.outcome?.toString() || ''}
                   onValueChange={(value) => setNewEntry(prev => ({ 
@@ -178,8 +178,8 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
                     <SelectValue placeholder="Seleccione el resultado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="true">Exitoso</SelectItem>
-                    <SelectItem value="false">No exitoso</SelectItem>
+                    <SelectItem value="true">Cerrada</SelectItem>
+                    <SelectItem value="false">Abierta</SelectItem>
                     <SelectItem value="">Sin resultado</SelectItem>
                   </SelectContent>
                 </Select>

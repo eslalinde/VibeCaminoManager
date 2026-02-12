@@ -23,26 +23,28 @@ export default function CatechistTeamsReport() {
     try {
       const supabase = createClient();
       
-      // Consulta directa para obtener equipos de catequistas
+      // Consulta para obtener equipos de catequistas (team_type_id = 3)
+      // Excluir el equipo nacional (community_id IS NULL)
       const { data: teamsData, error } = await supabase
         .from('teams')
         .select(`
           id,
           name,
-          team_types(name),
-          communities(
+          team_type:team_types(name),
+          community:communities!community_id(
             number,
-            parishes(
+            parish:parishes(
               name,
-              cities(name)
+              city:cities(name)
             )
           ),
           belongs(
             is_responsible_for_the_team,
-            people(person_name)
+            person:people(person_name)
           )
         `)
-        .eq('team_types.name', 'Catequistas');
+        .eq('team_type_id', 3)
+        .not('community_id', 'is', null);
 
       if (error) {
         console.error('Error fetching catechist teams:', error);
@@ -51,33 +53,23 @@ export default function CatechistTeamsReport() {
 
       // Procesar los datos para el formato de la tabla
       const processedData: CatechistTeamData[] = teamsData
-        ?.filter(team => {
-          // Filtrar solo equipos de catequistas, excluir responsables
-          const teamType = Array.isArray(team.team_types) ? team.team_types[0] : team.team_types;
-          return teamType?.name === 'Catequistas';
-        })
         ?.map(team => {
-          const community = Array.isArray(team.communities) ? team.communities[0] : team.communities;
-          const parish = Array.isArray(community?.parishes) ? community?.parishes[0] : community?.parishes;
-          const city = Array.isArray(parish?.cities) ? parish?.cities[0] : parish?.cities;
-          
+          const community = team.community as any;
+          const parish = community?.parish;
+          const city = parish?.city;
+
           // Encontrar el responsable del equipo
-          const responsible = team.belongs?.find(belong => belong.is_responsible_for_the_team);
-          
-          // Remover " Comunidad X" o variaciones del nombre del equipo
-          let teamName = team.name;
-          // Remover patrones como " Comunidad 1", " Comunidad 2", etc.
-          teamName = teamName.replace(/\s+Comunidad\s+\d+$/i, '');
-          
+          const responsible = team.belongs?.find((b: any) => b.is_responsible_for_the_team);
+
           return {
             team_id: team.id,
-            team_name: teamName,
-            team_type: (Array.isArray(team.team_types) ? team.team_types[0] : team.team_types)?.name || 'N/A',
+            team_name: team.name,
+            team_type: (team.team_type as any)?.name || 'N/A',
             community_number: community?.number || 'N/A',
             parish_name: parish?.name || 'N/A',
             city_name: city?.name || 'N/A',
             members_count: team.belongs?.length || 0,
-            responsible_name: (Array.isArray(responsible?.people) ? responsible?.people[0] : responsible?.people)?.person_name || 'Sin asignar'
+            responsible_name: (responsible as any)?.person?.person_name || 'Sin asignar'
           };
         }) || [];
 
