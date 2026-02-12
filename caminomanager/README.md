@@ -18,7 +18,7 @@ Este proyecto fue creado con [Next.js](https://nextjs.org/) y [Supabase](https:/
 5. Crea un archivo `.env.local` en la raíz del proyecto y agrega:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=tu_url_supabase
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=tu_anon_key
    NEXT_PUBLIC_SITE_URL=http://localhost:3000
    ```
    
