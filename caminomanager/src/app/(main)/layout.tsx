@@ -4,6 +4,7 @@ import Sidebar from "@/components/ui/sidebar";
 import Header from "@/components/ui/header";
 import React from "react";
 import { Theme } from "@radix-ui/themes";
+import { SupabaseAuthListener } from "@/components/auth/SupabaseAuthListener";
 
 export default async function MainLayout({
   children,
@@ -28,6 +29,7 @@ export default async function MainLayout({
 
   return (
     <Theme accentColor="amber" grayColor="mauve" panelBackground="solid">
+      <SupabaseAuthListener />
       <div className="flex h-screen bg-amber-50/40 print:block print:h-auto print:bg-white">
         <div className="print-hidden">
           <Sidebar />
