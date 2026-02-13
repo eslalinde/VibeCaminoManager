@@ -15,13 +15,14 @@ function LoginForm() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const searchParams = useSearchParams();
 
-  // Verificar si el usuario ya está autenticado
+  // Verificar si el usuario ya está autenticado (usando getSession para no
+  // disparar un refresh token request innecesario - el middleware ya lo maneja)
   useEffect(() => {
     async function checkAuth() {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (user) {
+      if (session?.user) {
         const redirectTo = searchParams.get('redirectTo') || '/';
         router.replace(redirectTo);
         return;

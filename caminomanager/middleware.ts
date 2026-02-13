@@ -37,7 +37,13 @@ export async function middleware(request: NextRequest) {
     if (pathname !== '/') {
       loginUrl.searchParams.set('redirectTo', pathname);
     }
-    return NextResponse.redirect(loginUrl);
+    const redirectResponse = NextResponse.redirect(loginUrl);
+    // Copiar las cookies de supabaseResponse al redirect para que el browser
+    // reciba las cookies actualizadas (ej: sesión limpiada por token expirado)
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value);
+    });
+    return redirectResponse;
   }
 
   return supabaseResponse;
