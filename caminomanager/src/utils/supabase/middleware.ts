@@ -27,8 +27,12 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // refreshing the auth token
-  await supabase.auth.getUser()
+  // IMPORTANT: DO NOT use getSession() here. getUser() sends a request to
+  // the Supabase Auth server to revalidate the Auth token. getSession() does
+  // not, and the session data may be stale.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  return supabaseResponse
+  return { supabaseResponse, user }
 }
