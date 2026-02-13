@@ -33,9 +33,9 @@ export function useParishData(parishId: number): ParishData & {
         .from('parishes')
         .select(`
           *,
-          city:cities(*),
-          state:states(*),
-          country:countries(*)
+          diocese:dioceses(*),
+          city:cities(*, state:states(*), country:countries(*)),
+          zone:city_zones(*)
         `)
         .eq('id', parishId)
         .single();

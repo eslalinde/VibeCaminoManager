@@ -92,33 +92,46 @@ INSERT INTO public.cities (id, name, country_id, state_id) VALUES
 -- ------------------------------------------------------------
 -- Parishes
 -- ------------------------------------------------------------
-INSERT INTO public.parishes (id, name, diocese, address, phone, email, city_id, country_id, state_id) VALUES
-  (1, 'Parroquia La Visitación', 'Diócesis de Medellín', 'Calle 12 #35-21, Medellín', '3065874400', 'pquia.visitacion@iglesia.org', 2, 1, 2),
-  (2, 'Parroquia Santa María de los Ángeles', 'Diócesis de Medellín', 'Carrera 43A #18-60, Medellín', '3065874401', 'sma.angeles@iglesia.org', 2, 1, 2),
-  (3, 'Parroquia La Balbanera', 'Diócesis de Medellín', 'Calle 30 #65-50, Medellín', '3065874402', 'balbanera@iglesia.org', 2, 1, 2),
-  (4, 'Parroquia Santuario Niño Jesús de Praga', 'Diócesis de Medellín', 'Carrera 50 #49-30, Medellín', '3065874403', 'ninojesus.praga@iglesia.org', 2, 1, 2),
-  (5, 'Parroquia Nuestra Señora del Sagrado Corazón', 'Diócesis de Medellín', 'Calle 45 #80-20, Medellín', '3065874404', 'ns.sagradocorazon@iglesia.org', 2, 1, 2),
-  (6, 'Parroquia María Madre Admirable', 'Diócesis de Medellín', 'Carrera 70 #32-15, Medellín', '3065874405', 'madre.admirable@iglesia.org', 2, 1, 2),
-  (7, 'Parroquia El Señor de las Misericordias', 'Diócesis de Medellín', 'Calle 50 #40-10, Medellín', '3065874406', 'senor.misericordias@iglesia.org', 2, 1, 2),
-  (8, 'Parroquia San José de El Poblado', 'Diócesis de Medellín', 'Carrera 43A #9-50, Medellín', '3065874407', 'san.jose.poblado@iglesia.org', 2, 1, 2),
-  (9, 'Parroquia San Joaquín', 'Diócesis de Medellín', 'Calle 42 #68-20, Medellín', '3065874408', 'san.joaquin@iglesia.org', 2, 1, 2),
-  (10, 'Parroquia San Cayetano', 'Diócesis de Medellín', 'Carrera 65 #48-30, Medellín', '3065874409', 'san.cayetano@iglesia.org', 2, 1, 2),
-  (11, 'Parroquia San Juan Bosco', 'Diócesis de Medellín', 'Calle 44 #80-15, Medellín', '3065874410', 'san.juanbosco@iglesia.org', 2, 1, 2),
-  (12, 'Parroquia San Antonio de Padua', 'Diócesis de Medellín', 'Carrera 52 #49-20, Medellín', '3065874411', 'san.antonio.padua@iglesia.org', 2, 1, 2),
-  (13, 'Parroquia Nuestra Señora de Chiquinquirá', 'Diócesis de Medellín', 'Calle 54 #80-30, Medellín', '3065874412', 'ns.chiquinquira@iglesia.org', 2, 1, 2),
-  (14, 'Parroquia Nuestra Señora de Belén', 'Diócesis de Medellín', 'Carrera 76 #32-20, Medellín', '3065874413', 'ns.belen@iglesia.org', 2, 1, 2),
-  (15, 'Parroquia Nuestra Señora del Rosario', 'Diócesis de Medellín', 'Calle 51 #50-10, Medellín', '3065874414', 'ns.rosario@iglesia.org', 2, 1, 2),
-  (16, 'Parroquia Nuestra Señora de la Candelaria', 'Diócesis de Medellín', 'Carrera 50 #51-30, Medellín', '3065874415', 'ns.candelaria@iglesia.org', 2, 1, 2),
-  (17, 'Parroquia Nuestra Señora de Fátima', 'Diócesis de Medellín', 'Calle 60 #80-40, Medellín', '3065874416', 'ns.fatima@iglesia.org', 2, 1, 2),
-  (18, 'Parroquia Nuestra Señora de Guadalupe', 'Diócesis de Medellín', 'Carrera 65 #30-50, Medellín', '3065874417', 'ns.guadalupe@iglesia.org', 2, 1, 2),
-  (19, 'Parroquia Nuestra Señora de las Lajas', 'Diócesis de Medellín', 'Calle 70 #80-50, Medellín', '3065874418', 'ns.lajas@iglesia.org', 2, 1, 2),
-  (20, 'Parroquia Nuestra Señora de Lourdes', 'Diócesis de Medellín', 'Carrera 80 #32-60, Medellín', '3065874419', 'ns.lourdes@iglesia.org', 2, 1, 2);
+INSERT INTO public.parishes (id, name, diocese_id, address, phone, email, city_id) VALUES
+  (1, 'Parroquia La Visitación', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 12 #35-21, Medellín', '3065874400', 'pquia.visitacion@iglesia.org', 2),
+  (2, 'Parroquia Santa María de los Ángeles', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 43A #18-60, Medellín', '3065874401', 'sma.angeles@iglesia.org', 2),
+  (3, 'Parroquia La Balbanera', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 30 #65-50, Medellín', '3065874402', 'balbanera@iglesia.org', 2),
+  (4, 'Parroquia Santuario Niño Jesús de Praga', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 50 #49-30, Medellín', '3065874403', 'ninojesus.praga@iglesia.org', 2),
+  (5, 'Parroquia Nuestra Señora del Sagrado Corazón', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 45 #80-20, Medellín', '3065874404', 'ns.sagradocorazon@iglesia.org', 2),
+  (6, 'Parroquia María Madre Admirable', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 70 #32-15, Medellín', '3065874405', 'madre.admirable@iglesia.org', 2),
+  (7, 'Parroquia El Señor de las Misericordias', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 50 #40-10, Medellín', '3065874406', 'senor.misericordias@iglesia.org', 2),
+  (8, 'Parroquia San José de El Poblado', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 43A #9-50, Medellín', '3065874407', 'san.jose.poblado@iglesia.org', 2),
+  (9, 'Parroquia San Joaquín', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 42 #68-20, Medellín', '3065874408', 'san.joaquin@iglesia.org', 2),
+  (10, 'Parroquia San Cayetano', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 65 #48-30, Medellín', '3065874409', 'san.cayetano@iglesia.org', 2),
+  (11, 'Parroquia San Juan Bosco', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 44 #80-15, Medellín', '3065874410', 'san.juanbosco@iglesia.org', 2),
+  (12, 'Parroquia San Antonio de Padua', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 52 #49-20, Medellín', '3065874411', 'san.antonio.padua@iglesia.org', 2),
+  (13, 'Parroquia Nuestra Señora de Chiquinquirá', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 54 #80-30, Medellín', '3065874412', 'ns.chiquinquira@iglesia.org', 2),
+  (14, 'Parroquia Nuestra Señora de Belén', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 76 #32-20, Medellín', '3065874413', 'ns.belen@iglesia.org', 2),
+  (15, 'Parroquia Nuestra Señora del Rosario', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 51 #50-10, Medellín', '3065874414', 'ns.rosario@iglesia.org', 2),
+  (16, 'Parroquia Nuestra Señora de la Candelaria', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 50 #51-30, Medellín', '3065874415', 'ns.candelaria@iglesia.org', 2),
+  (17, 'Parroquia Nuestra Señora de Fátima', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 60 #80-40, Medellín', '3065874416', 'ns.fatima@iglesia.org', 2),
+  (18, 'Parroquia Nuestra Señora de Guadalupe', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 65 #30-50, Medellín', '3065874417', 'ns.guadalupe@iglesia.org', 2),
+  (19, 'Parroquia Nuestra Señora de las Lajas', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Calle 70 #80-50, Medellín', '3065874418', 'ns.lajas@iglesia.org', 2),
+  (20, 'Parroquia Nuestra Señora de Lourdes', (SELECT id FROM public.dioceses WHERE name = 'Arquidiócesis de Medellín'), 'Carrera 80 #32-60, Medellín', '3065874419', 'ns.lourdes@iglesia.org', 2);
+
+-- ------------------------------------------------------------
+-- City Zones (Medellín = city_id 2)
+-- ------------------------------------------------------------
+INSERT INTO public.city_zones (id, name, city_id) VALUES
+  (1, 'Norte', 2),
+  (2, 'Sur', 2);
+
+-- Assign parishes to zones
+-- Norte: parishes 1-10
+UPDATE public.parishes SET zone_id = 1 WHERE id IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+-- Sur: parishes 11-20
+UPDATE public.parishes SET zone_id = 2 WHERE id IN (11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
 
 -- ------------------------------------------------------------
 -- Step ways
 -- ------------------------------------------------------------
 INSERT INTO public.step_ways (id, name, order_num) VALUES
-  (1, 'Catequesis iniciales', 1),
+  (1, 'Precatecumenado', 1),
   (2, '1º Escrutinio Bautismal', 2),
   (3, 'Shemá Israel', 3),
   (4, '2º Escrutinio Bautismal', 4),
@@ -655,13 +668,13 @@ INSERT INTO public.brothers (id, person_id, community_id) VALUES
 -- Community step log
 -- ------------------------------------------------------------
 INSERT INTO public.community_step_log (id, community_id, step_way_id, date_of_step, principal_catechist_name, outcome, notes) VALUES
-  (1, 1, 1, '2024-01-15', 'Juan Pérez', true, 'Catequesis iniciales: nacieron 15 hermanos, convivencia seminario. Faltan 3 por hacer convivencia.'),
+  (1, 1, 1, '2024-01-15', 'Juan Pérez', true, 'Precatecumenado: nacieron 15 hermanos, convivencia seminario. Faltan 3 por hacer convivencia.'),
   (2, 1, 2, '2024-02-20', 'María González', true, 'Primer escrutinio: asistieron 12 hermanos, 3 no asistieron.'),
-  (3, 2, 1, '2024-01-20', 'Carlos Rodríguez', true, 'Catequesis iniciales: nacieron 18 hermanos, convivencia seminario. Faltan 2 por hacer convivencia.'),
+  (3, 2, 1, '2024-01-20', 'Carlos Rodríguez', true, 'Precatecumenado: nacieron 18 hermanos, convivencia seminario. Faltan 2 por hacer convivencia.'),
   (4, 2, 2, '2024-02-25', 'Ana Martínez', true, 'Primer escrutinio: asistieron 16 hermanos, 2 no asistieron.'),
-  (5, 3, 1, '2024-01-25', 'Pedro López', true, 'Catequesis iniciales: nacieron 12 hermanos, convivencia seminario. Faltan 4 por hacer convivencia.'),
+  (5, 3, 1, '2024-01-25', 'Pedro López', true, 'Precatecumenado: nacieron 12 hermanos, convivencia seminario. Faltan 4 por hacer convivencia.'),
   (6, 3, 3, '2024-03-10', 'Laura Sánchez', true, 'Shemá Israel: 8 hermanos participaron, 4 ausentes.'),
-  (7, 4, 1, '2024-02-01', 'Miguel Herrera', true, 'Catequesis iniciales: nacieron 20 hermanos, convivencia seminario. Faltan 1 por hacer convivencia.'),
+  (7, 4, 1, '2024-02-01', 'Miguel Herrera', true, 'Precatecumenado: nacieron 20 hermanos, convivencia seminario. Faltan 1 por hacer convivencia.'),
   (8, 4, 2, '2024-03-05', 'Carmen Ruiz', true, 'Primer escrutinio: asistieron 19 hermanos, 1 no asistió.'),
   (9, 1, 3, '2024-03-15', 'Roberto Díaz', true, 'Shemá Israel: 10 hermanos participaron, 2 ausentes.'),
   (10, 2, 3, '2024-03-20', 'Isabel Morales', true, 'Shemá Israel: 14 hermanos participaron, 2 ausentes.');
@@ -706,6 +719,7 @@ select setval(pg_get_serial_sequence('public.countries', 'id'), coalesce((select
 select setval(pg_get_serial_sequence('public.states', 'id'), coalesce((select max(id) from public.states), 0), true);
 select setval(pg_get_serial_sequence('public.cities', 'id'), coalesce((select max(id) from public.cities), 0), true);
 select setval(pg_get_serial_sequence('public.parishes', 'id'), coalesce((select max(id) from public.parishes), 0), true);
+select setval(pg_get_serial_sequence('public.city_zones', 'id'), coalesce((select max(id) from public.city_zones), 0), true);
 select setval(pg_get_serial_sequence('public.step_ways', 'id'), coalesce((select max(id) from public.step_ways), 0), true);
 select setval(pg_get_serial_sequence('public.communities', 'id'), coalesce((select max(id) from public.communities), 0), true);
 select setval(pg_get_serial_sequence('public.people', 'id'), coalesce((select max(id) from public.people), 0), true);
@@ -716,6 +730,7 @@ select setval(pg_get_serial_sequence('public.brothers', 'id'), coalesce((select 
 select setval(pg_get_serial_sequence('public.community_step_log', 'id'), coalesce((select max(id) from public.community_step_log), 0), true);
 select setval(pg_get_serial_sequence('public.parish_teams', 'id'), coalesce((select max(id) from public.parish_teams), 0), true);
 select setval(pg_get_serial_sequence('public.priests', 'id'), coalesce((select max(id) from public.priests), 0), true);
+select setval(pg_get_serial_sequence('public.dioceses', 'id'), coalesce((select max(id) from public.dioceses), 0), true);
 
 commit;
 

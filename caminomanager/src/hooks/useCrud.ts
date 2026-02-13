@@ -393,6 +393,10 @@ function handleSupabaseError(error: any): string {
       return 'Ya existe un departamento con ese nombre en el país seleccionado.';
     } else if (constraintName.includes('cities_name_country_state_unique')) {
       return 'Ya existe una ciudad con ese nombre en el país y departamento seleccionados.';
+    } else if (constraintName.includes('city_zones_name_city_unique')) {
+      return 'Ya existe una zona con ese nombre en la ciudad seleccionada.';
+    } else if (constraintName.includes('dioceses_name_key')) {
+      return 'Ya existe una diócesis con ese nombre.';
     } else if (constraintName.includes('parishes_name_city_unique')) {
       return 'Ya existe una parroquia con ese nombre en la ciudad seleccionada.';
     } else if (constraintName.includes('team_types_name_unique')) {

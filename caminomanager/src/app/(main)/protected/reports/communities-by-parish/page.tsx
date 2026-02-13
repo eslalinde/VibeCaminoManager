@@ -28,7 +28,7 @@ export default function CommunitiesByParishReport() {
         .select(`
           id,
           name,
-          diocese,
+          diocese:dioceses(name),
           cities(name),
           communities(
             id,
@@ -52,7 +52,7 @@ export default function CommunitiesByParishReport() {
         return {
           parish_id: parish.id,
           parish_name: parish.name,
-          diocese: parish.diocese || 'No especificado',
+          diocese: (parish.diocese as any)?.name || 'No especificado',
           city_name: (Array.isArray(parish.cities) ? parish.cities[0] : parish.cities)?.name || 'N/A',
           communities_count: communities.length,
           total_brothers: totalBrothers,

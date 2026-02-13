@@ -23,6 +23,8 @@ import {
   useStateOptions,
   useCityOptions,
   useAllCityOptions,
+  useZoneOptions,
+  useDioceseOptions,
   useParishOptions,
   useAllParishOptions,
   usePeopleOptions,
@@ -65,10 +67,16 @@ export function DynamicEntityModal<T extends BaseEntity>({
   const hasCityField = fields.some(f => f.name === 'city_id');
   
   // Usar el hook apropiado para ciudades
-  const { options: cityOptions } = hasCountryField || hasStateField 
+  const { options: cityOptions } = hasCountryField || hasStateField
     ? useCityOptions(formData.country_id, formData.state_id)
     : useAllCityOptions();
-    
+
+  // Zonas filtradas por ciudad
+  const { options: zoneOptions } = useZoneOptions(formData.city_id ? Number(formData.city_id) : undefined);
+
+  // Diócesis
+  const { options: dioceseOptions } = useDioceseOptions();
+
   // Usar el hook apropiado para parroquias
   const { options: parishOptions } = hasCityField
     ? useParishOptions(formData.city_id)
@@ -168,7 +176,17 @@ export function DynamicEntityModal<T extends BaseEntity>({
       // Update the previous value
       previousValues.current.state_id = formData.state_id;
     }
-  }, [formData.country_id, formData.state_id, fields]);
+
+    // Check if city_id changed from its previous value
+    if (formData.city_id !== previousValues.current.city_id) {
+      // Limpiar zona cuando cambia la ciudad
+      if (fields.some(f => f.name === 'zone_id')) {
+        setFormData((prev) => ({ ...prev, zone_id: "" }));
+      }
+      // Update the previous value
+      previousValues.current.city_id = formData.city_id;
+    }
+  }, [formData.country_id, formData.state_id, formData.city_id, fields]);
 
   const validateField = (field: FormFieldType, value: any): string | null => {
     // Validación para campos requeridos
@@ -295,6 +313,10 @@ export function DynamicEntityModal<T extends BaseEntity>({
         return stateOptions && stateOptions.length > 0 ? stateOptions : [];
       case "city_id":
         return cityOptions && cityOptions.length > 0 ? cityOptions : [];
+      case "zone_id":
+        return zoneOptions && zoneOptions.length > 0 ? zoneOptions : [];
+      case "diocese_id":
+        return dioceseOptions && dioceseOptions.length > 0 ? dioceseOptions : [];
       case "parish_id":
         return parishOptions && parishOptions.length > 0 ? parishOptions : [];
       case "spouse_id":
@@ -328,6 +350,13 @@ export function DynamicEntityModal<T extends BaseEntity>({
                 hasOptions: fieldOptions && fieldOptions.length > 0,
                 configOptions: field.options
               });
+            }
+
+            // Solo mostrar zone_id si la ciudad seleccionada tiene zonas
+            if (field.name === 'zone_id') {
+              if (!zoneOptions || zoneOptions.length === 0) {
+                return null;
+              }
             }
 
             // Lógica condicional para mostrar/ocultar el campo cónyuge

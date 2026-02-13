@@ -25,18 +25,28 @@ export interface City extends BaseEntity {
   state?: State;
 }
 
+export interface CityZone extends BaseEntity {
+  name: string;
+  city_id: number;
+  city?: City;
+}
+
+export interface Diocese extends BaseEntity {
+  name: string;
+  type: string;
+}
+
 export interface Parish extends BaseEntity {
   name: string;
-  diocese?: string;
+  diocese_id?: number;
   address?: string;
   phone?: string;
   email?: string;
-  country_id: number;
-  state_id?: number;
   city_id: number;
-  country?: Country;
-  state?: State;
+  zone_id?: number;
+  diocese?: Diocese;
   city?: City;
+  zone?: CityZone;
 }
 
 export interface StepWay extends BaseEntity {

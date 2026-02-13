@@ -51,7 +51,7 @@ export function SelectParishModal({
 
       const { data: parishData, error: parishError } = await supabase
         .from('parishes')
-        .select('*')
+        .select('*, diocese:dioceses(name)')
         .order('name', { ascending: true });
 
       if (parishError) throw parishError;
@@ -135,7 +135,7 @@ export function SelectParishModal({
                   >
                     <div className="font-medium">{parish.name}</div>
                     <div className="text-sm text-gray-500">
-                      {parish.diocese && `Diócesis: ${parish.diocese}`}
+                      {parish.diocese?.name && `Diócesis: ${parish.diocese.name}`}
                       {parish.address && ` · ${parish.address}`}
                     </div>
                   </div>

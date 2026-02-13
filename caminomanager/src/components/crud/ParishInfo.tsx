@@ -67,7 +67,7 @@ export function ParishInfo({ parish, loading, onEdit }: ParishInfoProps) {
 
           <div className="space-y-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Diócesis</label>
-            <p className="text-sm text-gray-700">{parish.diocese || 'No especificada'}</p>
+            <p className="text-sm text-gray-700">{parish.diocese?.name || 'No especificada'}</p>
           </div>
 
           <div className="space-y-1 col-span-2">
@@ -91,13 +91,18 @@ export function ParishInfo({ parish, loading, onEdit }: ParishInfoProps) {
           </div>
 
           <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Zona</label>
+            <p className="text-sm text-gray-700">{parish.zone?.name || 'No especificada'}</p>
+          </div>
+
+          <div className="space-y-1">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Departamento</label>
-            <p className="text-sm text-gray-700">{parish.state?.name || 'No especificado'}</p>
+            <p className="text-sm text-gray-700">{(parish.city as any)?.state?.name || 'No especificado'}</p>
           </div>
 
           <div className="space-y-1 col-span-2">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">País</label>
-            <p className="text-sm text-gray-700">{parish.country?.name || 'No especificado'}</p>
+            <p className="text-sm text-gray-700">{(parish.city as any)?.country?.name || 'No especificado'}</p>
           </div>
         </div>
       </CardContent>

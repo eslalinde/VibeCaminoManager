@@ -111,10 +111,27 @@ export function useCityOptions(countryId?: number, stateId?: number) {
   });
 }
 
+// Hook específico para zonas por ciudad
+export function useZoneOptions(cityId?: number) {
+  return useEntityOptions({
+    tableName: 'city_zones',
+    filters: cityId ? { city_id: cityId } : {},
+    orderBy: { field: 'name', asc: true }
+  });
+}
+
 // Hook específico para todas las ciudades (sin filtros)
 export function useAllCityOptions() {
   return useEntityOptions({
     tableName: 'cities',
+    orderBy: { field: 'name', asc: true }
+  });
+}
+
+// Hook específico para diócesis
+export function useDioceseOptions() {
+  return useEntityOptions({
+    tableName: 'dioceses',
     orderBy: { field: 'name', asc: true }
   });
 }

@@ -1,5 +1,5 @@
 import { EntityConfig, FormField } from '@/types/database';
-import { Country, State, City, Parish, StepWay, TeamType, Person, Community, CommunityStepLog } from '@/types/database';
+import { Country, State, City, CityZone, Diocese, Parish, StepWay, TeamType, Person, Community, CommunityStepLog } from '@/types/database';
 
 // Configuración para Países
 export const countryConfig: EntityConfig<Country> = {
@@ -119,6 +119,87 @@ export const cityConfig: EntityConfig<City> = {
   ]
 };
 
+// Configuración para Zonas por Ciudad
+export const cityZoneConfig: EntityConfig<CityZone> = {
+  tableName: 'city_zones',
+  displayName: 'Zona',
+  fields: [
+    {
+      name: 'name',
+      label: 'Nombre',
+      type: 'text',
+      required: true,
+      maxLength: 256,
+      placeholder: 'Ingrese el nombre de la zona'
+    },
+    {
+      name: 'city_id',
+      label: 'Ciudad',
+      type: 'select',
+      required: true,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione una ciudad'
+    }
+  ],
+  searchFields: ['name'],
+  sortableFields: ['name'],
+  defaultSort: { field: 'name', asc: true },
+  foreignKeys: [
+    {
+      foreignKey: 'city_id',
+      tableName: 'cities',
+      displayField: 'name',
+      alias: 'city'
+    }
+  ]
+};
+
+// Configuración para Diócesis
+export const dioceseConfig: EntityConfig<Diocese> = {
+  tableName: 'dioceses',
+  displayName: 'Diócesis',
+  fields: [
+    {
+      name: 'name',
+      label: 'Nombre',
+      type: 'text',
+      required: true,
+      maxLength: 256,
+      placeholder: 'Ingrese el nombre de la diócesis'
+    },
+    {
+      name: 'type',
+      label: 'Tipo',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'arquidiocesis', label: 'Arquidiócesis' },
+        { value: 'diocesis', label: 'Diócesis' },
+        { value: 'vicariato_apostolico', label: 'Vicariato Apostólico' },
+        { value: 'ordinariato_militar', label: 'Ordinariato Militar' },
+        { value: 'exarcado_apostolico', label: 'Exarcado Apostólico' }
+      ],
+      placeholder: 'Seleccione el tipo'
+    }
+  ],
+  searchFields: ['name'],
+  sortableFields: ['name', 'type'],
+  defaultSort: { field: 'name', asc: true },
+  renderValue: (fieldName: string, value: any) => {
+    if (fieldName === 'type') {
+      const typeOptions: Record<string, string> = {
+        'arquidiocesis': 'Arquidiócesis',
+        'diocesis': 'Diócesis',
+        'vicariato_apostolico': 'Vicariato Apostólico',
+        'ordinariato_militar': 'Ordinariato Militar',
+        'exarcado_apostolico': 'Exarcado Apostólico'
+      };
+      return typeOptions[value] || String(value || '');
+    }
+    return String(value || '');
+  }
+};
+
 // Configuración para Parroquias
 export const parishConfig: EntityConfig<Parish> = {
   tableName: 'parishes',
@@ -133,12 +214,12 @@ export const parishConfig: EntityConfig<Parish> = {
       placeholder: 'Ingrese el nombre de la parroquia'
     },
     {
-      name: 'diocese',
+      name: 'diocese_id',
       label: 'Diócesis',
-      type: 'text',
+      type: 'select',
       required: false,
-      maxLength: 256,
-      placeholder: 'Ingrese el nombre de la diócesis'
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione una diócesis (opcional)'
     },
     {
       name: 'address',
@@ -165,53 +246,43 @@ export const parishConfig: EntityConfig<Parish> = {
       placeholder: 'Ingrese el email'
     },
     {
-      name: 'country_id',
-      label: 'País',
-      type: 'select',
-      required: true,
-      options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione un país',
-      hiddenInTable: true // Ocultar en la tabla
-    },
-    {
-      name: 'state_id',
-      label: 'Departamento',
-      type: 'select',
-      required: false,
-      options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione un departamento (opcional)',
-      hiddenInTable: true // Ocultar en la tabla
-    },
-    {
       name: 'city_id',
       label: 'Ciudad',
       type: 'select',
       required: true,
       options: [], // Se llenará dinámicamente
       placeholder: 'Seleccione una ciudad'
+    },
+    {
+      name: 'zone_id',
+      label: 'Zona',
+      type: 'select',
+      required: false,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione una zona (opcional)'
     }
   ],
-  searchFields: ['name', 'diocese'],
-  sortableFields: ['name', 'diocese'],
+  searchFields: ['name'],
+  sortableFields: ['name'],
   defaultSort: { field: 'name', asc: true },
   foreignKeys: [
     {
-      foreignKey: 'country_id',
-      tableName: 'countries',
+      foreignKey: 'diocese_id',
+      tableName: 'dioceses',
       displayField: 'name',
-      alias: 'country'
-    },
-    {
-      foreignKey: 'state_id',
-      tableName: 'states',
-      displayField: 'name',
-      alias: 'state'
+      alias: 'diocese'
     },
     {
       foreignKey: 'city_id',
       tableName: 'cities',
       displayField: 'name',
       alias: 'city'
+    },
+    {
+      foreignKey: 'zone_id',
+      tableName: 'city_zones',
+      displayField: 'name',
+      alias: 'zone'
     }
   ]
 };
@@ -554,6 +625,8 @@ export const entityConfigs = {
   countries: countryConfig,
   states: stateConfig,
   cities: cityConfig,
+  cityZones: cityZoneConfig,
+  dioceses: dioceseConfig,
   parishes: parishConfig,
   stepWays: stepWayConfig,
   teamTypes: teamTypeConfig,

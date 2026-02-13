@@ -90,7 +90,7 @@ export default function ParishDetailPage() {
           {parish?.name || 'Cargando...'}
         </h1>
         <p className="text-gray-600 mt-2">
-          {parish?.diocese || 'Diócesis no especificada'}
+          {parish?.diocese?.name || 'Diócesis no especificada'}
         </p>
       </div>
 

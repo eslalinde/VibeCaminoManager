@@ -207,7 +207,7 @@ export default function CommunityDetailPage() {
             </div>
 
             {/* Responsables Team */}
-            <div className="h-80">
+            <div>
               {teams.responsables.length > 0 ? (
                 teams.responsables.map((team) => (
                   <div key={team.id || `responsable-${Math.random()}`}>
@@ -223,7 +223,7 @@ export default function CommunityDetailPage() {
                   </div>
                 ))
               ) : (
-                <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                   <div className="text-center space-y-4">
                     <p className="text-gray-500 text-lg">No hay equipo de responsables</p>
                     <p className="text-gray-400 text-sm">Crea el equipo de responsables para comenzar</p>

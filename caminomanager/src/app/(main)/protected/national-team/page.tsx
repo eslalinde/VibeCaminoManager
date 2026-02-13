@@ -9,7 +9,7 @@ import { personConfig } from '@/config/entities';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Plus, UserPlus, Users2 } from 'lucide-react';
+import { Plus, UserPlus, Users2, Pencil } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Person } from '@/types/database';
 import Link from 'next/link';
@@ -19,6 +19,7 @@ export default function NationalTeamPage() {
 
   const [isSelectPersonOpen, setIsSelectPersonOpen] = useState(false);
   const [isCreatePersonOpen, setIsCreatePersonOpen] = useState(false);
+  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // IDs of people already in the team (to exclude from selection)
@@ -89,6 +90,45 @@ export default function NationalTeamPage() {
     }
   };
 
+  const handleEditMember = (personId: number) => {
+    const member = members.find(m => m.person_id === personId);
+    if (member?.person) {
+      setEditingPerson(member.person as Person);
+    }
+  };
+
+  const handleUpdatePerson = async (data: Omit<Person, 'id' | 'created_at' | 'updated_at'>) => {
+    if (!editingPerson?.id) return;
+    setIsSaving(true);
+    try {
+      const supabase = createClient();
+
+      const cleanData = { ...data };
+      for (const key of Object.keys(cleanData) as (keyof typeof cleanData)[]) {
+        if (cleanData[key] === '') {
+          (cleanData as any)[key] = null;
+        }
+      }
+
+      const { error: updateError } = await supabase
+        .from('people')
+        .update(cleanData)
+        .eq('id', editingPerson.id);
+
+      if (updateError) {
+        throw new Error(updateError.message || JSON.stringify(updateError));
+      }
+
+      await refreshTeam();
+      setEditingPerson(null);
+    } catch (err: any) {
+      console.error('Error updating person:', err?.message || JSON.stringify(err));
+      throw err;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (error) {
     return (
       <div className="container mx-auto p-6">
@@ -123,6 +163,7 @@ export default function NationalTeamPage() {
               loading={loading}
               communityId={null}
               onDelete={refreshTeam}
+              onEditMember={handleEditMember}
             />
           ) : loading ? (
             <Card>
@@ -231,6 +272,16 @@ export default function NationalTeamPage() {
         onSave={handleCreatePerson}
         fields={personConfig.fields}
         title="Crear Nueva Persona"
+        loading={isSaving}
+      />
+
+      <DynamicEntityModal
+        open={editingPerson !== null}
+        onClose={() => setEditingPerson(null)}
+        onSave={handleUpdatePerson}
+        initial={editingPerson}
+        fields={personConfig.fields}
+        title={`Editar Persona: ${editingPerson?.person_name || ''}`}
         loading={isSaving}
       />
     </div>

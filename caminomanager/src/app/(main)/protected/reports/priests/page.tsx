@@ -65,7 +65,7 @@ export default function PriestsReport() {
         .select(`
           id,
           name,
-          diocese,
+          diocese:dioceses(name),
           city_id
         `)
         .in('id', parishIds);
@@ -113,7 +113,7 @@ export default function PriestsReport() {
           email: person?.email || '-',
           is_parish_priest: priest.is_parish_priest,
           parish_name: parish?.name || 'Sin parroquia asignada',
-          diocese: parish?.diocese || 'No especificado',
+          diocese: (parish?.diocese as any)?.name || 'No especificado',
           city_name: city?.name || 'N/A',
           communities_count: communitiesCount
         };

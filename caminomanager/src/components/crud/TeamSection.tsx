@@ -13,7 +13,7 @@ import {
 import { Theme } from '@radix-ui/themes';
 import { Team, Belongs, Parish } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
-import { Trash2, UserMinus, Crown, UserPlus } from 'lucide-react';
+import { Trash2, UserMinus, Crown, UserPlus, Pencil } from 'lucide-react';
 
 interface TeamSectionProps {
   team: Team;
@@ -24,9 +24,10 @@ interface TeamSectionProps {
   communityId: number | null;
   onDelete?: () => void;
   onAddMember?: () => void;
+  onEditMember?: (personId: number) => void;
 }
 
-export function TeamSection({ team, members, parishes, loading, teamNumber, communityId, onDelete, onAddMember }: TeamSectionProps) {
+export function TeamSection({ team, members, parishes, loading, teamNumber, communityId, onDelete, onAddMember, onEditMember }: TeamSectionProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [removingResponsibleId, setRemovingResponsibleId] = useState<string | null>(null);
   const [assigningResponsibleId, setAssigningResponsibleId] = useState<string | null>(null);
@@ -436,6 +437,18 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                     </TableCell>
                     <TableCell className="print-hidden">
                       <div className="flex gap-2">
+                        {onEditMember && (
+                          <Button
+                            size="1"
+                            variant="outline"
+                            radius="small"
+                            onClick={() => onEditMember(member.personIds[0])}
+                            disabled={deletingId === member.id || removingResponsibleId === member.id || assigningResponsibleId === member.id}
+                            title="Editar persona"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        )}
                         {member.isResponsible ? (
                           <Button
                             size="1"
