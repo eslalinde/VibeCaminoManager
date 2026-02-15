@@ -22,6 +22,7 @@ export interface MergedBrother {
   carisma: string;
   celular: string;
   isMarriage: boolean;
+  isPresbitero: boolean;
   personIds: number[];
 }
 
@@ -240,6 +241,7 @@ export function useCommunityData(communityId: number): CommunityData & {
               carisma: 'Casado',
               celular: husband.mobile || wife.mobile || '',
               isMarriage: true,
+              isPresbitero: false,
               personIds: [person.id!, spouseBrother.person_id]
             });
 
@@ -259,6 +261,7 @@ export function useCommunityData(communityId: number): CommunityData & {
         carisma,
         celular: person.mobile || '',
         isMarriage: false,
+        isPresbitero: person.person_type_id === 3,
         personIds: [person.id!]
       });
 
