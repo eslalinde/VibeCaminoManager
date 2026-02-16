@@ -40,7 +40,7 @@ export default function ReportsPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <BarChart3 className="w-8 h-8 text-blue-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Reportes</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Reportes</h1>
       </div>
       
       <p className="text-gray-600 text-lg">

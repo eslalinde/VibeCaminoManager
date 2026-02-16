@@ -3,6 +3,40 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
 import { QueryParams, BaseEntity } from '@/types/database';
 
+/** Strip accents from a string (e.g. "Medellín" → "Medellin") */
+function stripAccents(term: string): string {
+  return term.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/** Map plain chars to their accented Spanish variant */
+const ACCENT_OF: Record<string, string> = {
+  a: 'á', e: 'é', i: 'í', o: 'ó', u: 'ú',
+  A: 'Á', E: 'É', I: 'Í', O: 'Ó', U: 'Ú',
+  n: 'ñ', N: 'Ñ',
+};
+
+/**
+ * Generate accent search variants for a term.
+ * Returns the original, the accent-stripped version, and one variant per
+ * vowel/ñ position with that character accented.
+ * e.g. "Maria" → ["Maria", "Mária", "María", "Mariá"]
+ */
+function accentVariants(term: string): string[] {
+  const stripped = stripAccents(term);
+  const variants = new Set<string>();
+  variants.add(term);
+  variants.add(stripped);
+
+  for (let i = 0; i < stripped.length; i++) {
+    const accented = ACCENT_OF[stripped[i]];
+    if (accented) {
+      variants.add(stripped.slice(0, i) + accented + stripped.slice(i + 1));
+    }
+  }
+
+  return Array.from(variants);
+}
+
 export interface ForeignKeyRelation {
   foreignKey: string;
   tableName: string;
@@ -108,9 +142,11 @@ export function useCrud<T extends BaseEntity>({
           });
         }
 
-        // Apply search
+        // Apply search (accent-insensitive via per-vowel accent variants)
         const searchTerm = params.search;
         if (searchTerm && searchFields.length > 0) {
+          const terms = accentVariants(searchTerm);
+
           // Separate regular fields from foreign key fields
           const regularFields: string[] = [];
           const foreignKeySearches: { foreignKey: string; displayField: string; tableName: string }[] = [];
@@ -134,33 +170,37 @@ export function useCrud<T extends BaseEntity>({
           if (foreignKeySearches.length > 0) {
             try {
               // Search in related tables to get matching IDs
-              const foreignKeyIds: number[] = [];
+              const foreignKeyIds = new Set<number>();
 
               for (const fkSearch of foreignKeySearches) {
-                const { data: relatedData } = await supabase
-                  .from(fkSearch.tableName)
-                  .select('id')
-                  .ilike(fkSearch.displayField, `%${searchTerm}%`);
+                for (const term of terms) {
+                  const { data: relatedData } = await supabase
+                    .from(fkSearch.tableName)
+                    .select('id')
+                    .ilike(fkSearch.displayField, `%${term}%`);
 
-                if (relatedData) {
-                  foreignKeyIds.push(...relatedData.map(item => item.id));
+                  if (relatedData) {
+                    relatedData.forEach(item => foreignKeyIds.add(item.id));
+                  }
                 }
               }
 
               // If we found matching foreign key IDs, add them to the query
-              if (foreignKeyIds.length > 0) {
-                // Create conditions for foreign key searches
+              if (foreignKeyIds.size > 0) {
+                const ids = Array.from(foreignKeyIds);
                 const foreignKeyConditions: string[] = [];
                 foreignKeySearches.forEach(fkSearch => {
-                  foreignKeyConditions.push(`${fkSearch.foreignKey}.in.(${foreignKeyIds.join(',')})`);
+                  foreignKeyConditions.push(`${fkSearch.foreignKey}.in.(${ids.join(',')})`);
                 });
 
-                // Combine with regular field conditions
                 const allConditions: string[] = [];
 
                 if (regularFields.length > 0) {
-                  const regularConditions = regularFields.map(field => `${field}.ilike.%${searchTerm}%`);
-                  allConditions.push(...regularConditions);
+                  terms.forEach(term => {
+                    regularFields.forEach(field => {
+                      allConditions.push(`${field}.ilike.%${term}%`);
+                    });
+                  });
                 }
 
                 allConditions.push(...foreignKeyConditions);
@@ -169,22 +209,25 @@ export function useCrud<T extends BaseEntity>({
                   query = query.or(allConditions.join(','));
                 }
               } else if (regularFields.length > 0) {
-                // If no foreign key matches, only search regular fields
-                const regularConditions = regularFields.map(field => `${field}.ilike.%${searchTerm}%`);
-                query = query.or(regularConditions.join(','));
+                const conditions = terms.flatMap(term =>
+                  regularFields.map(field => `${field}.ilike.%${term}%`)
+                );
+                query = query.or(conditions.join(','));
               }
             } catch (err) {
               console.error('Error searching foreign key fields:', err);
-              // Fallback to regular field search only
               if (regularFields.length > 0) {
-                const regularConditions = regularFields.map(field => `${field}.ilike.%${searchTerm}%`);
-                query = query.or(regularConditions.join(','));
+                const conditions = terms.flatMap(term =>
+                  regularFields.map(field => `${field}.ilike.%${term}%`)
+                );
+                query = query.or(conditions.join(','));
               }
             }
           } else if (regularFields.length > 0) {
-            // Only regular fields to search
-            const regularConditions = regularFields.map(field => `${field}.ilike.%${searchTerm}%`);
-            query = query.or(regularConditions.join(','));
+            const conditions = terms.flatMap(term =>
+              regularFields.map(field => `${field}.ilike.%${term}%`)
+            );
+            query = query.or(conditions.join(','));
           }
         }
 

@@ -8,20 +8,25 @@ import { EntityModal } from './EntityModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
 import { useCrud } from '@/hooks/useCrud';
 import { BaseEntity, FormField, EntityConfig } from '@/types/database';
+import { TextField } from '@radix-ui/themes';
 import { Search, X, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface EntityPageProps<T extends BaseEntity> {
   config: EntityConfig<T>;
   pageSize?: number;
   onRowClick?: (item: T) => void;
+  onCreated?: (item: T) => void;
   hideDefaultAddButton?: boolean;
+  extraActions?: React.ReactNode;
 }
 
-export function EntityPage<T extends BaseEntity>({ 
-  config, 
+export function EntityPage<T extends BaseEntity>({
+  config,
   pageSize = 10,
   onRowClick,
-  hideDefaultAddButton = false
+  onCreated,
+  hideDefaultAddButton = false,
+  extraActions
 }: EntityPageProps<T>) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<T | null>(null);
@@ -55,7 +60,13 @@ export function EntityPage<T extends BaseEntity>({
       if (editing) {
         await update(editing.id!, formData as Partial<T>);
       } else {
-        await create(formData);
+        const created = await create(formData);
+        if (onCreated && created) {
+          setModalOpen(false);
+          setEditing(null);
+          onCreated(created);
+          return;
+        }
       }
       setModalOpen(false);
       setEditing(null);
@@ -101,8 +112,9 @@ export function EntityPage<T extends BaseEntity>({
       
       return {
         key: field.name as keyof T,
-        label: field.label,
+        label: field.tableLabel || field.label,
         sortable: config.sortableFields.includes(field.name as keyof T),
+        width: field.columnWidth,
         foreignKey: foreignKeyConfig ? {
           tableName: foreignKeyConfig.tableName,
           displayField: foreignKeyConfig.displayField,
@@ -132,43 +144,51 @@ export function EntityPage<T extends BaseEntity>({
 
       {/* Search and Add Button */}
       <div className="flex items-center justify-between gap-4 mb-4">
-        <div className="relative flex items-center w-full max-w-sm">
-          <Search className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none" />
-          <Input
-            placeholder={
-              config.displayName === 'Comunidad'
-                ? 'Buscar por número o parroquia...'
-                : `Buscar ${config.displayName.toLowerCase()}...`
-            }
-            value={search}
-            onChange={e => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9 pr-8 w-full"
-          />
+        <TextField.Root
+          radius="large"
+          size="2"
+          placeholder={
+            config.displayName === 'Comunidad'
+              ? 'Buscar por número o parroquia...'
+              : `Buscar ${config.displayName.toLowerCase()}...`
+          }
+          value={search}
+          onChange={e => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          className="w-full max-w-sm"
+        >
+          <TextField.Slot>
+            <Search className="w-4 h-4 text-gray-400" />
+          </TextField.Slot>
           {search && (
-            <button
-              type="button"
-              onClick={() => { setSearch(''); setPage(1); }}
-              className="absolute right-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Limpiar búsqueda"
+            <TextField.Slot>
+              <button
+                type="button"
+                onClick={() => { setSearch(''); setPage(1); }}
+                className="p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            </TextField.Slot>
+          )}
+        </TextField.Root>
+        <div className="flex items-center gap-2">
+          {extraActions}
+          {!hideDefaultAddButton && (
+            <Button
+              color="amber"
+              highContrast
+              size="2"
+              onClick={handleAddNew}
             >
-              <X className="w-4 h-4 text-gray-400" />
-            </button>
+              <Plus className="w-4 h-4" />
+              Agregar {config.displayName.toLowerCase()}
+            </Button>
           )}
         </div>
-        {!hideDefaultAddButton && (
-          <Button
-            color="amber"
-            highContrast
-            size="2"
-            onClick={handleAddNew}
-          >
-            <Plus className="w-4 h-4" />
-            Agregar {config.displayName.toLowerCase()}
-          </Button>
-        )}
       </div>
 
       {/* Table */}

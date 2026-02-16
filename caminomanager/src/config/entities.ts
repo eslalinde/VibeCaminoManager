@@ -1,6 +1,8 @@
+import React from 'react';
 import { EntityConfig, FormField } from '@/types/database';
 import { Country, State, City, CityZone, Diocese, Parish, StepWay, TeamType, Person, Community, CommunityStepLog } from '@/types/database';
 import { CARISMA_OPTIONS } from '@/config/carisma';
+import { CarismaBadge } from '@/components/ui/carisma-badge';
 
 // Configuración para Países
 export const countryConfig: EntityConfig<Country> = {
@@ -379,11 +381,11 @@ export const personConfig: EntityConfig<Person> = {
     },
     {
       name: 'person_type_id',
-      label: 'Carisma',
+      label: 'Estado',
       type: 'select',
       required: false,
       options: CARISMA_OPTIONS,
-      placeholder: 'Seleccione el carisma'
+      placeholder: 'Seleccione el estado'
     },
     {
       name: 'gender_id',
@@ -417,12 +419,15 @@ export const personConfig: EntityConfig<Person> = {
     }
   ],
   // Función para renderizar valores personalizados en la tabla
-  renderValue: (fieldName: string, value: any) => {
+  renderValue: (fieldName: string, value: any): React.ReactNode => {
     if (fieldName === 'person_type_id') {
       const option = CARISMA_OPTIONS.find(opt => opt.value === value);
-      return option ? option.label : String(value || '');
+      if (option) {
+        return React.createElement(CarismaBadge, { carisma: option.label });
+      }
+      return String(value || '');
     }
-    
+
     if (fieldName === 'gender_id') {
       const genderOptions = [
         { value: 1, label: 'Masculino' },
@@ -431,7 +436,7 @@ export const personConfig: EntityConfig<Person> = {
       const option = genderOptions.find(opt => opt.value === value);
       return option ? option.label : String(value || '');
     }
-    
+
     return String(value || '');
   }
 };
@@ -444,17 +449,21 @@ export const communityConfig: EntityConfig<Community> = {
     {
       name: 'number',
       label: 'Número',
+      tableLabel: 'Nº',
       type: 'text',
       required: true,
       maxLength: 50,
-      placeholder: 'Ingrese el número de la comunidad'
+      placeholder: 'Ingrese el número de la comunidad',
+      columnWidth: '60px'
     },
     {
       name: 'born_date',
       label: 'Fecha de Nacimiento',
+      tableLabel: 'F. Nacimiento',
       type: 'date',
       required: false,
-      placeholder: 'Seleccione la fecha'
+      placeholder: 'Seleccione la fecha',
+      columnWidth: '120px'
     },
     {
       name: 'parish_id',
@@ -467,31 +476,39 @@ export const communityConfig: EntityConfig<Community> = {
     {
       name: 'born_brothers',
       label: 'Hermanos Iniciales',
+      tableLabel: 'Hns. Inicio',
       type: 'number',
       required: false,
-      placeholder: 'Ingrese el número de hermanos iniciales'
+      placeholder: 'Ingrese el número de hermanos iniciales',
+      columnWidth: '90px'
     },
     {
       name: 'actual_brothers',
       label: 'Hermanos Actuales',
+      tableLabel: 'Hns. Actual',
       type: 'number',
       required: false,
-      placeholder: 'Ingrese el número de hermanos actuales'
+      placeholder: 'Ingrese el número de hermanos actuales',
+      columnWidth: '90px'
     },
     {
       name: 'step_way_id',
       label: 'Etapa Actual',
+      tableLabel: 'Etapa',
       type: 'select',
       required: false,
       options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione la etapa actual'
+      placeholder: 'Seleccione la etapa actual',
+      columnWidth: '120px'
     },
     {
       name: 'last_step_way_date',
       label: 'Fecha Última Etapa',
+      tableLabel: 'F. Últ. Etapa',
       type: 'date',
       required: false,
-      placeholder: 'Seleccione la fecha'
+      placeholder: 'Seleccione la fecha',
+      columnWidth: '120px'
     },
     {
       name: 'cathechist_team_id',
@@ -499,7 +516,8 @@ export const communityConfig: EntityConfig<Community> = {
       type: 'select',
       required: false,
       options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione un equipo de catequistas'
+      placeholder: 'Seleccione un equipo de catequistas',
+      hiddenInTable: true
     }
   ],
   searchFields: ['number', 'parish'],

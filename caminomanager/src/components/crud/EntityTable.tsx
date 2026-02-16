@@ -7,6 +7,7 @@ interface Column<T> {
   key: keyof T;
   label: string;
   sortable?: boolean;
+  width?: string;
   render?: (value: any, item: T) => React.ReactNode;
   foreignKey?: {
     tableName: string;
@@ -66,13 +67,14 @@ export function EntityTable<T extends BaseEntity>({
 
   return (
     <div className="overflow-x-auto">
-      <Table>
+      <Table className="table-fixed w-full">
         <TableHeader>
           <TableRow>
             {columns.map(column => (
               <TableHead
                 key={String(column.key)}
-                className={column.sortable ? "cursor-pointer hover:bg-gray-50" : ""}
+                className={`whitespace-nowrap ${column.sortable ? "cursor-pointer hover:bg-gray-50" : ""}`}
+                style={column.width ? { width: column.width } : undefined}
                 onClick={() => column.sortable && onSort(column.key)}
               >
                 <div className="flex items-center gap-1">
@@ -85,7 +87,7 @@ export function EntityTable<T extends BaseEntity>({
                 </div>
               </TableHead>
             ))}
-            <TableHead>Acciones</TableHead>
+            <TableHead className="whitespace-nowrap" style={{ width: '140px' }}>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -109,7 +111,7 @@ export function EntityTable<T extends BaseEntity>({
                 onClick={() => onRowClick?.(item)}
               >
                 {columns.map(column => (
-                  <TableCell key={String(column.key)}>
+                  <TableCell key={String(column.key)} className="truncate">
                     {column.render
                       ? column.render(item[column.key], item)
                       : column.foreignKey
@@ -119,7 +121,7 @@ export function EntityTable<T extends BaseEntity>({
                   </TableCell>
                 ))}
                 <TableCell>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <Button
                       size="2"
                       variant="solid"

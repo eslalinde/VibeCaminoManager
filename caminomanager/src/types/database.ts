@@ -148,6 +148,7 @@ export interface QueryParams {
 export interface FormField {
   name: string;
   label: string;
+  tableLabel?: string;
   type: 'text' | 'email' | 'number' | 'select' | 'textarea' | 'date';
   required?: boolean;
   maxLength?: number;
@@ -155,7 +156,8 @@ export interface FormField {
   placeholder?: string;
   options?: { value: string | number; label: string }[];
   validation?: (value: any) => string | null;
-  hiddenInTable?: boolean; // Nueva propiedad para ocultar en la tabla
+  hiddenInTable?: boolean;
+  columnWidth?: string;
 }
 
 export interface ForeignKeyConfig {
@@ -173,5 +175,5 @@ export interface EntityConfig<T> {
   sortableFields: (keyof T)[];
   defaultSort: { field: keyof T; asc: boolean };
   foreignKeys?: ForeignKeyConfig[];
-  renderValue?: (fieldName: string, value: any) => string;
+  renderValue?: (fieldName: string, value: any) => React.ReactNode;
 } 

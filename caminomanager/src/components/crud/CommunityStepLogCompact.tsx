@@ -63,9 +63,9 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
 
   const getOutcomeBadge = (outcome?: boolean) => {
     if (outcome === true) {
-      return <Badge variant="default" className="bg-green-100 text-green-800 text-xs"><CheckCircle className="w-3 h-3 mr-1" />Cerrada</Badge>;
+      return <Badge variant="default" className="bg-green-100 text-green-800 text-sm"><CheckCircle className="w-4 h-4 mr-1" />Cerrada</Badge>;
     } else if (outcome === false) {
-      return <Badge variant="default" className="bg-yellow-100 text-yellow-800 text-xs"><XCircle className="w-3 h-3 mr-1" />Abierta</Badge>;
+      return <Badge variant="default" className="bg-yellow-100 text-yellow-800 text-sm"><XCircle className="w-4 h-4 mr-1" />Abierta</Badge>;
     }
     return null;
   };
@@ -185,10 +185,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
     return (
       <Card className="h-full">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <FileText className="w-4 h-4" />
-            Bitácora
-          </CardTitle>
+          <CardTitle className="text-lg">Bitácora</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -205,18 +202,14 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
     <Card className="flex flex-col">
       <CardHeader className="flex-shrink-0">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <FileText className="w-4 h-4" />
-            Bitácora
-          </CardTitle>
+          <CardTitle className="text-lg">Bitácora</CardTitle>
           <div className="flex items-center gap-2 print-hidden">
             <Button
               variant="outline"
               size="2"
-              className="h-6 px-2 text-xs"
               onClick={() => setIsAddModalOpen(true)}
             >
-              <Plus className="w-3 h-3 mr-1" />
+              <Plus className="w-4 h-4 mr-1" />
               Agregar
             </Button>
             {count > itemsPerPage && (
@@ -225,9 +218,8 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
                   <Button
                     variant="ghost"
                     size="2"
-                    className="h-6 px-2 text-xs"
                   >
-                    <ExternalLink className="w-3 h-3 mr-1" />
+                    <ExternalLink className="w-4 h-4 mr-1" />
                     Ver todos ({count})
                   </Button>
                 </DialogTrigger>
@@ -255,11 +247,11 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
                           <Button
                             variant="outline"
                             size="2"
-                            className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={() => handleDeleteClick(entry.id!)}
                             disabled={deletingId === entry.id}
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                         
@@ -294,31 +286,31 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
                 <div key={entry.id} className="border rounded-lg p-3 space-y-2">
                   {/* Fecha y paso en la misma línea */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <Calendar className="w-3 h-3" />
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar className="w-4 h-4" />
                       <span>{formatDate(entry.date_of_step)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {entry.step_way && (
-                        <Badge variant="outline" className="text-xs">{entry.step_way.name}</Badge>
+                        <Badge variant="outline">{entry.step_way.name}</Badge>
                       )}
                       {getOutcomeBadge(entry.outcome)}
                       <Button
                         variant="ghost"
                         size="2"
-                        className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         onClick={() => handleDeleteClick(entry.id!)}
                         disabled={deletingId === entry.id}
                         title="Eliminar evento"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
 
                   {/* Comentario debajo */}
                   {entry.notes && (
-                    <div className="text-xs text-gray-700">
+                    <div className="text-sm text-gray-700">
                       <p className="line-clamp-2">{entry.notes}</p>
                     </div>
                   )}
@@ -391,6 +383,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
             <DialogFooter className="gap-3">
               <Button
                 variant="outline"
+                size="2"
                 onClick={() => {
                   setIsDeleteDialogOpen(false);
                   setDeletingId(null);
@@ -401,6 +394,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
               </Button>
               <Button
                 color="red"
+                size="2"
                 onClick={handleDeleteConfirm}
                 disabled={isDeleting || !deletingId}
               >

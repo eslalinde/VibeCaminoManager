@@ -15,14 +15,14 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Verificar si el usuario ya está autenticado (usando getSession para no
-  // disparar un refresh token request innecesario - el middleware ya lo maneja)
+  // Verificar si el usuario ya está autenticado (usando getUser para validar
+  // el token con el servidor y evitar loops si la sesión expiró)
   useEffect(() => {
     async function checkAuth() {
       const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (session?.user) {
+      if (user) {
         router.replace("/");
         return;
       }

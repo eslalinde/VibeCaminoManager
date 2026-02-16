@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button';
 import { MergedBrother } from '@/hooks/useCommunityData';
 import { Belongs, Person } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
-import { Trash2, UserPlus, Plus, ChevronDown, ChevronRight } from 'lucide-react';
+import { Trash2, UserPlus, Plus, ChevronDown, ChevronRight, Heart, User } from 'lucide-react';
 import { SelectBrotherModal } from './SelectBrotherModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
+import { MarriageModal } from './MarriageModal';
 import { personConfig } from '@/config/entities';
 import { CARISMA_BADGE_COLORS, CARISMA_GROUP_ORDER } from '@/config/carisma';
+import { CarismaBadge } from '@/components/ui/carisma-badge';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 interface BrothersListProps {
   brothers: MergedBrother[];
@@ -29,6 +32,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isMarriageModalOpen, setIsMarriageModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
@@ -140,6 +144,24 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
     }
   };
 
+  const handleMarriageSuccess = async (husbandId?: number, wifeId?: number) => {
+    if (!husbandId || !wifeId) return;
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('brothers')
+        .insert([
+          { person_id: husbandId, community_id: communityId },
+          { person_id: wifeId, community_id: communityId },
+        ]);
+      if (error) throw error;
+      if (onAdd) onAdd();
+    } catch (error: any) {
+      console.error('Error adding marriage to community:', error);
+      alert(error.message || 'El matrimonio fue creado pero hubo un error al agregarlo a la comunidad.');
+    }
+  };
+
   const handleCreateNewBrother = async (data: Omit<Person, 'id' | 'created_at' | 'updated_at'>) => {
     setIsSaving(true);
     try {
@@ -200,7 +222,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
         <CardHeader className="flex-shrink-0">
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle>Hermanos de la Comunidad</CardTitle>
+              <CardTitle className="text-lg">Hermanos de la Comunidad</CardTitle>
               <p className="text-sm text-gray-600">
                 Total: {brothers.length} {brothers.length === 1 ? 'hermano' : 'hermanos'}
               </p>
@@ -215,14 +237,40 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
                 <UserPlus className="h-4 w-4" />
                 Agregar Existente
               </Button>
-              <Button
-                size="2"
-                onClick={() => setIsCreateModalOpen(true)}
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Nuevo Hermano
-              </Button>
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <Button
+                    size="2"
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Agregar Nuevo
+                    <ChevronDown className="h-3 w-3 ml-1" />
+                  </Button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Portal>
+                <DropdownMenu.Content
+                  align="end"
+                  sideOffset={4}
+                  className="min-w-[180px] rounded-lg bg-white p-1 shadow-lg border border-gray-200 z-50"
+                >
+                  <DropdownMenu.Item
+                    className="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer hover:bg-amber-50 text-sm outline-none"
+                    onSelect={() => setIsCreateModalOpen(true)}
+                  >
+                    <User className="h-4 w-4" />
+                    Hermano individual
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    className="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer hover:bg-amber-50 text-sm outline-none"
+                    onSelect={() => setIsMarriageModalOpen(true)}
+                  >
+                    <Heart className="h-4 w-4" />
+                    Matrimonio
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
             </div>
           </div>
         </CardHeader>
@@ -245,7 +293,6 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
                 </TableRow>
               ) : (
                 groupedBrothers.map((group) => {
-                  const badgeColors = CARISMA_BADGE_COLORS[group.carisma] || { bg: 'bg-gray-100', text: 'text-gray-800' };
                   const isCollapsed = collapsedGroups.has(group.carisma);
                   return (
                     <Fragment key={`group-${group.carisma}`}>
@@ -255,15 +302,13 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
                         onClick={() => toggleGroup(group.carisma)}
                       >
                         <TableCell colSpan={3} className="py-2">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
                             {isCollapsed ? (
                               <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
                             ) : (
                               <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
                             )}
-                            <span className={`text-xs font-semibold px-2 py-1 rounded ${badgeColors.bg} ${badgeColors.text}`}>
-                              {group.carisma || 'Sin carisma'}
-                            </span>
+                            <CarismaBadge carisma={group.carisma || 'Sin carisma'} size="md" />
                             <span className="text-xs text-gray-500">
                               ({group.brothers.length})
                             </span>
@@ -288,7 +333,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
                             <TableCell>{brother.celular || '-'}</TableCell>
                             <TableCell>
                               <Button
-                                size="1"
+                                size="2"
                                 variant="outline"
                                 radius="small"
                                 color={isInTeam ? "gray" : "red"}
@@ -296,7 +341,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
                                 disabled={isInTeam || isDeleting}
                                 title={isInTeam ? 'Este hermano está asociado a un equipo y no puede ser eliminado' : 'Eliminar hermano de la comunidad'}
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -329,6 +374,13 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
       fields={personConfig.fields}
       title="Crear Nuevo Hermano"
       loading={isSaving}
+    />
+
+    {/* Modal para crear matrimonio */}
+    <MarriageModal
+      open={isMarriageModalOpen}
+      onClose={() => setIsMarriageModalOpen(false)}
+      onSuccess={handleMarriageSuccess}
     />
   </>
   );

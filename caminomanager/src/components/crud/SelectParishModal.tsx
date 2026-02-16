@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Theme } from '@radix-ui/themes';
 import { createClient } from '@/utils/supabase/client';
 import { Parish } from '@/types/database';
+import { normalizeText } from '@/lib/utils';
 
 interface SelectParishModalProps {
   open: boolean;
@@ -72,7 +73,7 @@ export function SelectParishModal({
   };
 
   const filteredParishes = parishes.filter((parish) =>
-    parish.name.toLowerCase().includes(searchTerm.toLowerCase())
+    normalizeText(parish.name).includes(normalizeText(searchTerm))
   );
 
   const handleSelect = async () => {

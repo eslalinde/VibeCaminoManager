@@ -39,7 +39,7 @@ export default async function MainLayout({
           <div className="print-hidden">
             <Header userEmail={user.email} userName={profile?.full_name} title="ComunidadCat" />
           </div>
-          <main className="flex-1 overflow-y-auto p-6 print:p-0 print:overflow-visible">
+          <main className="flex-1 overflow-y-auto p-4 print:p-0 print:overflow-visible">
             <Breadcrumbs />
             {children}
           </main>

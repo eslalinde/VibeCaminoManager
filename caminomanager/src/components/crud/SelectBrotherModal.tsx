@@ -21,6 +21,7 @@ import {
 import { Theme } from '@radix-ui/themes';
 import { createClient } from '@/utils/supabase/client';
 import { Person } from '@/types/database';
+import { normalizeText } from '@/lib/utils';
 
 interface SelectBrotherModalProps {
   open: boolean;
@@ -90,7 +91,7 @@ export function SelectBrotherModal({
   };
 
   const filteredPeople = people.filter((person) =>
-    person.person_name.toLowerCase().includes(searchTerm.toLowerCase())
+    normalizeText(person.person_name).includes(normalizeText(searchTerm))
   );
 
   const handleSelect = async () => {

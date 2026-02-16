@@ -15,6 +15,7 @@ import { Team, Belongs, Parish } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserMinus, Crown, UserPlus, Pencil } from 'lucide-react';
 import { getCarismaLabel } from '@/config/carisma';
+import { CarismaBadge } from '@/components/ui/carisma-badge';
 
 interface TeamSectionProps {
   team: Team;
@@ -308,7 +309,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
           <div className="flex items-center gap-2 print-hidden">
             {onAddMember && (
               <Button
-                size="1"
+                size="2"
                 variant="outline"
                 radius="small"
                 onClick={onAddMember}
@@ -320,7 +321,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
               </Button>
             )}
             <Button
-              size="1"
+              size="2"
               variant="outline"
               radius="small"
               color="red"
@@ -370,54 +371,24 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                       {team.team_type_id === 3 ? (
                         <>
                           {member.isResponsible && (
-                            <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            <span className="ml-2 text-xs font-semibold bg-green-100 text-green-800 px-2 py-0.5 rounded inline-flex items-center gap-1">
+                              <Crown className="w-4 h-4" />
                               Responsable
                             </span>
                           )}
-                          {member.isPresbitero && (
-                            <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                              Presbítero
-                            </span>
-                          )}
-                          {member.carisma === 'Itinerante' && (
-                            <span className="ml-2 text-xs bg-teal-100 text-teal-800 px-2 py-1 rounded">
-                              Itinerante
-                            </span>
-                          )}
-                          {member.carisma === 'Seminarista' && (
-                            <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              Seminarista
-                            </span>
-                          )}
-                          {member.carisma === 'Soltero' && (
-                            <span className="ml-2 text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
-                              Soltero
-                            </span>
-                          )}
-                          {member.carisma === 'Diácono' && (
-                            <span className="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                              Diácono
-                            </span>
-                          )}
-                          {member.carisma === 'Monja' && (
-                            <span className="ml-2 text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
-                              Monja
-                            </span>
-                          )}
-                          {member.carisma === 'Viudo' && (
-                            <span className="ml-2 text-xs bg-slate-100 text-slate-800 px-2 py-1 rounded">
-                              Viudo
-                            </span>
+                          {member.carisma && member.carisma !== 'Casado' && (
+                            <CarismaBadge carisma={member.carisma} className="ml-2" />
                           )}
                         </>
                       ) : (
                         <>
                           {member.isResponsible ? (
-                            <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            <span className="ml-2 text-xs font-semibold bg-green-100 text-green-800 px-2 py-0.5 rounded inline-flex items-center gap-1">
+                              <Crown className="w-4 h-4" />
                               Responsable
                             </span>
                           ) : (
-                            <span className="ml-2 text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                            <span className="ml-2 text-xs font-semibold bg-gray-100 text-gray-800 px-2 py-0.5 rounded">
                               Corresponsable
                             </span>
                           )}
@@ -431,19 +402,19 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                       <div className="flex gap-2">
                         {onEditMember && (
                           <Button
-                            size="1"
+                            size="2"
                             variant="outline"
                             radius="small"
                             onClick={() => onEditMember(member.personIds[0])}
                             disabled={deletingId === member.id || removingResponsibleId === member.id || assigningResponsibleId === member.id}
                             title="Editar persona"
                           >
-                            <Pencil className="h-3 w-3" />
+                            <Pencil className="h-4 w-4" />
                           </Button>
                         )}
                         {member.isResponsible ? (
                           <Button
-                            size="1"
+                            size="2"
                             variant="outline"
                             radius="small"
                             color="orange"
@@ -451,11 +422,11 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                             disabled={removingResponsibleId === member.id || deletingId === member.id || assigningResponsibleId === member.id}
                             title="Quitar responsabilidad (la persona permanecerá en el equipo)"
                           >
-                            <UserMinus className="h-3 w-3" />
+                            <UserMinus className="h-4 w-4" />
                           </Button>
                         ) : (
                           <Button
-                            size="1"
+                            size="2"
                             variant="outline"
                             radius="small"
                             color="green"
@@ -463,11 +434,11 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                             disabled={hasResponsible || assigningResponsibleId === member.id || deletingId === member.id || removingResponsibleId === member.id}
                             title={hasResponsible ? "Ya existe un responsable en el equipo. Quita la responsabilidad del actual para asignar a otro." : "Asignar responsabilidad"}
                           >
-                            <Crown className="h-3 w-3" />
+                            <Crown className="h-4 w-4" />
                           </Button>
                         )}
                         <Button
-                          size="1"
+                          size="2"
                           variant="outline"
                           radius="small"
                           color="red"
@@ -475,7 +446,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                           disabled={deletingId === member.id || removingResponsibleId === member.id || assigningResponsibleId === member.id}
                           title="Eliminar miembro del equipo"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -500,6 +471,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
             <DialogFooter className="gap-3">
               <Button
                 variant="outline"
+                size="2"
                 onClick={() => setShowDeleteDialog(false)}
                 disabled={deletingTeam}
               >
@@ -507,6 +479,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
               </Button>
               <Button
                 color="red"
+                size="2"
                 onClick={handleDeleteTeam}
                 disabled={deletingTeam}
               >

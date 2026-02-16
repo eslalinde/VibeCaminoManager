@@ -14,17 +14,18 @@ export default function CommunitiesPage() {
     router.push(routes.comunidad(community.id));
   };
 
+  const handleCreated = (community: any) => {
+    router.push(routes.comunidad(community.id));
+  };
+
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Gestión de Comunidades</h1>
-      </div>
-      
-      <EntityPage 
+    <div className="container mx-auto">
+      <EntityPage
         key={refreshTrigger}
-        config={communityConfig} 
+        config={communityConfig}
         pageSize={10}
         onRowClick={handleRowClick}
+        onCreated={handleCreated}
       />
     </div>
   );

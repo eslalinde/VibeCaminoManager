@@ -1,7 +1,6 @@
 "use client";
-import { Moon, Sun, User as UserIcon, LogOut, Home } from "lucide-react";
+import { Moon, Sun, User as UserIcon, LogOut } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import "@radix-ui/themes/styles.css";
@@ -13,37 +12,6 @@ interface HeaderProps {
   title?: string;
 }
 
-const sectionNames: Record<string, string> = {
-  "/": "Inicio",
-  "/paises": "Países",
-  "/departamentos": "Departamentos",
-  "/ciudades": "Ciudades",
-  "/zonas": "Zonas",
-  "/diocesis": "Diócesis",
-  "/parroquias": "Parroquias",
-  "/etapas": "Etapas del Camino",
-  "/tipos-equipo": "Tipos de Equipo",
-  "/personas": "Personas",
-  "/comunidades": "Comunidades",
-  "/equipo-nacional": "Equipo Nacional",
-  "/reportes": "Reportes",
-  "/cuenta": "Mi Cuenta",
-  "/admin": "Administración",
-};
-
-function getSectionName(pathname: string): string {
-  // Exact match first
-  if (sectionNames[pathname]) return sectionNames[pathname];
-
-  // Check for partial match (for nested routes like /reportes/xxx or /comunidades/123)
-  const segments = pathname.split("/").filter(Boolean);
-  for (let i = segments.length; i > 0; i--) {
-    const partial = "/" + segments.slice(0, i).join("/");
-    if (sectionNames[partial]) return sectionNames[partial];
-  }
-
-  return "ComunidadCat";
-}
 
 function getInitials(email?: string) {
   if (!email) return "U";
@@ -59,9 +27,6 @@ export default function Header({ userEmail, userName, title }: HeaderProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
-
-  const currentSection = getSectionName(pathname);
 
   // Toggle dark mode (add/remove 'dark' class on html)
   const toggleDarkMode = () => {
@@ -94,18 +59,6 @@ export default function Header({ userEmail, userName, title }: HeaderProps) {
   return (
     <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-amber-100 h-16 flex items-center px-4 justify-between">
       <div className="flex items-center gap-3">
-        {pathname !== "/" && (
-          <Link
-            href={routes.home}
-            className="p-2 rounded-lg hover:bg-amber-50 transition-colors"
-            aria-label="Ir al inicio"
-          >
-            <Home className="w-5 h-5 text-gray-500" />
-          </Link>
-        )}
-        <span className="font-semibold text-xl text-gray-900 dark:text-white">
-          {currentSection}
-        </span>
       </div>
       <div className="flex items-center space-x-4 relative">
         <DropdownMenu.Root open={menuOpen} onOpenChange={setMenuOpen}>

@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Theme } from '@radix-ui/themes';
 import { MergedBrother } from '@/hooks/useCommunityData';
 import { Belongs } from '@/types/database';
+import { normalizeText } from '@/lib/utils';
 
 interface SelectBrotherForTeamModalProps {
   open: boolean;
@@ -43,7 +44,7 @@ export function SelectBrotherForTeamModal({
   }, [brothers, teamMembers]);
 
   const filteredBrothers = availableBrothers.filter((b) =>
-    b.name.toLowerCase().includes(searchTerm.toLowerCase())
+    normalizeText(b.name).includes(normalizeText(searchTerm))
   );
 
   const handleOpen = (isOpen: boolean) => {

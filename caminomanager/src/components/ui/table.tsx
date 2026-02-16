@@ -86,13 +86,14 @@ TableHead.displayName = "TableHead"
 const TableCell = React.forwardRef<
   React.ElementRef<typeof RadixTable.Cell>,
   React.ComponentPropsWithoutRef<typeof RadixTable.Cell>
->(({ className, ...props }, ref) => (
+>(({ className, style, ...props }, ref) => (
   <RadixTable.Cell
     ref={ref}
     className={cn(
-      "p-0 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "p-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     )}
+    style={{ verticalAlign: 'middle', ...style }}
     {...props}
   />
 ))

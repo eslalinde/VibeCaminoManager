@@ -159,7 +159,7 @@ export default function CommunityDetailPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           <strong>Error:</strong> {error}
         </div>
@@ -168,7 +168,7 @@ export default function CommunityDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6">
       {/* Screen view - hidden when printing */}
       <div className="print:hidden">
         {/* Header */}
@@ -204,7 +204,7 @@ export default function CommunityDetailPage() {
               </Button>
             )}
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900">
             Comunidad {community?.number || 'Cargando...'}
           </h1>
           <p className="text-gray-600 mt-2">
@@ -213,13 +213,10 @@ export default function CommunityDetailPage() {
         </div>
 
         {/* Main Content - 50/50 Split */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           {/* Left: Community Info + Teams */}
           <div className="space-y-6">
-            {/* Community Info */}
-            <div>
-              <CommunityInfo community={community} loading={loading} onEdit={handleEdit} />
-            </div>
+            <CommunityInfo community={community} loading={loading} onEdit={handleEdit} />
 
             {/* Responsables Team */}
             <div>
@@ -305,30 +302,23 @@ export default function CommunityDetailPage() {
           </div>
 
           {/* Right: Step Log + Brothers List (unified) */}
-          <div className="space-y-4">
+          <div className="space-y-6">
+            <CommunityStepLogCompact
+              communityId={communityId}
+              communityNumber={community?.number || ''}
+              onStepLogAdded={refreshCommunity}
+              defaultCatechistName={defaultCatechistName}
+              actualBrothers={community?.actual_brothers}
+            />
 
-            {/* Step Log */}
-            <div>
-              <CommunityStepLogCompact
-                communityId={communityId}
-                communityNumber={community?.number || ''}
-                onStepLogAdded={refreshCommunity}
-                defaultCatechistName={defaultCatechistName}
-                actualBrothers={community?.actual_brothers}
-              />
-            </div>
-
-            {/* Brothers List (all brothers grouped by carisma) */}
-            <div className="flex-1">
-              <BrothersList
-                brothers={mergedBrothers}
-                loading={loading}
-                communityId={communityId}
-                teamMembers={teamMembers}
-                onDelete={refreshCommunity}
-                onAdd={refreshCommunity}
-              />
-            </div>
+            <BrothersList
+              brothers={mergedBrothers}
+              loading={loading}
+              communityId={communityId}
+              teamMembers={teamMembers}
+              onDelete={refreshCommunity}
+              onAdd={refreshCommunity}
+            />
           </div>
         </div>
       </div>

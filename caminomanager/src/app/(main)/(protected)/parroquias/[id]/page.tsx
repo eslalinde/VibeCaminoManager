@@ -64,7 +64,7 @@ export default function ParishDetailPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           <strong>Error:</strong> {error}
         </div>
@@ -73,7 +73,7 @@ export default function ParishDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-4 mb-4">
@@ -87,7 +87,7 @@ export default function ParishDetailPage() {
             Regresar a Parroquias
           </Button>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900">
           {parish?.name || 'Cargando...'}
         </h1>
         <p className="text-gray-600 mt-2">

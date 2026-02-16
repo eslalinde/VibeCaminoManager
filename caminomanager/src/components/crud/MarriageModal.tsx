@@ -22,7 +22,7 @@ import { createClient } from "@/utils/supabase/client";
 interface MarriageModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (husbandId?: number, wifeId?: number) => void;
 }
 
 interface MarriageFormData {
@@ -148,7 +148,7 @@ export function MarriageModal({ open, onClose, onSuccess }: MarriageModalProps) 
 
       if (updateError) throw updateError;
 
-      onSuccess();
+      onSuccess(husband.id, wife.id);
       onClose();
     } catch (error: any) {
       console.error('Error creating marriage:', error);
