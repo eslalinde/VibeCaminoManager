@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { BaseEntity } from '@/types/database';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface Column<T> {
   key: keyof T;
@@ -28,19 +29,19 @@ interface EntityTableProps<T extends BaseEntity> {
 
 // Helper function to render foreign key values
 function renderForeignKeyValue<T extends BaseEntity>(
-  item: T, 
-  key: keyof T, 
+  item: T,
+  key: keyof T,
   foreignKey: { tableName: string; displayField: string; alias?: string }
 ): string {
   // Use alias if available, otherwise use table name
   const propertyName = foreignKey.alias || foreignKey.tableName;
   const relatedData = (item as any)[propertyName];
-  
+
   // Check if the related data exists and has the display field
   if (relatedData && typeof relatedData === 'object') {
     return String(relatedData[foreignKey.displayField] || '');
   }
-  
+
   // Fallback to showing the ID if no JOIN data is available
   const foreignKeyData = item[key] as any;
   return String(foreignKeyData || '');
@@ -59,7 +60,7 @@ export function EntityTable<T extends BaseEntity>({
 }: EntityTableProps<T>) {
   const handleDelete = (id: number | undefined) => {
     if (!id) return;
-    if (!window.confirm("¿Seguro que deseas eliminar este registro?")) return;
+    if (!window.confirm("¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.")) return;
     onDelete(id);
   };
 
@@ -69,7 +70,7 @@ export function EntityTable<T extends BaseEntity>({
         <TableHeader>
           <TableRow>
             {columns.map(column => (
-              <TableHead 
+              <TableHead
                 key={String(column.key)}
                 className={column.sortable ? "cursor-pointer hover:bg-gray-50" : ""}
                 onClick={() => column.sortable && onSort(column.key)}
@@ -102,16 +103,16 @@ export function EntityTable<T extends BaseEntity>({
             </TableRow>
           ) : (
             data.map((item, index) => (
-              <TableRow 
+              <TableRow
                 key={item.id || index}
                 className={onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}
                 onClick={() => onRowClick?.(item)}
               >
                 {columns.map(column => (
                   <TableCell key={String(column.key)}>
-                    {column.render 
+                    {column.render
                       ? column.render(item[column.key], item)
-                      : column.foreignKey 
+                      : column.foreignKey
                         ? renderForeignKeyValue(item, column.key, column.foreignKey)
                         : String(item[column.key] || '')
                     }
@@ -120,7 +121,7 @@ export function EntityTable<T extends BaseEntity>({
                 <TableCell>
                   <div className="flex gap-2">
                     <Button
-                      size="1"
+                      size="2"
                       variant="solid"
                       radius="small"
                       onClick={(e: React.MouseEvent) => {
@@ -128,17 +129,20 @@ export function EntityTable<T extends BaseEntity>({
                         onRowClick ? onRowClick(item) : onEdit(item);
                       }}
                     >
+                      <Pencil className="w-4 h-4" />
                       Editar
                     </Button>
                     <Button
-                      size="1"
+                      size="2"
                       variant="outline"
                       radius="small"
+                      color="red"
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         handleDelete(item.id);
                       }}
                     >
+                      <Trash2 className="w-4 h-4" />
                       Eliminar
                     </Button>
                   </div>
@@ -150,4 +154,4 @@ export function EntityTable<T extends BaseEntity>({
       </Table>
     </div>
   );
-} 
+}

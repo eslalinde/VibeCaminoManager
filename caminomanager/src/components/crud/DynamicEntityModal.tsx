@@ -18,6 +18,7 @@ import {
   FormSubmit,
 } from "@/components/ui/form";
 import { BaseEntity, FormField as FormFieldType } from "@/types/database";
+import { X } from "lucide-react";
 import {
   useCountryOptions,
   useStateOptions,
@@ -335,8 +336,17 @@ export function DynamicEntityModal<T extends BaseEntity>({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative">
-        <h2 className="text-lg font-bold mb-4">{title}</h2>
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Cerrar"
+        >
+          <X className="w-5 h-5 text-gray-400" />
+        </button>
+        <h2 className="text-xl font-bold mb-5 pr-8">{title}</h2>
 
         <FormRoot key={formKey} onSubmit={handleSubmit}>
           {fields.map((field) => {
@@ -370,7 +380,10 @@ export function DynamicEntityModal<T extends BaseEntity>({
 
             return (
               <FormField key={field.name} name={field.name}>
-                <FormLabel>{field.label}</FormLabel>
+                <FormLabel>
+                  {field.label}
+                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                </FormLabel>
                 <FormControl asChild className="w-full">
                   {field.type === "textarea" ? (
                     <Textarea
@@ -436,17 +449,18 @@ export function DynamicEntityModal<T extends BaseEntity>({
             );
           })}
 
-          <div className="flex gap-2 justify-end mt-6">
+          <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
             <Button
               type="button"
               variant="outline"
+              size="2"
               onClick={onClose}
               disabled={loading}
             >
               Cancelar
             </Button>
             <FormSubmit asChild>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" size="2" color="amber" highContrast disabled={loading}>
                 {loading ? "Guardando..." : "Guardar"}
               </Button>
             </FormSubmit>

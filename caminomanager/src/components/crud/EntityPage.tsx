@@ -8,6 +8,7 @@ import { EntityModal } from './EntityModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
 import { useCrud } from '@/hooks/useCrud';
 import { BaseEntity, FormField, EntityConfig } from '@/types/database';
+import { Search, X, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface EntityPageProps<T extends BaseEntity> {
   config: EntityConfig<T>;
@@ -131,26 +132,40 @@ export function EntityPage<T extends BaseEntity>({
 
       {/* Search and Add Button */}
       <div className="flex items-center justify-between gap-4 mb-4">
-        <Input
-          placeholder={
-            config.displayName === 'Comunidad' 
-              ? 'Buscar por número o parroquia...' 
-              : `Buscar ${config.displayName.toLowerCase()}...`
-          }
-          value={search}
-          onChange={e => { 
-            setSearch(e.target.value); 
-            setPage(1); 
-          }}
-          className="w-80"
-          style={{ width: '320px', minWidth: '320px' }}
-        />
+        <div className="relative flex items-center w-full max-w-sm">
+          <Search className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none" />
+          <Input
+            placeholder={
+              config.displayName === 'Comunidad'
+                ? 'Buscar por número o parroquia...'
+                : `Buscar ${config.displayName.toLowerCase()}...`
+            }
+            value={search}
+            onChange={e => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="pl-9 pr-8 w-full"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => { setSearch(''); setPage(1); }}
+              className="absolute right-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Limpiar búsqueda"
+            >
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          )}
+        </div>
         {!hideDefaultAddButton && (
-          <Button 
-            color="amber" 
-            highContrast 
+          <Button
+            color="amber"
+            highContrast
+            size="2"
             onClick={handleAddNew}
           >
+            <Plus className="w-4 h-4" />
             Agregar {config.displayName.toLowerCase()}
           </Button>
         )}
@@ -170,25 +185,62 @@ export function EntityPage<T extends BaseEntity>({
       />
 
       {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
-        <span>
-          Página {page} de {totalPages || 1} 
-          {count > 0 && ` (${count} total)`}
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-3">
+        <span className="text-sm text-gray-600">
+          Página {page} de {totalPages || 1}
+          {count > 0 && ` — ${count} registros`}
         </span>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => setPage(Math.max(1, page - 1))} 
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="2"
+            onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
           >
+            <ChevronLeft className="w-4 h-4" />
             Anterior
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => setPage(Math.min(totalPages, page + 1))} 
+
+          {/* Page numbers */}
+          {totalPages > 1 && (() => {
+            const pages: (number | string)[] = [];
+            if (totalPages <= 5) {
+              for (let i = 1; i <= totalPages; i++) pages.push(i);
+            } else {
+              pages.push(1);
+              if (page > 3) pages.push('...');
+              for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
+                pages.push(i);
+              }
+              if (page < totalPages - 2) pages.push('...');
+              pages.push(totalPages);
+            }
+            return pages.map((p, idx) =>
+              typeof p === 'string' ? (
+                <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">...</span>
+              ) : (
+                <Button
+                  key={p}
+                  variant={p === page ? "solid" : "outline"}
+                  size="2"
+                  onClick={() => setPage(p)}
+                  color={p === page ? "amber" : undefined}
+                  highContrast={p === page}
+                >
+                  {p}
+                </Button>
+              )
+            );
+          })()}
+
+          <Button
+            variant="outline"
+            size="2"
+            onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
           >
             Siguiente
+            <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       </div>

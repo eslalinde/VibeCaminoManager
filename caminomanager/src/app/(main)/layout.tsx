@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/ui/sidebar";
 import Header from "@/components/ui/header";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import React from "react";
 import { Theme } from "@radix-ui/themes";
 import { SupabaseAuthListener } from "@/components/auth/SupabaseAuthListener";
@@ -39,6 +40,7 @@ export default async function MainLayout({
             <Header userEmail={user.email} userName={profile?.full_name} title="ComunidadCat" />
           </div>
           <main className="flex-1 overflow-y-auto p-6 print:p-0 print:overflow-visible">
+            <Breadcrumbs />
             {children}
           </main>
         </div>
