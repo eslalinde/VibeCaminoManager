@@ -148,6 +148,8 @@ async function fetchCommunityLeaders(): Promise<CommunityLeaderRow[]> {
         seminarians.push(person.person_name);
       } else if (person.person_type_id === 6) {
         nuns.push(person.person_name);
+      } else if (person.person_type_id === 8) {
+        itinerantNames.push(person.person_name);
       }
     }
 

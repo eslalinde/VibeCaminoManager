@@ -227,7 +227,7 @@ INSERT INTO public.people (id, person_name, phone, mobile, email, person_type_id
   (58, 'Gabriela Ríos', '6041000058', '3001000058', 'gabriela.rios@email.com', 1, 2, 57),
   (59, 'Samuel Pineda', '6041000059', '3001000059', 'samuel.pineda@email.com', 1, 1, 60),
   (60, 'Valeria Cárdenas', '6041000060', '3001000060', 'valeria.cardenas@email.com', 1, 2, 59),
-  (61, 'Padre Álvaro Restrepo', '6041000061', '3001000061', 'alvaro.restrepo@email.com', 3, 1, NULL),
+  (61, 'Padre Álvaro Restrepo', '6041000061', '3001000061', 'alvaro.restrepo@email.com', 8, 1, NULL),
   (62, 'Padre Jorge Giraldo', '6041000062', '3001000062', 'jorge.giraldo@email.com', 3, 1, NULL),
   (63, 'Padre Luis Zapata', '6041000063', '3001000063', 'luis.zapata@email.com', 3, 1, NULL),
   (64, 'Padre Mario Castaño', '6041000064', '3001000064', 'mario.castano@email.com', 3, 1, NULL),
@@ -366,7 +366,12 @@ INSERT INTO public.people (id, person_name, phone, mobile, email, person_type_id
   (197, 'Silvia Viuda', '6041000197', '3001000197', 'silvia.viuda@email.com', 7, 2, NULL),
   (198, 'Mario Viudo', '6041000198', '3001000198', 'mario.viudo@email.com', 7, 1, NULL),
   (199, 'Camila Viuda', '6041000199', '3001000199', 'camila.viuda@email.com', 7, 2, NULL),
-  (200, 'Jorge Viudo', '6041000200', '3001000200', 'jorge.viudo@email.com', 7, 1, NULL);
+  (200, 'Jorge Viudo', '6041000200', '3001000200', 'jorge.viudo@email.com', 7, 1, NULL),
+  -- Itinerantes (person_type_id = 8)
+  (201, 'Francisco Mejía', '6041000201', '3001000201', 'francisco.mejia@email.com', 8, 1, NULL),
+  (202, 'Gloria Echavarría', '6041000202', '3001000202', 'gloria.echavarria@email.com', 8, 2, NULL),
+  (203, 'Hernando Velásquez', '6041000203', '3001000203', 'hernando.velasquez@email.com', 8, 1, NULL),
+  (204, 'Amparo Londoño', '6041000204', '3001000204', 'amparo.londono@email.com', 8, 2, NULL);
 
 -- ------------------------------------------------------------
 -- Team types
@@ -667,7 +672,12 @@ INSERT INTO public.brothers (id, person_id, community_id) VALUES
   (198, 197, 4),
   (199, 198, 4),
   (200, 199, 4),
-  (201, 135, 1);
+  (201, 135, 1),
+  -- Itinerantes en Comunidad 1 (La Visitación)
+  (202, 201, 1),
+  (203, 202, 1),
+  (204, 203, 1),
+  (205, 204, 1);
 
 -- ------------------------------------------------------------
 -- Community step log
@@ -682,7 +692,14 @@ INSERT INTO public.community_step_log (id, community_id, step_way_id, date_of_st
   (7, 4, 1, '2024-02-01', 'Miguel Herrera', true, 'Precatecumenado: nacieron 20 hermanos, convivencia seminario. Faltan 1 por hacer convivencia.'),
   (8, 4, 2, '2024-03-05', 'Carmen Ruiz', true, 'Primer escrutinio: asistieron 19 hermanos, 1 no asistió.'),
   (9, 1, 3, '2024-03-15', 'Roberto Díaz', true, 'Shemá Israel: 10 hermanos participaron, 2 ausentes.'),
-  (10, 2, 3, '2024-03-20', 'Isabel Morales', true, 'Shemá Israel: 14 hermanos participaron, 2 ausentes.');
+  (10, 2, 3, '2024-03-20', 'Isabel Morales', true, 'Shemá Israel: 14 hermanos participaron, 2 ausentes.'),
+  (11, 1, 4, '2024-06-10', 'Francisco Mejía y Gloria Echavarría', true, '2do Escrutinio Bautismal: todos los hermanos participaron. Se realizó convivencia de fin de semana en el seminario.'),
+  (12, 1, 5, '2024-09-20', 'Francisco Mejía y Hernando Velásquez', false, '1ª Iniciación a la Oración: 8 hermanos participaron activamente. Pendiente convivencia de cierre.'),
+  (13, 1, 6, '2025-01-15', 'Francisco Mejía y Gloria Echavarría', true, 'Traditio Symboli: entrega del Credo. 45 hermanos presentes. Celebración muy emotiva.'),
+  (14, 1, 7, '2025-05-10', 'Francisco Mejía y Amparo Londoño', true, 'Retraditio Symboli: convivencia de tres días en casa de retiros. 42 hermanos asistieron.'),
+  (15, 1, 8, '2025-08-20', 'Francisco Mejía y Gloria Echavarría', true, 'Redditio Symboli: devolución del Credo. Momento muy significativo para la comunidad.'),
+  (16, 1, 9, '2025-11-15', 'Francisco Mejía y Hernando Velásquez', true, '2ª Iniciación a la Oración (Padrenuestro): 40 hermanos presentes. Se entregó el Padrenuestro.'),
+  (17, 1, 10, '2026-02-01', 'Francisco Mejía, Gloria Echavarría y Amparo Londoño', false, '3er Escrutinio Bautismal: en proceso. 48 hermanos convocados. Pendiente cierre.');
 
 -- ------------------------------------------------------------
 -- Parish teams

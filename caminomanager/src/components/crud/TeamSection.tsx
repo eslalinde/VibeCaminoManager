@@ -14,6 +14,7 @@ import { Theme } from '@radix-ui/themes';
 import { Team, Belongs, Parish } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserMinus, Crown, UserPlus, Pencil } from 'lucide-react';
+import { getCarismaLabel } from '@/config/carisma';
 
 interface TeamSectionProps {
   team: Team;
@@ -50,20 +51,6 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       </Card>
     );
   }
-
-  const getCarismaLabel = (personTypeId?: number) => {
-    const carismaOptions = [
-      { value: 1, label: 'Casado' },
-      { value: 2, label: 'Soltero' },
-      { value: 3, label: 'Presbítero' },
-      { value: 4, label: 'Seminarista' },
-      { value: 5, label: 'Diácono' },
-      { value: 6, label: 'Monja' },
-      { value: 7, label: 'Viudo' }
-    ];
-    
-    return carismaOptions.find(opt => opt.value === personTypeId)?.label || 'No especificado';
-  };
 
   // Merge married couples in team members
   const mergedMembers = (() => {
@@ -120,11 +107,11 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       }
 
       // Single person
-      const carisma = getCarismaLabel(person.person_type_id);
+      const carisma = getCarismaLabel(person.person_type_id) || 'No especificado';
       merged.push({
         id: `person-${person.id}`,
         name: person.person_name,
-        carisma: carisma,
+        carisma,
         mobile: person.mobile || '',
         isResponsible: member.is_responsible_for_the_team,
         isMarriage: false,
@@ -390,6 +377,11 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                           {member.isPresbitero && (
                             <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
                               Presbítero
+                            </span>
+                          )}
+                          {member.carisma === 'Itinerante' && (
+                            <span className="ml-2 text-xs bg-teal-100 text-teal-800 px-2 py-1 rounded">
+                              Itinerante
                             </span>
                           )}
                           {member.carisma === 'Seminarista' && (

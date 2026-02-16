@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Community, Brother, Team, Belongs, Person, Parish, CommunityStepLog } from '@/types/database';
+import { CARISMA_OPTIONS, NON_MARRIAGE_TYPE_IDS, getCarismaLabel } from '@/config/carisma';
 
 export interface CommunityData {
   community: Community | null;
@@ -12,6 +13,7 @@ export interface CommunityData {
   teamMembers: Record<number, Belongs[]>;
   teamParishes: Record<number, Parish[]>;
   stepLogs: CommunityStepLog[];
+  parishPriestName: string | null;
   loading: boolean;
   error: string | null;
 }
@@ -23,6 +25,7 @@ export interface MergedBrother {
   celular: string;
   isMarriage: boolean;
   isPresbitero: boolean;
+  isItinerante: boolean;
   personIds: number[];
 }
 
@@ -36,6 +39,7 @@ export function useCommunityData(communityId: number): CommunityData & {
   const [teamMembers, setTeamMembers] = useState<Record<number, Belongs[]>>({});
   const [teamParishes, setTeamParishes] = useState<Record<number, Parish[]>>({});
   const [stepLogs, setStepLogs] = useState<CommunityStepLog[]>([]);
+  const [parishPriestName, setParishPriestName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -156,7 +160,24 @@ export function useCommunityData(communityId: number): CommunityData & {
 
       if (stepLogsError) throw stepLogsError;
 
+      // Fetch parish priest
+      let priestName: string | null = null;
+      if (communityData?.parish_id) {
+        const { data: priestData } = await supabase
+          .from('priests')
+          .select('person:people(person_name)')
+          .eq('parish_id', communityData.parish_id)
+          .eq('is_parish_priest', true)
+          .limit(1)
+          .maybeSingle();
+
+        if (priestData?.person) {
+          priestName = (priestData.person as any).person_name || null;
+        }
+      }
+
       setCommunity(communityData);
+      setParishPriestName(priestName);
       setBrothers(brothersData || []);
       setTeams(teamsData || []);
       setTeamMembers(membersByTeam);
@@ -195,18 +216,8 @@ export function useCommunityData(communityId: number): CommunityData & {
     const processedIds = new Set<number>();
     const merged: MergedBrother[] = [];
 
-    const carismaOptions = [
-      { value: 1, label: 'Casado' },
-      { value: 2, label: 'Soltero' },
-      { value: 3, label: 'Presbítero' },
-      { value: 4, label: 'Seminarista' },
-      { value: 5, label: 'Diácono' },
-      { value: 6, label: 'Monja' },
-      { value: 7, label: 'Viudo' }
-    ];
-
     // Person types that cannot be married (should not be merged with spouse)
-    const nonMarriageTypes = [3, 4, 5, 6]; // Presbítero, Seminarista, Diácono, Monja
+    const nonMarriageTypes = NON_MARRIAGE_TYPE_IDS;
 
     brothers.forEach(brother => {
       if (processedIds.has(brother.person_id)) return;
@@ -242,6 +253,7 @@ export function useCommunityData(communityId: number): CommunityData & {
               celular: husband.mobile || wife.mobile || '',
               isMarriage: true,
               isPresbitero: false,
+              isItinerante: false,
               personIds: [person.id!, spouseBrother.person_id]
             });
 
@@ -253,7 +265,7 @@ export function useCommunityData(communityId: number): CommunityData & {
       }
 
       // Single person (or person type that cannot be married)
-      const carisma = carismaOptions.find(opt => opt.value === person.person_type_id)?.label || '';
+      const carisma = getCarismaLabel(person.person_type_id);
 
       merged.push({
         id: `person-${person.id}`,
@@ -262,6 +274,7 @@ export function useCommunityData(communityId: number): CommunityData & {
         celular: person.mobile || '',
         isMarriage: false,
         isPresbitero: person.person_type_id === 3,
+        isItinerante: person.person_type_id === 8,
         personIds: [person.id!]
       });
 
@@ -278,6 +291,7 @@ export function useCommunityData(communityId: number): CommunityData & {
     teamMembers,
     teamParishes,
     stepLogs,
+    parishPriestName,
     loading,
     error,
     mergedBrothers,

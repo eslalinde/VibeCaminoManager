@@ -1,5 +1,6 @@
 import { EntityConfig, FormField } from '@/types/database';
 import { Country, State, City, CityZone, Diocese, Parish, StepWay, TeamType, Person, Community, CommunityStepLog } from '@/types/database';
+import { CARISMA_OPTIONS } from '@/config/carisma';
 
 // Configuración para Países
 export const countryConfig: EntityConfig<Country> = {
@@ -381,15 +382,7 @@ export const personConfig: EntityConfig<Person> = {
       label: 'Carisma',
       type: 'select',
       required: false,
-      options: [
-        { value: 1, label: 'Casado' },
-        { value: 2, label: 'Soltero' },
-        { value: 3, label: 'Presbítero' },
-        { value: 4, label: 'Seminarista' },
-        { value: 5, label: 'Diácono' },
-        { value: 6, label: 'Monja' },
-        { value: 7, label: 'Viudo' }
-      ],
+      options: CARISMA_OPTIONS,
       placeholder: 'Seleccione el carisma'
     },
     {
@@ -426,16 +419,7 @@ export const personConfig: EntityConfig<Person> = {
   // Función para renderizar valores personalizados en la tabla
   renderValue: (fieldName: string, value: any) => {
     if (fieldName === 'person_type_id') {
-      const personTypeOptions = [
-        { value: 1, label: 'Casado' },
-        { value: 2, label: 'Soltero' },
-        { value: 3, label: 'Presbítero' },
-        { value: 4, label: 'Seminarista' },
-        { value: 5, label: 'Diácono' },
-        { value: 6, label: 'Monja' },
-        { value: 7, label: 'Viudo' }
-      ];
-      const option = personTypeOptions.find(opt => opt.value === value);
+      const option = CARISMA_OPTIONS.find(opt => opt.value === value);
       return option ? option.label : String(value || '');
     }
     

@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { Fragment, useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { MergedBrother } from '@/hooks/useCommunityData';
 import { Belongs, Person } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
-import { Trash2, UserPlus, Plus } from 'lucide-react';
+import { Trash2, UserPlus, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { SelectBrotherModal } from './SelectBrotherModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
 import { personConfig } from '@/config/entities';
+import { CARISMA_BADGE_COLORS, CARISMA_GROUP_ORDER } from '@/config/carisma';
 
 interface BrothersListProps {
   brothers: MergedBrother[];
@@ -19,11 +20,54 @@ interface BrothersListProps {
   onAdd?: () => void;
 }
 
+interface CarismaGroup {
+  carisma: string;
+  brothers: MergedBrother[];
+}
+
 export function BrothersList({ brothers, loading, communityId, teamMembers, onDelete, onAdd }: BrothersListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  const toggleGroup = (carisma: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(carisma)) {
+        next.delete(carisma);
+      } else {
+        next.add(carisma);
+      }
+      return next;
+    });
+  };
+
+  // Group brothers by carisma and sort groups/members
+  const groupedBrothers = useMemo((): CarismaGroup[] => {
+    const groups: Record<string, MergedBrother[]> = {};
+
+    for (const brother of brothers) {
+      const key = brother.carisma || '';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(brother);
+    }
+
+    // Sort brothers within each group alphabetically
+    for (const key of Object.keys(groups)) {
+      groups[key].sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+    }
+
+    // Sort groups by CARISMA_GROUP_ORDER
+    return Object.entries(groups)
+      .map(([carisma, bros]) => ({ carisma, brothers: bros }))
+      .sort((a, b) => {
+        const orderA = CARISMA_GROUP_ORDER[a.carisma] ?? 99;
+        const orderB = CARISMA_GROUP_ORDER[b.carisma] ?? 99;
+        return orderA - orderB;
+      });
+  }, [brothers]);
 
   // Check if a brother is associated with any team
   const isBrotherInTeam = (brother: MergedBrother): boolean => {
@@ -55,7 +99,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
     setDeletingId(brother.id);
     try {
       const supabase = createClient();
-      
+
       // Delete all brother records for all person IDs in this merged brother
       for (const personId of brother.personIds) {
         const { error } = await supabase
@@ -188,7 +232,6 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
-                <TableHead>Carisma</TableHead>
                 <TableHead>Celular</TableHead>
                 <TableHead></TableHead>
               </TableRow>
@@ -196,41 +239,70 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
             <TableBody>
               {brothers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-500 py-8">
+                  <TableCell colSpan={3} className="text-center text-gray-500 py-8">
                     No hay hermanos registrados
                   </TableCell>
                 </TableRow>
               ) : (
-                brothers.map((brother) => {
-                  const isInTeam = isBrotherInTeam(brother);
-                  const isDeleting = deletingId === brother.id;
-                  
+                groupedBrothers.map((group) => {
+                  const badgeColors = CARISMA_BADGE_COLORS[group.carisma] || { bg: 'bg-gray-100', text: 'text-gray-800' };
+                  const isCollapsed = collapsedGroups.has(group.carisma);
                   return (
-                    <TableRow key={brother.id}>
-                      <TableCell className="font-medium">
-                        {brother.name}
-                        {brother.isMarriage && (
-                          <span className="ml-2 text-xs bg-pink-100 text-pink-800 px-2 py-1 rounded">
-                            Matrimonio
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>{brother.carisma}</TableCell>
-                      <TableCell>{brother.celular || '-'}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="1"
-                          variant="outline"
-                          radius="small"
-                          color={isInTeam ? "gray" : "red"}
-                          onClick={() => handleDelete(brother)}
-                          disabled={isInTeam || isDeleting}
-                          title={isInTeam ? 'Este hermano está asociado a un equipo y no puede ser eliminado' : 'Eliminar hermano de la comunidad'}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                    <Fragment key={`group-${group.carisma}`}>
+                      {/* Group header row */}
+                      <TableRow
+                        className="bg-gray-50 hover:bg-gray-100 cursor-pointer select-none"
+                        onClick={() => toggleGroup(group.carisma)}
+                      >
+                        <TableCell colSpan={3} className="py-2">
+                          <div className="flex items-center gap-1">
+                            {isCollapsed ? (
+                              <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            )}
+                            <span className={`text-xs font-semibold px-2 py-1 rounded ${badgeColors.bg} ${badgeColors.text}`}>
+                              {group.carisma || 'Sin carisma'}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ({group.brothers.length})
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      {/* Brother rows */}
+                      {!isCollapsed && group.brothers.map((brother) => {
+                        const isInTeam = isBrotherInTeam(brother);
+                        const isDeleting = deletingId === brother.id;
+
+                        return (
+                          <TableRow key={brother.id}>
+                            <TableCell className="font-medium pl-8">
+                              {brother.name}
+                              {brother.isMarriage && (
+                                <span className="ml-2 text-xs bg-pink-100 text-pink-800 px-2 py-1 rounded">
+                                  Matrimonio
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell>{brother.celular || '-'}</TableCell>
+                            <TableCell>
+                              <Button
+                                size="1"
+                                variant="outline"
+                                radius="small"
+                                color={isInTeam ? "gray" : "red"}
+                                onClick={() => handleDelete(brother)}
+                                disabled={isInTeam || isDeleting}
+                                title={isInTeam ? 'Este hermano está asociado a un equipo y no puede ser eliminado' : 'Eliminar hermano de la comunidad'}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </Fragment>
                   );
                 })
               )}

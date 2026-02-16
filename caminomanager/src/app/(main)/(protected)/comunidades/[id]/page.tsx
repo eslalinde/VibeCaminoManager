@@ -12,8 +12,6 @@ import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { communityConfig } from '@/config/entities';
 import { SelectBrotherForTeamModal } from '@/components/crud/SelectBrotherForTeamModal';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { MergeCommunityModal } from '@/components/crud/MergeCommunityModal';
 import { ArrowLeft, Merge, Plus, Printer } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
@@ -36,6 +34,7 @@ export default function CommunityDetailPage() {
     teamMembers,
     teamParishes,
     stepLogs,
+    parishPriestName,
     loading,
     error,
     refreshCommunity
@@ -51,12 +50,6 @@ export default function CommunityDetailPage() {
       .filter(Boolean);
     return names.join(' y ');
   }, [community?.cathechist_team]);
-
-  const { presbiteros, regularBrothers } = useMemo(() => {
-    const presbiteros = mergedBrothers.filter(b => b.isPresbitero);
-    const regularBrothers = mergedBrothers.filter(b => !b.isPresbitero);
-    return { presbiteros, regularBrothers };
-  }, [mergedBrothers]);
 
   const handleEdit = () => {
     setIsEditModalOpen(true);
@@ -311,9 +304,9 @@ export default function CommunityDetailPage() {
             </div>
           </div>
 
-          {/* Right: Presbíteros + Step Log + Brothers List */}
+          {/* Right: Step Log + Brothers List (unified) */}
           <div className="space-y-4">
-            
+
             {/* Step Log */}
             <div>
               <CommunityStepLogCompact
@@ -324,38 +317,11 @@ export default function CommunityDetailPage() {
                 actualBrothers={community?.actual_brothers}
               />
             </div>
-            
-            {/* Presbíteros */}
-            {presbiteros.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Presbíteros ({presbiteros.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Celular</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {presbiteros.map(p => (
-                        <TableRow key={p.id}>
-                          <TableCell>{p.name}</TableCell>
-                          <TableCell>{p.celular}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
 
-            {/* Brothers List */}
+            {/* Brothers List (all brothers grouped by carisma) */}
             <div className="flex-1">
               <BrothersList
-                brothers={regularBrothers}
+                brothers={mergedBrothers}
                 loading={loading}
                 communityId={communityId}
                 teamMembers={teamMembers}
@@ -374,6 +340,8 @@ export default function CommunityDetailPage() {
         teamMembers={teamMembers}
         teamParishes={teamParishes}
         stepLogs={stepLogs}
+        parishPriestName={parishPriestName}
+        mergedBrothers={mergedBrothers}
       />
 
       {/* Modal de edición */}
