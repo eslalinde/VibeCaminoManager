@@ -1,5 +1,6 @@
 import { updateSession } from "@/utils/supabase/middleware";
 import { type NextRequest, NextResponse } from "next/server";
+import { publicRoutes } from "@/lib/routes";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -7,14 +8,6 @@ export async function middleware(request: NextRequest) {
   // ==============================================
   // RUTAS PÚBLICAS - No requieren autenticación
   // ==============================================
-  const publicRoutes = [
-    '/login',
-    '/signup',
-    '/public',
-    '/auth/confirm',
-    '/auth/signout',
-  ];
-
   const isPublicRoute = publicRoutes.some((route) =>
     pathname === route || pathname.startsWith(`${route}/`)
   );

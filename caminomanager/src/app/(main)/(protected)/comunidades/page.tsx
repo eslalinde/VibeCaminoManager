@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { EntityPage } from '@/components/crud';
 import { communityConfig } from '@/config/entities';
+import { routes } from '@/lib/routes';
 
 export default function CommunitiesPage() {
   const router = useRouter();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleRowClick = (community: any) => {
-    router.push(`/protected/communities/${community.id}`);
+    router.push(routes.comunidad(community.id));
   };
 
   return (

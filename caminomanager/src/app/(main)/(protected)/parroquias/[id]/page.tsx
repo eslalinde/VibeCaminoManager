@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Parish } from '@/types/database';
+import { routes } from '@/lib/routes';
 
 export default function ParishDetailPage() {
   const params = useParams();
@@ -79,7 +80,7 @@ export default function ParishDetailPage() {
           <Button
             variant="outline"
             size="2"
-            onClick={() => router.push('/protected/parishes')}
+            onClick={() => router.push(routes.parroquias)}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -121,7 +122,7 @@ export default function ParishDetailPage() {
                     <div
                       key={community.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                      onClick={() => router.push(`/protected/communities/${community.id}`)}
+                      onClick={() => router.push(routes.comunidad(community.id!))}
                     >
                       <div>
                         <span className="font-medium">Comunidad {community.number}</span>

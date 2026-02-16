@@ -1,0 +1,33 @@
+export const routes = {
+  login: '/login',
+  signup: '/signup',
+  home: '/',
+  paises: '/paises',
+  departamentos: '/departamentos',
+  ciudades: '/ciudades',
+  zonas: '/zonas',
+  diocesis: '/diocesis',
+  parroquias: '/parroquias',
+  parroquia: (id: string | number) => `/parroquias/${id}`,
+  etapas: '/etapas',
+  tiposEquipo: '/tipos-equipo',
+  personas: '/personas',
+  comunidades: '/comunidades',
+  comunidad: (id: string | number) => `/comunidades/${id}`,
+  equipoNacional: '/equipo-nacional',
+  reportes: '/reportes',
+  reporteCatequistas: '/reportes/equipos-catequistas',
+  reportePresbiteros: '/reportes/presbiteros',
+  reporteEstadoPasos: '/reportes/estado-pasos',
+  reporteLideres: '/reportes/lideres-comunidades',
+  cuenta: '/cuenta',
+  admin: '/admin',
+  publico: '/publico',
+  authConfirm: '/auth/confirm',
+  authSignout: '/auth/signout',
+} as const;
+
+export const publicRoutes = [
+  routes.login, routes.signup, routes.publico,
+  routes.authConfirm, routes.authSignout,
+];

@@ -1,29 +1,37 @@
 "use client";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { BarChart3, Users, Church, UserCheck } from "lucide-react";
+import { BarChart3, Users, UserCheck, GitBranch, Crown } from "lucide-react";
+import { routes } from "@/lib/routes";
 
 const reportTypes = [
   {
     title: "Equipos de Catequistas",
     description: "Reporte de equipos de catequistas con sus miembros y comunidades asignadas",
-    href: "/protected/reports/catechist-teams",
+    href: routes.reporteCatequistas,
     icon: Users,
     color: "bg-blue-500",
   },
   {
-    title: "Comunidades por Parroquia",
-    description: "Agrupación de comunidades por parroquia con estadísticas",
-    href: "/protected/reports/communities-by-parish",
-    icon: Church,
-    color: "bg-green-500",
-  },
-  {
     title: "Presbíteros",
     description: "Listado de presbíteros con sus parroquias asignadas",
-    href: "/protected/reports/priests",
+    href: routes.reportePresbiteros,
     icon: UserCheck,
     color: "bg-purple-500",
+  },
+  {
+    title: "Estado de Comunidades",
+    description: "Matriz de comunidades por parroquia y etapa del camino neocatecumenal",
+    href: routes.reporteEstadoPasos,
+    icon: GitBranch,
+    color: "bg-orange-500",
+  },
+  {
+    title: "Líderes de Comunidades",
+    description: "Reporte dinámico de comunidades con catequistas, presbíteros, itinerantes, seminaristas y monjas",
+    href: routes.reporteLideres,
+    icon: Crown,
+    color: "bg-teal-500",
   },
 ];
 

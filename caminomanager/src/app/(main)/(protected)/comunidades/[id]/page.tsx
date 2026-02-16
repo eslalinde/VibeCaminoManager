@@ -14,9 +14,11 @@ import { SelectBrotherForTeamModal } from '@/components/crud/SelectBrotherForTea
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { ArrowLeft, Plus, Printer } from 'lucide-react';
+import { MergeCommunityModal } from '@/components/crud/MergeCommunityModal';
+import { ArrowLeft, Merge, Plus, Printer } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Community } from '@/types/database';
+import { routes } from '@/lib/routes';
 
 export default function CommunityDetailPage() {
   const params = useParams();
@@ -25,6 +27,7 @@ export default function CommunityDetailPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [addToTeamId, setAddToTeamId] = useState<number | null>(null);
+  const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
   
   const {
     community,
@@ -181,7 +184,7 @@ export default function CommunityDetailPage() {
             <Button
               variant="outline"
               size="2"
-              onClick={() => router.push('/protected/communities')}
+              onClick={() => router.push(routes.comunidades)}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -196,6 +199,17 @@ export default function CommunityDetailPage() {
               <Printer className="h-4 w-4" />
               Imprimir Ficha
             </Button>
+            {community?.parish_id && (
+              <Button
+                variant="outline"
+                size="2"
+                onClick={() => setIsMergeModalOpen(true)}
+                className="flex items-center gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
+              >
+                <Merge className="h-4 w-4" />
+                Fusionar
+              </Button>
+            )}
           </div>
           <h1 className="text-3xl font-bold text-gray-900">
             Comunidad {community?.number || 'Cargando...'}
@@ -381,6 +395,18 @@ export default function CommunityDetailPage() {
         brothers={mergedBrothers}
         teamMembers={addToTeamId ? teamMembers[addToTeamId] || [] : []}
       />
+
+      {/* Modal de fusión de comunidades */}
+      {community?.parish_id && (
+        <MergeCommunityModal
+          open={isMergeModalOpen}
+          onClose={() => setIsMergeModalOpen(false)}
+          keepCommunityId={communityId}
+          keepCommunityNumber={community.number || ''}
+          parishId={community.parish_id}
+          onSuccess={refreshCommunity}
+        />
+      )}
     </div>
   );
 }

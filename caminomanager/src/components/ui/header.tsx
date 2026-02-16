@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import "@radix-ui/themes/styles.css";
+import { routes } from "@/lib/routes";
 
 interface HeaderProps {
   userEmail?: string;
@@ -82,7 +83,7 @@ export default function Header({ userEmail, userName, title }: HeaderProps) {
             <DropdownMenu.Label className="px-2 py-1.5 text-xs text-gray-500 dark:text-gray-400 font-semibold">Cuenta</DropdownMenu.Label>
             <DropdownMenu.Item asChild>
               <Link
-                href="/protected/account"
+                href={routes.cuenta}
                 className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer hover:bg-amber-50 dark:hover:bg-gray-800"
                 onClick={() => setMenuOpen(false)}
               >

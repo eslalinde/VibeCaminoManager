@@ -391,7 +391,8 @@ INSERT INTO public.teams (id, name, team_type_id, community_id) VALUES
   (8, 'Equipo Responsables Comunidad 4', 4, 4),
   (9, 'Equipo Catequistas Comunidad 4', 3, 4),
   (10, 'Equipo de Responsables - Comunidad 1', 4, 5),
-  (11, 'Equipo de Catequistas de la Nación', 3, NULL);
+  (11, 'Equipo de Catequistas de la Nación', 3, NULL),
+  (12, 'Equipo Catequistas Comunidad 5', 3, 5);
 
 -- Assign default catechist teams (team_type_id = 3) to communities
 UPDATE public.communities SET cathechist_team_id = 2 WHERE id = 1;  -- Equipo Catequistas 1 Comunidad 1
@@ -457,7 +458,11 @@ INSERT INTO public.belongs (id, person_id, community_id, team_id, is_responsible
   (5, 5, 1, 1, false),
   (6, 6, 1, 1, false),
   (3, 3, 1, 1, true),
-  (4, 4, 1, 1, true);
+  (4, 4, 1, 1, true),
+  (57, 135, 5, 12, true),
+  (58, 136, 5, 12, true),
+  (59, 137, 5, 12, false),
+  (60, 138, 5, 12, false);
 
 -- ------------------------------------------------------------
 -- Brothers
@@ -691,7 +696,8 @@ INSERT INTO public.parish_teams (id, parish_id, team_id) VALUES
   (6, 1, 6),
   (7, 1, 7),
   (8, 1, 8),
-  (9, 1, 9);
+  (9, 1, 9),
+  (10, 2, 2);
 
 -- ------------------------------------------------------------
 -- Priests

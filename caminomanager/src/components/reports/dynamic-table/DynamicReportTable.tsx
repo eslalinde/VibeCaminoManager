@@ -1,0 +1,365 @@
+"use client";
+import { useState, useCallback } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  getGroupedRowModel,
+  getExpandedRowModel,
+  getFacetedUniqueValues,
+  flexRender,
+  SortingState,
+  ColumnFiltersState,
+  ExpandedState,
+  Row,
+} from "@tanstack/react-table";
+import {
+  ArrowLeft,
+  Download,
+  RefreshCw,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-react";
+import Link from "next/link";
+import { routes } from "@/lib/routes";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { DynamicReportTableProps, DynamicColumnMeta } from "./types";
+import { exportTableToCSV } from "./utils";
+import { GlobalFilter } from "./GlobalFilter";
+import { ColumnFilter } from "./ColumnFilter";
+import { GroupingControls } from "./GroupingControls";
+
+export function DynamicReportTable<TData>({
+  config,
+  data,
+  loading,
+  onRefresh,
+}: DynamicReportTableProps<TData>) {
+  const [sorting, setSorting] = useState<SortingState>(
+    config.defaultSorting ?? []
+  );
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [grouping, setGrouping] = useState<string[]>(
+    config.defaultGrouping ?? []
+  );
+  const [expanded, setExpanded] = useState<ExpandedState>(true);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const table = useReactTable({
+    data,
+    columns: config.columns,
+    state: {
+      sorting,
+      columnFilters,
+      globalFilter,
+      grouping,
+      expanded,
+    },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
+    onGroupingChange: setGrouping,
+    onExpandedChange: setExpanded,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getGroupedRowModel: getGroupedRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    enableGrouping: true,
+  });
+
+  const handleExport = useCallback(() => {
+    setIsExporting(true);
+    try {
+      exportTableToCSV(table, config.exportFileName ?? "reporte");
+    } finally {
+      setIsExporting(false);
+    }
+  }, [table, config.exportFileName]);
+
+  const handleGlobalFilterChange = useCallback((value: string) => {
+    setGlobalFilter(value);
+  }, []);
+
+  const handleGroupingChange = useCallback((newGrouping: string[]) => {
+    setGrouping(newGrouping);
+  }, []);
+
+  // Compute footer aggregations
+  const hasAggregations = config.columns.some((col) => {
+    const meta = col.meta as DynamicColumnMeta | undefined;
+    return meta?.aggregationType;
+  });
+
+  const filteredLeafRowCount = table.getFilteredRowModel().rows.reduce(
+    (count, row) => count + countLeafRows(row),
+    0
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link href={routes.reportes}>
+            <Button variant="outline" size="1">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {config.title}
+            </h1>
+            <p className="text-gray-600">{config.description}</p>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onRefresh} disabled={loading}>
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            />
+            Actualizar
+          </Button>
+          <Button
+            onClick={handleExport}
+            disabled={loading || isExporting || data.length === 0}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            {isExporting ? "Exportando..." : "Exportar CSV"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-4 flex-wrap">
+          <GlobalFilter
+            value={globalFilter}
+            onChange={handleGlobalFilterChange}
+            placeholder={
+              config.globalFilterPlaceholder ?? "Buscar en todos los campos..."
+            }
+          />
+          <GroupingControls
+            allColumns={table.getAllColumns()}
+            grouping={grouping}
+            onGroupingChange={handleGroupingChange}
+          />
+        </div>
+      </div>
+
+      {/* Table */}
+      <Card className="p-6">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
+            <span className="ml-3 text-gray-600">Cargando datos...</span>
+          </div>
+        ) : data.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No hay datos disponibles</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      const meta = header.column.columnDef
+                        .meta as DynamicColumnMeta | undefined;
+                      const align = meta?.align ?? "left";
+                      return (
+                        <TableHead
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          className={`px-3 ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"}`}
+                        >
+                          {header.isPlaceholder ? null : (
+                            <div className="space-y-1">
+                              <div
+                                className={`flex items-center gap-1 ${
+                                  header.column.getCanSort()
+                                    ? "cursor-pointer select-none hover:text-gray-900"
+                                    : ""
+                                }`}
+                                onClick={header.column.getToggleSortingHandler()}
+                              >
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                                {header.column.getCanSort() && (
+                                  <span className="ml-1">
+                                    {header.column.getIsSorted() === "asc" ? (
+                                      <ArrowUp className="h-3 w-3" />
+                                    ) : header.column.getIsSorted() ===
+                                      "desc" ? (
+                                      <ArrowDown className="h-3 w-3" />
+                                    ) : (
+                                      <ArrowUpDown className="h-3 w-3 text-gray-400" />
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                              <ColumnFilter column={header.column} />
+                            </div>
+                          )}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+
+              <TableBody>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className={
+                      row.getIsGrouped() ? "bg-gray-50 font-semibold" : ""
+                    }
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      const meta = cell.column.columnDef
+                        .meta as DynamicColumnMeta | undefined;
+                      const align = meta?.align ?? "left";
+
+                      return (
+                        <TableCell
+                          key={cell.id}
+                          className={`px-3 py-2 ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"}`}
+                        >
+                          {cell.getIsGrouped() ? (
+                            <button
+                              onClick={row.getToggleExpandedHandler()}
+                              className="flex items-center gap-1"
+                            >
+                              {row.getIsExpanded() ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}{" "}
+                              <span className="text-gray-500 font-normal text-xs">
+                                ({row.subRows.length})
+                              </span>
+                            </button>
+                          ) : cell.getIsAggregated() ? (
+                            flexRender(
+                              cell.column.columnDef.aggregatedCell ??
+                                cell.column.columnDef.cell,
+                              cell.getContext()
+                            )
+                          ) : cell.getIsPlaceholder() ? null : (
+                            flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+
+              {hasAggregations && data.length > 0 && (
+                <TableFooter>
+                  <TableRow className="bg-gray-100 font-semibold">
+                    {table.getAllLeafColumns().map((column, index) => {
+                      const meta = column.columnDef
+                        .meta as DynamicColumnMeta | undefined;
+                      const align = meta?.align ?? "left";
+
+                      if (index === 0) {
+                        return (
+                          <TableCell key={column.id} className="px-3 py-2">
+                            Totales
+                          </TableCell>
+                        );
+                      }
+
+                      if (meta?.aggregationType) {
+                        const allRows = table.getFilteredRowModel().flatRows.filter(
+                          (r) => !r.getIsGrouped()
+                        );
+                        let value: number;
+                        if (meta.aggregationType === "count") {
+                          value = allRows.length;
+                        } else if (meta.aggregationType === "sum") {
+                          value = allRows.reduce(
+                            (sum, row) =>
+                              sum + (Number(row.getValue(column.id)) || 0),
+                            0
+                          );
+                        } else {
+                          const unique = new Set(
+                            allRows
+                              .map((row) => row.getValue(column.id))
+                              .filter(Boolean)
+                          );
+                          value = unique.size;
+                        }
+                        return (
+                          <TableCell
+                            key={column.id}
+                            className={`px-3 py-2 ${align === "center" ? "text-center" : align === "right" ? "text-right" : "text-left"}`}
+                          >
+                            {meta.aggregationLabel
+                              ? `${meta.aggregationLabel}: ${value}`
+                              : value}
+                          </TableCell>
+                        );
+                      }
+
+                      return (
+                        <TableCell key={column.id} className="px-3 py-2" />
+                      );
+                    })}
+                  </TableRow>
+                </TableFooter>
+              )}
+            </Table>
+          </div>
+        )}
+
+        {data.length > 0 && (
+          <div className="mt-4 text-sm text-gray-500 text-center">
+            Mostrando {filteredLeafRowCount} registros
+            {filteredLeafRowCount !== data.length &&
+              ` (de ${data.length} totales)`}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+function countLeafRows<TData>(row: Row<TData>): number {
+  if (row.subRows && row.subRows.length > 0) {
+    return row.subRows.reduce((count, subRow) => count + countLeafRows(subRow), 0);
+  }
+  return 1;
+}

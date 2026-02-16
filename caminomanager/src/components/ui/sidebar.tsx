@@ -20,20 +20,21 @@ import {
 } from "lucide-react";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import "@radix-ui/themes/styles.css";
+import { routes } from "@/lib/routes";
 
 const navItems = [
-  { label: "Países", href: "/protected/countries", icon: Globe },
-  { label: "Departamentos", href: "/protected/departamentos", icon: MapPinned },
-  { label: "Ciudades", href: "/protected/cities", icon: Building2 },
-  { label: "Zonas", href: "/protected/zones", icon: Layers },
-  { label: "Diócesis", href: "/protected/dioceses", icon: Cross },
-  { label: "Parroquias", href: "/protected/parishes", icon: Church },
-  { label: "Etapas del Camino", href: "/protected/stepways", icon: Route },
-  { label: "Tipos de Equipo", href: "/protected/teamtypes", icon: Users2 },
-  { label: "Personas", href: "/protected/people", icon: Users },
-  { label: "Comunidades", href: "/protected/communities", icon: Users2 },
-  { label: "Equipo Nacional", href: "/protected/national-team", icon: Shield },
-  { label: "Reportes", href: "/protected/reports", icon: BarChart3 },
+  { label: "Países", href: routes.paises, icon: Globe },
+  { label: "Departamentos", href: routes.departamentos, icon: MapPinned },
+  { label: "Ciudades", href: routes.ciudades, icon: Building2 },
+  { label: "Zonas", href: routes.zonas, icon: Layers },
+  { label: "Diócesis", href: routes.diocesis, icon: Cross },
+  { label: "Parroquias", href: routes.parroquias, icon: Church },
+  { label: "Etapas del Camino", href: routes.etapas, icon: Route },
+  { label: "Tipos de Equipo", href: routes.tiposEquipo, icon: Users2 },
+  { label: "Personas", href: routes.personas, icon: Users },
+  { label: "Comunidades", href: routes.comunidades, icon: Users2 },
+  { label: "Equipo Nacional", href: routes.equipoNacional, icon: Shield },
+  { label: "Reportes", href: routes.reportes, icon: BarChart3 },
 ];
 
 export default function Sidebar() {

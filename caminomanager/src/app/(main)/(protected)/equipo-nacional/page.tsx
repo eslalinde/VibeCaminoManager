@@ -13,6 +13,7 @@ import { Plus, UserPlus, Users2, Pencil } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Person } from '@/types/database';
 import Link from 'next/link';
+import { routes } from '@/lib/routes';
 
 export default function NationalTeamPage() {
   const { team, members, communities, loading, error, refreshTeam } = useNationalTeamData();
@@ -238,7 +239,7 @@ export default function NationalTeamPage() {
                         <TableRow key={community.id}>
                           <TableCell>
                             <Link
-                              href={`/protected/communities/${community.id}`}
+                              href={routes.comunidad(community.id!)}
                               className="font-medium text-amber-700 hover:text-amber-900 hover:underline"
                             >
                               {community.number}
