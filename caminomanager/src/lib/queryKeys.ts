@@ -44,4 +44,10 @@ export const queryKeys = {
     all: ['report'] as const,
     type: (reportType: string) => ['report', reportType] as const,
   },
+
+  // Admin
+  admin: {
+    all: ['admin'] as const,
+    users: () => ['admin', 'users'] as const,
+  },
 };

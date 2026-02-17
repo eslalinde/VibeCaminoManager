@@ -17,6 +17,7 @@ import {
   Route,
   BarChart3,
   Shield,
+  ShieldCheck,
   Home,
 } from "lucide-react";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
@@ -67,6 +68,12 @@ const navGroups: NavGroup[] = [
     title: "Reportes",
     items: [
       { label: "Reportes", href: routes.reportes, icon: BarChart3 },
+    ],
+  },
+  {
+    title: "Administración",
+    items: [
+      { label: "Usuarios", href: routes.admin, icon: ShieldCheck },
     ],
   },
 ];
