@@ -1,6 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
 import { Parish, Priest, Community } from '@/types/database';
+import { queryKeys } from '@/lib/queryKeys';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export interface ParishData {
   parish: Parish | null;
@@ -10,86 +13,119 @@ export interface ParishData {
   error: string | null;
 }
 
+// --- Fetcher functions ---
+
+async function fetchParish(supabase: SupabaseClient, parishId: number) {
+  const { data, error } = await supabase
+    .from('parishes')
+    .select(`
+      *,
+      diocese:dioceses(*),
+      city:cities(*, state:states(*), country:countries(*)),
+      zone:city_zones(*)
+    `)
+    .eq('id', parishId)
+    .single();
+
+  if (error) throw error;
+  return data as Parish;
+}
+
+async function fetchPriests(supabase: SupabaseClient, parishId: number) {
+  const { data, error } = await supabase
+    .from('priests')
+    .select(`
+      *,
+      person:people(*)
+    `)
+    .eq('parish_id', parishId);
+
+  if (error) throw error;
+  return (data || []) as Priest[];
+}
+
+async function fetchParishCommunities(supabase: SupabaseClient, parishId: number) {
+  const { data, error } = await supabase
+    .from('communities')
+    .select(`
+      *,
+      step_way:step_ways(*)
+    `)
+    .eq('parish_id', parishId)
+    .order('number', { ascending: true });
+
+  if (error) throw error;
+  return (data || []) as Community[];
+}
+
+// --- Hook ---
+
 export function useParishData(parishId: number): ParishData & {
   refreshParish: () => Promise<void>;
+  invalidateDetail: () => Promise<void>;
+  invalidatePriests: () => Promise<void>;
+  invalidateCommunities: () => Promise<void>;
 } {
-  const [parish, setParish] = useState<Parish | null>(null);
-  const [priests, setPriests] = useState<Priest[]>([]);
-  const [communities, setCommunities] = useState<Community[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const supabase = useMemo(() => createClient(), []);
+  const queryClient = useQueryClient();
 
-  const fetchParishData = useCallback(async () => {
-    if (!parishId) return;
+  const parishQuery = useQuery({
+    queryKey: queryKeys.parish.detail(parishId),
+    queryFn: () => fetchParish(supabase, parishId),
+    enabled: !!parishId,
+  });
 
-    try {
-      setLoading(true);
-      setError(null);
+  const priestsQuery = useQuery({
+    queryKey: queryKeys.parish.priests(parishId),
+    queryFn: () => fetchPriests(supabase, parishId),
+    enabled: !!parishId,
+  });
 
-      // Fetch parish with relations
-      const { data: parishData, error: parishError } = await supabase
-        .from('parishes')
-        .select(`
-          *,
-          diocese:dioceses(*),
-          city:cities(*, state:states(*), country:countries(*)),
-          zone:city_zones(*)
-        `)
-        .eq('id', parishId)
-        .single();
+  const communitiesQuery = useQuery({
+    queryKey: queryKeys.parish.communities(parishId),
+    queryFn: () => fetchParishCommunities(supabase, parishId),
+    enabled: !!parishId,
+  });
 
-      if (parishError) throw parishError;
+  // Invalidation helpers
+  const invalidateDetail = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.parish.detail(parishId) }),
+    [queryClient, parishId]
+  );
 
-      // Fetch priests with person data
-      const { data: priestsData, error: priestsError } = await supabase
-        .from('priests')
-        .select(`
-          *,
-          person:people(*)
-        `)
-        .eq('parish_id', parishId);
+  const invalidatePriests = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.parish.priests(parishId) }),
+    [queryClient, parishId]
+  );
 
-      if (priestsError) throw priestsError;
+  const invalidateCommunities = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.parish.communities(parishId) }),
+    [queryClient, parishId]
+  );
 
-      // Fetch communities of this parish
-      const { data: communitiesData, error: communitiesError } = await supabase
-        .from('communities')
-        .select(`
-          *,
-          step_way:step_ways(*)
-        `)
-        .eq('parish_id', parishId)
-        .order('number', { ascending: true });
+  const refreshParish = useCallback(
+    async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.parish.all });
+    },
+    [queryClient]
+  );
 
-      if (communitiesError) throw communitiesError;
-
-      setParish(parishData);
-      setPriests(priestsData || []);
-      setCommunities(communitiesData || []);
-    } catch (err) {
-      console.error('Error fetching parish data:', err);
-      setError(err instanceof Error ? err.message : 'Error desconocido');
-    } finally {
-      setLoading(false);
-    }
-  }, [parishId, supabase]);
-
-  useEffect(() => {
-    fetchParishData();
-  }, [fetchParishData]);
-
-  const refreshParish = useCallback(async () => {
-    await fetchParishData();
-  }, [fetchParishData]);
+  // Combine loading/error state
+  const loading = parishQuery.isLoading || priestsQuery.isLoading || communitiesQuery.isLoading;
+  const error = parishQuery.error?.message
+    ?? priestsQuery.error?.message
+    ?? communitiesQuery.error?.message
+    ?? null;
 
   return {
-    parish,
-    priests,
-    communities,
+    parish: parishQuery.data ?? null,
+    priests: priestsQuery.data ?? [],
+    communities: communitiesQuery.data ?? [],
     loading,
     error,
     refreshParish,
+    invalidateDetail,
+    invalidatePriests,
+    invalidateCommunities,
   };
 }

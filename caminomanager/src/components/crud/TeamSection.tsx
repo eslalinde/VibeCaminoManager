@@ -130,8 +130,11 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       if (person.id) processedIds.add(person.id);
     });
 
-    // Ordenar por nombre
-    return merged.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+    // Responsables primero, luego ordenar por nombre
+    return merged.sort((a, b) => {
+      if (a.isResponsible !== b.isResponsible) return a.isResponsible ? -1 : 1;
+      return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+    });
   })();
 
   // Verificar si ya existe un responsable en el equipo

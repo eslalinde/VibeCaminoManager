@@ -64,9 +64,7 @@ const columns = [
   }),
   columnHelper.accessor("communities_count", {
     header: "Comunidades",
-    cell: (info) => (
-      <span className="font-medium text-purple-600">{info.getValue()}</span>
-    ),
+    cell: (info) => info.getValue(),
     meta: {
       align: "center",
       aggregationType: "sum",
@@ -89,9 +87,7 @@ const columns = [
   }),
   columnHelper.accessor("email", {
     header: "Email",
-    cell: (info) => (
-      <span className="text-sm text-blue-600">{info.getValue()}</span>
-    ),
+    cell: (info) => <span className="text-sm">{info.getValue()}</span>,
     meta: {
       filterType: "text",
     } satisfies DynamicColumnMeta,

@@ -1,7 +1,10 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
-import { Community, Brother, Team, Belongs, Person, Parish, CommunityStepLog } from '@/types/database';
-import { CARISMA_OPTIONS, NON_MARRIAGE_TYPE_IDS, getCarismaLabel } from '@/config/carisma';
+import { Community, Brother, Team, Belongs, Parish, CommunityStepLog } from '@/types/database';
+import { NON_MARRIAGE_TYPE_IDS, getCarismaLabel } from '@/config/carisma';
+import { queryKeys } from '@/lib/queryKeys';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export interface CommunityData {
   community: Community | null;
@@ -29,194 +32,249 @@ export interface MergedBrother {
   personIds: number[];
 }
 
+// --- Fetcher functions ---
+
+async function fetchCommunity(supabase: SupabaseClient, communityId: number) {
+  const { data, error } = await supabase
+    .from('communities')
+    .select(`
+      *,
+      parish:parishes(*),
+      step_way:step_ways(*),
+      cathechist_team:teams!cathechist_team_id(
+        *,
+        belongs(
+          is_responsible_for_the_team,
+          person:people(person_name)
+        ),
+        parish_teams(
+          parish:parishes(name)
+        )
+      )
+    `)
+    .eq('id', communityId)
+    .single();
+
+  if (error) throw error;
+  return data as Community;
+}
+
+async function fetchBrothers(supabase: SupabaseClient, communityId: number) {
+  const { data, error } = await supabase
+    .from('brothers')
+    .select(`
+      *,
+      person:people(*)
+    `)
+    .eq('community_id', communityId);
+
+  if (error) throw error;
+  return (data || []) as Brother[];
+}
+
+async function fetchTeams(supabase: SupabaseClient, communityId: number) {
+  const { data, error } = await supabase
+    .from('teams')
+    .select(`
+      *,
+      team_type:team_types(*)
+    `)
+    .eq('community_id', communityId);
+
+  if (error) throw error;
+  return (data || []) as Team[];
+}
+
+async function fetchTeamMembers(supabase: SupabaseClient, teamIds: number[]) {
+  const { data, error } = await supabase
+    .from('belongs')
+    .select(`
+      *,
+      person:people(*)
+    `)
+    .in('team_id', teamIds);
+
+  if (error) throw error;
+
+  // Group by team_id
+  const membersByTeam: Record<number, Belongs[]> = {};
+  (data || []).forEach((member: Belongs) => {
+    if (!membersByTeam[member.team_id]) {
+      membersByTeam[member.team_id] = [];
+    }
+    membersByTeam[member.team_id].push(member);
+  });
+  return membersByTeam;
+}
+
+async function fetchTeamParishes(supabase: SupabaseClient, teamIds: number[]) {
+  const { data, error } = await supabase
+    .from('parish_teams')
+    .select(`
+      team_id,
+      parish:parishes(*)
+    `)
+    .in('team_id', teamIds);
+
+  if (error) throw error;
+
+  // Group by team_id
+  const parishesByTeam: Record<number, Parish[]> = {};
+  (data || []).forEach((item: any) => {
+    if (!parishesByTeam[item.team_id]) {
+      parishesByTeam[item.team_id] = [];
+    }
+    if (item.parish) {
+      parishesByTeam[item.team_id].push(item.parish as Parish);
+    }
+  });
+  return parishesByTeam;
+}
+
+async function fetchStepLogs(supabase: SupabaseClient, communityId: number) {
+  const { data, error } = await supabase
+    .from('community_step_log')
+    .select(`
+      *,
+      step_way:step_ways(*)
+    `)
+    .eq('community_id', communityId)
+    .order('id', { ascending: false });
+
+  if (error) throw error;
+  return (data || []) as CommunityStepLog[];
+}
+
+async function fetchParishPriest(supabase: SupabaseClient, parishId: number) {
+  const { data } = await supabase
+    .from('priests')
+    .select('person:people(person_name)')
+    .eq('parish_id', parishId)
+    .eq('is_parish_priest', true)
+    .limit(1)
+    .maybeSingle();
+
+  if (data?.person) {
+    return (data.person as any).person_name as string | null;
+  }
+  return null;
+}
+
+// --- Hook ---
+
 export function useCommunityData(communityId: number): CommunityData & {
   mergedBrothers: MergedBrother[];
   refreshCommunity: () => Promise<void>;
+  invalidateDetail: () => Promise<void>;
+  invalidateBrothers: () => Promise<void>;
+  invalidateTeams: () => Promise<void>;
+  invalidateTeamMembers: () => Promise<void>;
+  invalidateStepLogs: () => Promise<void>;
 } {
-  const [community, setCommunity] = useState<Community | null>(null);
-  const [brothers, setBrothers] = useState<Brother[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [teamMembers, setTeamMembers] = useState<Record<number, Belongs[]>>({});
-  const [teamParishes, setTeamParishes] = useState<Record<number, Parish[]>>({});
-  const [stepLogs, setStepLogs] = useState<CommunityStepLog[]>([]);
-  const [parishPriestName, setParishPriestName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const supabase = useMemo(() => createClient(), []);
+  const queryClient = useQueryClient();
 
-  const fetchCommunityData = useCallback(async () => {
-    if (!communityId) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
+  // Query 1: Community base (needed for parish_id)
+  const communityQuery = useQuery({
+    queryKey: queryKeys.community.detail(communityId),
+    queryFn: () => fetchCommunity(supabase, communityId),
+    enabled: !!communityId,
+  });
 
-      // Fetch community with relations
-      const { data: communityData, error: communityError } = await supabase
-        .from('communities')
-        .select(`
-          *,
-          parish:parishes(*),
-          step_way:step_ways(*),
-          cathechist_team:teams!cathechist_team_id(
-            *,
-            belongs(
-              is_responsible_for_the_team,
-              person:people(person_name)
-            ),
-            parish_teams(
-              parish:parishes(name)
-            )
-          )
-        `)
-        .eq('id', communityId)
-        .single();
+  // Parallel queries (don't depend on community)
+  const brothersQuery = useQuery({
+    queryKey: queryKeys.community.brothers(communityId),
+    queryFn: () => fetchBrothers(supabase, communityId),
+    enabled: !!communityId,
+  });
 
-      if (communityError) throw communityError;
+  const teamsQuery = useQuery({
+    queryKey: queryKeys.community.teams(communityId),
+    queryFn: () => fetchTeams(supabase, communityId),
+    enabled: !!communityId,
+  });
 
-      // Fetch brothers with person data
-      const { data: brothersData, error: brothersError } = await supabase
-        .from('brothers')
-        .select(`
-          *,
-          person:people(*)
-        `)
-        .eq('community_id', communityId);
+  const stepLogsQuery = useQuery({
+    queryKey: queryKeys.community.stepLogs(communityId),
+    queryFn: () => fetchStepLogs(supabase, communityId),
+    enabled: !!communityId,
+  });
 
-      if (brothersError) throw brothersError;
+  // Dependent queries - need teamIds from teamsQuery
+  const teamIds = useMemo(
+    () => teamsQuery.data?.map(t => t.id!).filter(Boolean) ?? [],
+    [teamsQuery.data]
+  );
 
-      // Fetch teams
-      const { data: teamsData, error: teamsError } = await supabase
-        .from('teams')
-        .select(`
-          *,
-          team_type:team_types(*)
-        `)
-        .eq('community_id', communityId);
+  const teamMembersQuery = useQuery({
+    queryKey: queryKeys.community.teamMembers(communityId),
+    queryFn: () => fetchTeamMembers(supabase, teamIds),
+    enabled: teamIds.length > 0,
+  });
 
-      if (teamsError) throw teamsError;
+  const teamParishesQuery = useQuery({
+    queryKey: queryKeys.community.teamParishes(communityId),
+    queryFn: () => fetchTeamParishes(supabase, teamIds),
+    enabled: teamIds.length > 0,
+  });
 
-      // Fetch team members for all teams
-      const teamIds = teamsData?.map(team => team.id) || [];
-      let membersData: Belongs[] = [];
-      
-      if (teamIds.length > 0) {
-        const { data: members, error: membersError } = await supabase
-          .from('belongs')
-          .select(`
-            *,
-            person:people(*)
-          `)
-          .in('team_id', teamIds);
+  // Dependent query - needs parish_id from communityQuery
+  const parishId = communityQuery.data?.parish_id;
 
-        if (membersError) throw membersError;
-        membersData = members || [];
-      }
+  const parishPriestQuery = useQuery({
+    queryKey: queryKeys.community.parishPriest(parishId!),
+    queryFn: () => fetchParishPriest(supabase, parishId!),
+    enabled: !!parishId,
+  });
 
-      // Group team members by team_id
-      const membersByTeam: Record<number, Belongs[]> = {};
-      membersData.forEach(member => {
-        if (!membersByTeam[member.team_id]) {
-          membersByTeam[member.team_id] = [];
-        }
-        membersByTeam[member.team_id].push(member);
-      });
+  // Invalidation helpers
+  const invalidateDetail = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.community.detail(communityId) }),
+    [queryClient, communityId]
+  );
 
-      // Fetch parishes for each team
-      const parishesByTeam: Record<number, Parish[]> = {};
-      
-      if (teamIds.length > 0) {
-        const { data: parishTeamsData, error: parishTeamsError } = await supabase
-          .from('parish_teams')
-          .select(`
-            team_id,
-            parish:parishes(*)
-          `)
-          .in('team_id', teamIds);
+  const invalidateBrothers = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.community.brothers(communityId) }),
+    [queryClient, communityId]
+  );
 
-        if (parishTeamsError) throw parishTeamsError;
+  const invalidateTeams = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.community.teams(communityId) }),
+    [queryClient, communityId]
+  );
 
-        // Group parishes by team_id
-        parishTeamsData?.forEach(item => {
-          if (!parishesByTeam[item.team_id]) {
-            parishesByTeam[item.team_id] = [];
-          }
-          if (item.parish) {
-            parishesByTeam[item.team_id].push(item.parish as unknown as Parish);
-          }
-        });
-      }
+  const invalidateTeamMembers = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.community.teamMembers(communityId) }),
+    [queryClient, communityId]
+  );
 
-      // Fetch step logs
-      const { data: stepLogsData, error: stepLogsError } = await supabase
-        .from('community_step_log')
-        .select(`
-          *,
-          step_way:step_ways(*)
-        `)
-        .eq('community_id', communityId)
-        .order('id', { ascending: false });
+  const invalidateStepLogs = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.community.stepLogs(communityId) }),
+    [queryClient, communityId]
+  );
 
-      if (stepLogsError) throw stepLogsError;
-
-      // Fetch parish priest
-      let priestName: string | null = null;
-      if (communityData?.parish_id) {
-        const { data: priestData } = await supabase
-          .from('priests')
-          .select('person:people(person_name)')
-          .eq('parish_id', communityData.parish_id)
-          .eq('is_parish_priest', true)
-          .limit(1)
-          .maybeSingle();
-
-        if (priestData?.person) {
-          priestName = (priestData.person as any).person_name || null;
-        }
-      }
-
-      setCommunity(communityData);
-      setParishPriestName(priestName);
-      setBrothers(brothersData || []);
-      setTeams(teamsData || []);
-      setTeamMembers(membersByTeam);
-      setTeamParishes(parishesByTeam);
-      setStepLogs(stepLogsData || []);
-
-    } catch (err: any) {
-      console.error('Error fetching community data:', JSON.stringify(err));
-      setError(err?.message || (typeof err === 'string' ? err : 'Error desconocido'));
-    } finally {
-      setLoading(false);
-    }
-  }, [communityId, supabase]);
-
-  useEffect(() => {
-    fetchCommunityData();
-  }, [fetchCommunityData]);
-
-  const refreshCommunity = useCallback(async () => {
-    await fetchCommunityData();
-  }, [fetchCommunityData]);
+  const refreshCommunity = useCallback(
+    async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.community.all });
+    },
+    [queryClient]
+  );
 
   // Group teams by type
   const groupedTeams = useMemo(() => {
-    const responsables = teams.filter(team => team.team_type_id === 4);
-    const catequistas = teams.filter(team => team.team_type_id === 3);
-    
+    const teams = teamsQuery.data ?? [];
     return {
-      responsables,
-      catequistas
+      responsables: teams.filter(team => team.team_type_id === 4),
+      catequistas: teams.filter(team => team.team_type_id === 3),
     };
-  }, [teams]);
+  }, [teamsQuery.data]);
 
   // Merge married couples
   const mergedBrothers = useMemo(() => {
+    const brothers = brothersQuery.data ?? [];
     const processedIds = new Set<number>();
     const merged: MergedBrother[] = [];
 
-    // Person types that cannot be married (should not be merged with spouse)
     const nonMarriageTypes = NON_MARRIAGE_TYPE_IDS;
 
     brothers.forEach(brother => {
@@ -225,27 +283,22 @@ export function useCommunityData(communityId: number): CommunityData & {
       const person = brother.person;
       if (!person) return;
 
-      // Check person_type_id first - if it's a type that cannot be married, skip marriage logic
       const cannotBeMarried = person.person_type_id && nonMarriageTypes.includes(person.person_type_id);
 
-      // Check if this person is married and spouse is also in the community
-      // Only check for marriage if the person type allows it
       if (!cannotBeMarried && person.spouse_id) {
-        const spouseBrother = brothers.find(b => 
-          b.person_id === person.spouse_id && 
+        const spouseBrother = brothers.find(b =>
+          b.person_id === person.spouse_id &&
           !processedIds.has(b.person_id)
         );
 
         if (spouseBrother && spouseBrother.person) {
-          // Verify spouse is also not a non-marriage type
-          const spouseCannotBeMarried = spouseBrother.person.person_type_id && 
+          const spouseCannotBeMarried = spouseBrother.person.person_type_id &&
             nonMarriageTypes.includes(spouseBrother.person.person_type_id);
-          
+
           if (!spouseCannotBeMarried) {
-            // Create merged marriage entry
             const husband = person.gender_id === 1 ? person : spouseBrother.person;
             const wife = person.gender_id === 2 ? person : spouseBrother.person;
-            
+
             merged.push({
               id: `marriage-${person.id}-${spouseBrother.person_id}`,
               name: `${husband.person_name} y ${wife.person_name}`,
@@ -264,7 +317,6 @@ export function useCommunityData(communityId: number): CommunityData & {
         }
       }
 
-      // Single person (or person type that cannot be married)
       const carisma = getCarismaLabel(person.person_type_id);
 
       merged.push({
@@ -282,19 +334,35 @@ export function useCommunityData(communityId: number): CommunityData & {
     });
 
     return merged;
-  }, [brothers]);
+  }, [brothersQuery.data]);
+
+  // Combine loading/error state
+  const loading = communityQuery.isLoading || brothersQuery.isLoading || teamsQuery.isLoading || stepLogsQuery.isLoading;
+  const error = communityQuery.error?.message
+    ?? brothersQuery.error?.message
+    ?? teamsQuery.error?.message
+    ?? stepLogsQuery.error?.message
+    ?? teamMembersQuery.error?.message
+    ?? teamParishesQuery.error?.message
+    ?? parishPriestQuery.error?.message
+    ?? null;
 
   return {
-    community,
-    brothers,
+    community: communityQuery.data ?? null,
+    brothers: brothersQuery.data ?? [],
     teams: groupedTeams,
-    teamMembers,
-    teamParishes,
-    stepLogs,
-    parishPriestName,
+    teamMembers: teamMembersQuery.data ?? {},
+    teamParishes: teamParishesQuery.data ?? {},
+    stepLogs: stepLogsQuery.data ?? [],
+    parishPriestName: parishPriestQuery.data ?? null,
     loading,
     error,
     mergedBrothers,
-    refreshCommunity
+    refreshCommunity,
+    invalidateDetail,
+    invalidateBrothers,
+    invalidateTeams,
+    invalidateTeamMembers,
+    invalidateStepLogs,
   };
 }

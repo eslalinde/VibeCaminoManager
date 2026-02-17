@@ -20,6 +20,7 @@ export const routes = {
   reportePresbiteros: '/reportes/presbiteros',
   reporteEstadoPasos: '/reportes/estado-pasos',
   reporteLideres: '/reportes/lideres-comunidades',
+  reporteCatequesisParroquia: '/reportes/catequesis-parroquia',
   cuenta: '/cuenta',
   admin: '/admin',
   publico: '/publico',

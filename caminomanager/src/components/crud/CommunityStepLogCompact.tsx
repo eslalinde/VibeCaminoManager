@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useCrud } from '@/hooks/useCrud';
 import { CommunityStepLog as CommunityStepLogType } from '@/types/database';
-import { Calendar, FileText, ChevronDown, ChevronUp, ExternalLink, Plus, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { communityStepLogConfig } from '@/config/entities';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -17,62 +15,39 @@ import { createClient } from '@/utils/supabase/client';
 interface CommunityStepLogCompactProps {
   communityId: number;
   communityNumber: string;
+  stepLogs: CommunityStepLogType[];
+  loading: boolean;
   onStepLogAdded?: () => void;
+  onStepLogDeleted?: () => void;
   defaultCatechistName?: string;
   actualBrothers?: number;
 }
 
-export function CommunityStepLogCompact({ communityId, communityNumber, onStepLogAdded, defaultCatechistName, actualBrothers }: CommunityStepLogCompactProps) {
+export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs, loading, onStepLogAdded, onStepLogDeleted, defaultCatechistName, actualBrothers }: CommunityStepLogCompactProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const itemsPerPage = 2;
-
-  const foreignKeys = useMemo(() => [
-    {
-      foreignKey: 'step_way_id',
-      tableName: 'step_ways',
-      displayField: 'name',
-      alias: 'step_way'
-    }
-  ], []);
-
-  const { data: stepLogs, loading, count, fetchData, create, delete: deleteEntry } = useCrud<CommunityStepLogType>({
-    tableName: 'community_step_log',
-    searchFields: ['principal_catechist_name', 'notes'],
-    defaultSort: { field: 'id', asc: false },
-    pageSize: 10, // Usar un pageSize fijo más grande
-    foreignKeys
-  });
-
-  useEffect(() => {
-    if (communityId) {
-      fetchData({ 
-        filters: { community_id: communityId }
-      });
-    }
-  }, [communityId]);
+  const itemsPerPage = 4;
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'No especificada';
     return new Date(dateString).toLocaleDateString('es-CO');
   };
 
-  const getOutcomeBadge = (outcome?: boolean) => {
-    if (outcome === true) {
-      return <Badge variant="default" className="bg-green-100 text-green-800 text-sm"><CheckCircle className="w-4 h-4 mr-1" />Cerrada</Badge>;
-    } else if (outcome === false) {
-      return <Badge variant="default" className="bg-yellow-100 text-yellow-800 text-sm"><XCircle className="w-4 h-4 mr-1" />Abierta</Badge>;
-    }
-    return null;
+  const getDotColor = (outcome?: boolean) => {
+    if (outcome === true) return 'bg-green-500';
+    if (outcome === false) return 'bg-amber-400';
+    return 'bg-gray-300';
   };
 
   const handleAddEntry = async (data: any) => {
     setIsSaving(true);
     try {
+      const supabase = createClient();
+
       // Extraer campo virtual brothers_count
       const brothersCount = data.brothers_count ? parseInt(data.brothers_count, 10) : null;
       delete data.brothers_count;
@@ -87,13 +62,17 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
       // Convertir outcome de string a boolean
       const outcomeValue = data.outcome === 'true' ? true : data.outcome === 'false' ? false : null;
 
-      const entryData: Omit<CommunityStepLogType, 'id' | 'created_at' | 'updated_at'> = {
+      const entryData = {
         ...data,
         community_id: communityId,
         outcome: outcomeValue,
       };
 
-      await create(entryData);
+      const { error } = await supabase
+        .from('community_step_log')
+        .insert(entryData);
+
+      if (error) throw error;
 
       // Preparar actualización de la comunidad
       const communityUpdate: Record<string, any> = {};
@@ -111,17 +90,14 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
 
       // Hacer un solo update a la comunidad si hay algo que actualizar
       if (Object.keys(communityUpdate).length > 0) {
-        const supabase = createClient();
         await supabase
           .from('communities')
           .update(communityUpdate)
           .eq('id', communityId);
-
-        onStepLogAdded?.();
       }
 
       setIsAddModalOpen(false);
-      await fetchData({ filters: { community_id: communityId } });
+      onStepLogAdded?.();
     } catch (error) {
       console.error('Error adding step log entry:', error);
       throw error;
@@ -152,10 +128,9 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
 
   const handleDeleteConfirm = async () => {
     if (!deletingId || isDeleting) return;
-    
+
     setIsDeleting(true);
     try {
-      // Eliminar el registro directamente con Supabase para tener más control
       const supabase = createClient();
       const { error, count } = await supabase
         .from('community_step_log')
@@ -166,12 +141,10 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
       if (count === 0) {
         throw new Error('No se pudo eliminar el registro. Es posible que no tengas permisos.');
       }
-      
+
       setIsDeleteDialogOpen(false);
       setDeletingId(null);
-      
-      // Refrescar los datos con los filtros correctos
-      await fetchData({ filters: { community_id: communityId } });
+      onStepLogDeleted?.();
     } catch (error) {
       console.error('Error deleting step log entry:', error);
       alert('Error al eliminar el registro. Por favor, intenta de nuevo.');
@@ -180,7 +153,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
     }
   };
 
-
+  const count = stepLogs.length;
   // Mostrar solo los primeros 2 elementos en la vista compacta
   const displayedLogs = stepLogs.slice(0, itemsPerPage);
 
@@ -233,38 +206,40 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
                       Bitácora - Comunidad {communityNumber}
                     </DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    {stepLogs.map((entry) => (
-                      <div key={entry.id} className="border rounded-lg p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Calendar className="w-4 h-4" />
-                              <span>{formatDate(entry.date_of_step)}</span>
-                            </div>
-                            {entry.step_way && (
-                              <Badge variant="outline">{entry.step_way.name}</Badge>
-                            )}
-                            {getOutcomeBadge(entry.outcome)}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="2"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleDeleteClick(entry.id!)}
-                            disabled={deletingId === entry.id}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                  <div className="relative">
+                    {stepLogs.map((entry, index) => (
+                      <div key={entry.id} className="group/entry relative flex gap-4 pb-5 last:pb-0">
+                        {/* Línea vertical + dot */}
+                        <div className="flex flex-col items-center">
+                          <div className={`w-3 h-3 rounded-full mt-1.5 shrink-0 ${getDotColor(entry.outcome)}`} />
+                          {index < stepLogs.length - 1 && (
+                            <div className="w-px flex-1 bg-gray-200 mt-1" />
+                          )}
                         </div>
-                        
-                        {entry.notes && (
-                          <div className="text-sm text-gray-700">
-                            <p className="font-medium mb-1">Comentario:</p>
-                            <p className="whitespace-pre-wrap">{entry.notes}</p>
+                        {/* Contenido */}
+                        <div className="flex-1 min-w-0 pb-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 leading-tight">
+                                {entry.step_way?.name || 'Sin paso'}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-0.5">{formatDate(entry.date_of_step)}</p>
+                              {entry.notes && (
+                                <p className="text-sm text-gray-500 mt-1 whitespace-pre-wrap">{entry.notes}</p>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="1"
+                              className="opacity-0 group-hover/entry:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 -mt-1"
+                              onClick={() => handleDeleteClick(entry.id!)}
+                              disabled={deletingId === entry.id}
+                              title="Eliminar evento"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
-                        )}
-                        
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -274,54 +249,54 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="flex-1">
-        {/* Vista normal (pantalla) - solo muestra los primeros 2 */}
+        {/* Vista normal (pantalla) - timeline vertical */}
         <div className="print-hidden">
-          <div className="space-y-3">
-            {displayedLogs.length === 0 ? (
-              <div className="text-center py-6 text-gray-500">
-                <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm">No hay entradas en el log</p>
-              </div>
-            ) : (
-              displayedLogs.map((entry) => (
-                <div key={entry.id} className="border rounded-lg p-3 space-y-2">
-                  {/* Fecha y paso en la misma línea */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar className="w-4 h-4" />
-                      <span>{formatDate(entry.date_of_step)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {entry.step_way && (
-                        <Badge variant="outline">{entry.step_way.name}</Badge>
-                      )}
-                      {getOutcomeBadge(entry.outcome)}
+          {displayedLogs.length === 0 ? (
+            <div className="text-center py-6 text-gray-500">
+              <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">No hay entradas en el log</p>
+            </div>
+          ) : (
+            <div className="relative">
+              {displayedLogs.map((entry, index) => (
+                <div key={entry.id} className="group/entry relative flex gap-3 pb-4 last:pb-0">
+                  {/* Línea vertical + dot */}
+                  <div className="flex flex-col items-center">
+                    <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${getDotColor(entry.outcome)}`} />
+                    {index < displayedLogs.length - 1 && (
+                      <div className="w-px flex-1 bg-gray-200 mt-1" />
+                    )}
+                  </div>
+                  {/* Contenido */}
+                  <div className="flex-1 min-w-0 pb-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 leading-tight">
+                          {entry.step_way?.name || 'Sin paso'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">{formatDate(entry.date_of_step)}</p>
+                        {entry.notes && (
+                          <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{entry.notes}</p>
+                        )}
+                      </div>
                       <Button
                         variant="ghost"
-                        size="2"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        size="1"
+                        className="opacity-0 group-hover/entry:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 -mt-1"
                         onClick={() => handleDeleteClick(entry.id!)}
                         disabled={deletingId === entry.id}
                         title="Eliminar evento"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>
-
-                  {/* Comentario debajo */}
-                  {entry.notes && (
-                    <div className="text-sm text-gray-700">
-                      <p className="line-clamp-2">{entry.notes}</p>
-                    </div>
-                  )}
-
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Vista de impresión - muestra TODOS los registros en tabla compacta */}

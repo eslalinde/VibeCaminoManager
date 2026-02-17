@@ -43,6 +43,27 @@ const columns = [
       filterType: "text",
     } satisfies DynamicColumnMeta,
   }),
+  columnHelper.accessor("has_parish_llevan", {
+    header: "Lleva Parroquia",
+    cell: (info) => {
+      const value = info.getValue();
+      return (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            value === "Sí"
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-800"
+          }`}
+        >
+          {value}
+        </span>
+      );
+    },
+    meta: {
+      filterType: "select",
+      enableGrouping: true,
+    } satisfies DynamicColumnMeta,
+  }),
   columnHelper.accessor("parish_llevan", {
     header: "Parroquia que Lleva",
     cell: (info) => info.getValue() || "-",

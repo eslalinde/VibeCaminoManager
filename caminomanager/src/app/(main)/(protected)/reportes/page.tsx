@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { BarChart3, Users, UserCheck, GitBranch, Crown } from "lucide-react";
+import { BarChart3, Users, UserCheck, GitBranch, Crown, Calendar } from "lucide-react";
 import { routes } from "@/lib/routes";
 
 const reportTypes = [
@@ -32,6 +32,13 @@ const reportTypes = [
     href: routes.reporteLideres,
     icon: Crown,
     color: "bg-teal-500",
+  },
+  {
+    title: "Catequesis por Parroquia",
+    description: "Catequesis programadas por parroquia en un rango de fechas",
+    href: routes.reporteCatequesisParroquia,
+    icon: Calendar,
+    color: "bg-green-500",
   },
 ];
 

@@ -6,6 +6,7 @@ export interface CatechistTeamRow {
   parish_name: string;
   community_number: string;
   responsible_name: string;
+  has_parish_llevan: string;
   parish_llevan: string;
 }
 
@@ -86,10 +87,10 @@ async function fetchCatechistTeams(): Promise<CatechistTeamRow[]> {
     const parishes = parishTeamsMap[team.id];
     if (parishes && parishes.length > 0) {
       for (const pName of parishes) {
-        rows.push({ ...baseRow, parish_llevan: pName });
+        rows.push({ ...baseRow, has_parish_llevan: "Sí", parish_llevan: pName });
       }
     } else {
-      rows.push({ ...baseRow, parish_llevan: "" });
+      rows.push({ ...baseRow, has_parish_llevan: "No", parish_llevan: "" });
     }
   }
 

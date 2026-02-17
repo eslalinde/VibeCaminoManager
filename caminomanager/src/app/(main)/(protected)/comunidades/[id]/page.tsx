@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import { useCommunityData } from '@/hooks/useCommunityData';
 import { CommunityInfo } from '@/components/crud/CommunityInfo';
 import { BrothersList } from '@/components/crud/BrothersList';
@@ -42,7 +43,12 @@ export default function CommunityDetailPage() {
     parishPriestName,
     loading,
     error,
-    refreshCommunity
+    refreshCommunity,
+    invalidateDetail,
+    invalidateTeams,
+    invalidateTeamMembers,
+    invalidateBrothers,
+    invalidateStepLogs,
   } = useCommunityData(communityId);
 
   // Construir nombre de catequistas responsables del equipo por defecto
@@ -78,8 +84,8 @@ export default function CommunityDetailPage() {
         throw new Error('No tienes permisos para editar comunidades. Contacta al administrador para que te asigne el rol de contributor o admin.');
       }
 
-      // Refrescar los datos de la comunidad
-      await refreshCommunity();
+      // Refrescar solo el detalle de la comunidad
+      await invalidateDetail();
       setIsEditModalOpen(false);
     } catch (err) {
       console.error('Error updating community:', err);
@@ -106,8 +112,7 @@ export default function CommunityDetailPage() {
 
       if (teamError) throw teamError;
 
-      // Refrescar los datos de la comunidad
-      await refreshCommunity();
+      await invalidateTeams();
     } catch (err) {
       console.error('Error creating responsables team:', err);
       alert('Error al crear el equipo de responsables. Por favor, intenta de nuevo.');
@@ -136,8 +141,7 @@ export default function CommunityDetailPage() {
 
       if (teamError) throw teamError;
 
-      // Refrescar los datos de la comunidad
-      await refreshCommunity();
+      await invalidateTeams();
     } catch (err) {
       console.error('Error creating catequistas team:', err);
       alert('Error al crear el equipo de catequistas. Por favor, intenta de nuevo.');
@@ -205,8 +209,7 @@ export default function CommunityDetailPage() {
         throw new Error('No se pudo eliminar la comunidad. Es posible que no tengas permisos.');
       }
 
-      // Invalidate the communities list cache before navigating
-      await queryClient.invalidateQueries({ queryKey: ['crud', 'communities'] });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.crud.table('communities') });
       router.push(routes.comunidades);
     } catch (err: any) {
       console.error('Error deleting community:', err);
@@ -232,7 +235,7 @@ export default function CommunityDetailPage() {
       if (error) throw error;
     }
 
-    await refreshCommunity();
+    await invalidateTeamMembers();
   };
 
   if (error) {
@@ -318,7 +321,7 @@ export default function CommunityDetailPage() {
                       parishes={team.id ? teamParishes[team.id] || [] : []}
                       loading={loading}
                       communityId={communityId}
-                      onDelete={refreshCommunity}
+                      onDelete={async () => { await invalidateTeams(); await invalidateTeamMembers(); }}
                       onAddMember={() => setAddToTeamId(team.id!)}
                     />
                   </div>
@@ -354,7 +357,7 @@ export default function CommunityDetailPage() {
                         loading={loading}
                         teamNumber={index + 1}
                         communityId={communityId}
-                        onDelete={refreshCommunity}
+                        onDelete={async () => { await invalidateTeams(); await invalidateTeamMembers(); }}
                         onAddMember={() => setAddToTeamId(team.id!)}
                       />
                     </div>
@@ -395,7 +398,10 @@ export default function CommunityDetailPage() {
             <CommunityStepLogCompact
               communityId={communityId}
               communityNumber={community?.number || ''}
-              onStepLogAdded={refreshCommunity}
+              stepLogs={stepLogs}
+              loading={loading}
+              onStepLogAdded={async () => { await invalidateStepLogs(); await invalidateDetail(); }}
+              onStepLogDeleted={invalidateStepLogs}
               defaultCatechistName={defaultCatechistName}
               actualBrothers={community?.actual_brothers}
             />
@@ -405,8 +411,8 @@ export default function CommunityDetailPage() {
               loading={loading}
               communityId={communityId}
               teamMembers={teamMembers}
-              onDelete={refreshCommunity}
-              onAdd={refreshCommunity}
+              onDelete={invalidateBrothers}
+              onAdd={invalidateBrothers}
             />
           </div>
         </div>

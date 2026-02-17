@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
 import { BaseEntity } from '@/types/database';
+import { queryKeys } from '@/lib/queryKeys';
 
 interface UseEntityOptionsOptions {
   tableName: string;
@@ -18,66 +20,44 @@ export function useEntityOptions<T extends BaseEntity>({
   orderBy = { field: 'name', asc: true }
 }: UseEntityOptionsOptions) {
   const supabase = useMemo(() => createClient(), []);
-  const [options, setOptions] = useState<{ value: string | number; label: string }[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchOptions = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      console.log(`Fetching options for table: ${tableName}`);
-      let query = supabase.from(tableName).select('*');
-      
+  const query = useQuery({
+    queryKey: queryKeys.options.filtered(tableName, { filters, orderBy }),
+    queryFn: async () => {
+      let q = supabase.from(tableName).select('*');
+
       // Apply filters
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           if (typeof value === 'object' && value.not !== undefined) {
-            // Handle "not" filters
-            query = query.neq(key, value.not);
+            q = q.neq(key, value.not);
           } else {
-            query = query.eq(key, value);
+            q = q.eq(key, value);
           }
         }
       });
-      
-      // Apply ordering
-      query = query.order(orderBy.field, { ascending: orderBy.asc });
-      
-      const { data, error: queryError } = await query;
-      
-      if (queryError) {
-        console.error(`Query error for ${tableName}:`, queryError);
-        throw queryError;
-      }
-      
-      console.log(`Raw data for ${tableName}:`, data);
-      
-      const formattedOptions = (data || []).map(item => ({
-        value: item[valueField],
-        label: item[labelField]
-      }));
-      
-      console.log(`Formatted options for ${tableName}:`, formattedOptions);
-      setOptions(formattedOptions);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar las opciones');
-      console.error('Error fetching options:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    fetchOptions();
-  }, [tableName, JSON.stringify(filters), JSON.stringify(orderBy)]);
+      // Apply ordering
+      q = q.order(orderBy.field, { ascending: orderBy.asc });
+
+      const { data, error } = await q;
+
+      if (error) throw error;
+
+      return (data || []).map(item => ({
+        value: item[valueField] as string | number,
+        label: item[labelField] as string,
+      }));
+    },
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
+  });
 
   return {
-    options,
-    loading,
-    error,
-    refetch: fetchOptions
+    options: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
+    refetch: query.refetch,
   };
 }
 
@@ -103,7 +83,7 @@ export function useCityOptions(countryId?: number, stateId?: number) {
   const filters: Record<string, any> = {};
   if (countryId) filters.country_id = countryId;
   if (stateId) filters.state_id = stateId;
-  
+
   return useEntityOptions({
     tableName: 'cities',
     filters,
@@ -156,15 +136,11 @@ export function useAllParishOptions() {
 // Hook específico para equipos de catequistas (con responsables y parroquias en una sola query)
 export function useCathechistTeamOptions() {
   const supabase = useMemo(() => createClient(), []);
-  const [options, setOptions] = useState<{ value: string | number; label: string }[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchOptions = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error: queryError } = await supabase
+  const query = useQuery({
+    queryKey: queryKeys.options.catechistTeams(),
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from('teams')
         .select(`
           id,
@@ -181,9 +157,9 @@ export function useCathechistTeamOptions() {
         .eq('belongs.is_responsible_for_the_team', true)
         .order('name', { ascending: true });
 
-      if (queryError) throw queryError;
+      if (error) throw error;
 
-      const formattedOptions = (data || []).map((team: any) => {
+      return (data || []).map((team: any) => {
         const responsibles = (team.belongs || [])
           .map((b: any) => b.person?.person_name)
           .filter(Boolean);
@@ -192,40 +168,34 @@ export function useCathechistTeamOptions() {
           .map((pt: any) => pt.parish?.name)
           .filter(Boolean);
 
-        // Construir label descriptivo: "Juan, María - Pquia La Visitación"
         const parts: string[] = [];
         if (responsibles.length > 0) parts.push(responsibles.join(', '));
         if (parishes.length > 0) parts.push(parishes.join(', '));
 
         const label = parts.length > 0 ? parts.join(' - ') : team.name;
 
-        return { value: team.id, label };
+        return { value: team.id as number, label };
       });
+    },
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
+  });
 
-      setOptions(formattedOptions);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar los equipos de catequistas');
-      console.error('Error fetching catechist team options:', err);
-    } finally {
-      setLoading(false);
-    }
+  return {
+    options: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error?.message ?? null,
+    refetch: query.refetch,
   };
-
-  useEffect(() => {
-    fetchOptions();
-  }, []);
-
-  return { options, loading, error, refetch: fetchOptions };
 }
 
 // Hook específico para personas (para cónyuges)
 export function usePeopleOptions(excludeId?: number) {
   const filters: Record<string, any> = {};
   if (excludeId) {
-    // Exclude the current person from spouse options
     filters.id = { not: excludeId };
   }
-  
+
   return useEntityOptions({
     tableName: 'people',
     valueField: 'id',
@@ -233,4 +203,4 @@ export function usePeopleOptions(excludeId?: number) {
     filters,
     orderBy: { field: 'person_name', asc: true }
   });
-} 
+}

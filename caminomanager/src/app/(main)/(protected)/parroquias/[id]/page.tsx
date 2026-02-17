@@ -36,7 +36,8 @@ export default function ParishDetailPage() {
     communities,
     loading,
     error,
-    refreshParish,
+    invalidateDetail,
+    invalidatePriests,
   } = useParishData(parishId);
 
   const totalBrothers = useMemo(() => {
@@ -61,7 +62,7 @@ export default function ParishDetailPage() {
         throw new Error('No tienes permisos para editar parroquias. Contacta al administrador para que te asigne el rol de contributor o admin.');
       }
 
-      await refreshParish();
+      await invalidateDetail();
       setIsEditModalOpen(false);
     } catch (err) {
       console.error('Error updating parish:', err);
@@ -236,7 +237,7 @@ export default function ParishDetailPage() {
           priests={priests}
           loading={loading}
           parishId={parishId}
-          onRefresh={refreshParish}
+          onRefresh={invalidatePriests}
         />
       </div>
 

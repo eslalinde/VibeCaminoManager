@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
 import { QueryParams, BaseEntity } from '@/types/database';
+import { queryKeys } from '@/lib/queryKeys';
 
 /** Strip accents from a string (e.g. "Medellín" → "Medellin") */
 function stripAccents(term: string): string {
@@ -116,7 +117,7 @@ export function useCrud<T extends BaseEntity>({
     [search, sort, page, filters]
   );
 
-  const queryKey = useMemo(() => ['crud', tableName, pageSize, currentParams], [tableName, pageSize, currentParams]);
+  const queryKey = useMemo(() => queryKeys.crud.list(tableName, pageSize, currentParams), [tableName, pageSize, currentParams]);
 
   const fetchEntities = useCallback(
     async (params: CrudQueryState<T>): Promise<CrudQueryData<T>> => {
@@ -267,7 +268,7 @@ export function useCrud<T extends BaseEntity>({
   });
 
   const invalidateTableQueries = useCallback(
-    () => queryClient.invalidateQueries({ queryKey: ['crud', tableName] }),
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.crud.table(tableName) }),
     [queryClient, tableName]
   );
 
@@ -283,7 +284,7 @@ export function useCrud<T extends BaseEntity>({
       return result as unknown as T;
     },
     onMutate: async (newData) => {
-      await queryClient.cancelQueries({ queryKey: ['crud', tableName] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.crud.table(tableName) });
       const previousData = queryClient.getQueryData<CrudQueryData<T>>(queryKey);
       const tempId = Date.now() * -1;
 
@@ -322,7 +323,7 @@ export function useCrud<T extends BaseEntity>({
       return result as unknown as T;
     },
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ['crud', tableName] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.crud.table(tableName) });
       const previousData = queryClient.getQueryData<CrudQueryData<T>>(queryKey);
 
       queryClient.setQueryData<CrudQueryData<T>>(queryKey, (current) => {
@@ -354,7 +355,7 @@ export function useCrud<T extends BaseEntity>({
       }
     },
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['crud', tableName] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.crud.table(tableName) });
       const previousData = queryClient.getQueryData<CrudQueryData<T>>(queryKey);
 
       queryClient.setQueryData<CrudQueryData<T>>(queryKey, (current) => {
@@ -391,7 +392,7 @@ export function useCrud<T extends BaseEntity>({
       setFilters(nextFilters);
       setError(null);
 
-      await queryClient.invalidateQueries({ queryKey: ['crud', tableName] });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.crud.table(tableName) });
     },
     [filters, page, queryClient, search, sort, tableName]
   );
