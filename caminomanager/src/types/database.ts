@@ -68,6 +68,11 @@ export interface Person extends BaseEntity {
   gender_id?: number;
   spouse_id?: number;
   spouse?: Person;
+  location_country_id?: number;
+  location_city_id?: number;
+  is_itinerante?: boolean;
+  location_country?: Country;
+  location_city?: City;
 }
 
 export interface Community extends BaseEntity {
@@ -115,6 +120,15 @@ export interface Belongs extends BaseEntity {
   team?: Team;
 }
 
+export interface ParishCatechesis extends BaseEntity {
+  parish_id: number;
+  planned_start_date?: string;
+  actual_start_date?: string;
+  birth_retreat_date?: string;
+  attendance_count?: number;
+  catechist_team?: string;
+}
+
 export interface CommunityStepLog extends BaseEntity {
   community_id: number;
   step_way_id?: number;
@@ -149,7 +163,7 @@ export interface FormField {
   name: string;
   label: string;
   tableLabel?: string;
-  type: 'text' | 'email' | 'number' | 'select' | 'textarea' | 'date';
+  type: 'text' | 'email' | 'number' | 'select' | 'textarea' | 'date' | 'checkbox';
   required?: boolean;
   maxLength?: number;
   minLength?: number;

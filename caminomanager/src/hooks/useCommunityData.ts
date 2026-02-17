@@ -253,7 +253,7 @@ export function useCommunityData(communityId: number): CommunityData & {
               celular: husband.mobile || wife.mobile || '',
               isMarriage: true,
               isPresbitero: false,
-              isItinerante: false,
+              isItinerante: person.is_itinerante === true || spouseBrother.person?.is_itinerante === true,
               personIds: [person.id!, spouseBrother.person_id]
             });
 
@@ -274,7 +274,7 @@ export function useCommunityData(communityId: number): CommunityData & {
         celular: person.mobile || '',
         isMarriage: false,
         isPresbitero: person.person_type_id === 3,
-        isItinerante: person.person_type_id === 8,
+        isItinerante: person.is_itinerante === true,
         personIds: [person.id!]
       });
 

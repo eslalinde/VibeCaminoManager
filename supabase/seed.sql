@@ -227,7 +227,7 @@ INSERT INTO public.people (id, person_name, phone, mobile, email, person_type_id
   (58, 'Gabriela Ríos', '6041000058', '3001000058', 'gabriela.rios@email.com', 1, 2, 57),
   (59, 'Samuel Pineda', '6041000059', '3001000059', 'samuel.pineda@email.com', 1, 1, 60),
   (60, 'Valeria Cárdenas', '6041000060', '3001000060', 'valeria.cardenas@email.com', 1, 2, 59),
-  (61, 'Padre Álvaro Restrepo', '6041000061', '3001000061', 'alvaro.restrepo@email.com', 8, 1, NULL),
+  (61, 'Padre Álvaro Restrepo', '6041000061', '3001000061', 'alvaro.restrepo@email.com', 3, 1, NULL),
   (62, 'Padre Jorge Giraldo', '6041000062', '3001000062', 'jorge.giraldo@email.com', 3, 1, NULL),
   (63, 'Padre Luis Zapata', '6041000063', '3001000063', 'luis.zapata@email.com', 3, 1, NULL),
   (64, 'Padre Mario Castaño', '6041000064', '3001000064', 'mario.castano@email.com', 3, 1, NULL),
@@ -367,11 +367,14 @@ INSERT INTO public.people (id, person_name, phone, mobile, email, person_type_id
   (198, 'Mario Viudo', '6041000198', '3001000198', 'mario.viudo@email.com', 7, 1, NULL),
   (199, 'Camila Viuda', '6041000199', '3001000199', 'camila.viuda@email.com', 7, 2, NULL),
   (200, 'Jorge Viudo', '6041000200', '3001000200', 'jorge.viudo@email.com', 7, 1, NULL),
-  -- Itinerantes (person_type_id = 8)
-  (201, 'Francisco Mejía', '6041000201', '3001000201', 'francisco.mejia@email.com', 8, 1, NULL),
-  (202, 'Gloria Echavarría', '6041000202', '3001000202', 'gloria.echavarria@email.com', 8, 2, NULL),
-  (203, 'Hernando Velásquez', '6041000203', '3001000203', 'hernando.velasquez@email.com', 8, 1, NULL),
-  (204, 'Amparo Londoño', '6041000204', '3001000204', 'amparo.londono@email.com', 8, 2, NULL);
+  -- Itinerantes (is_itinerante = true)
+  (201, 'Francisco Mejía', '6041000201', '3001000201', 'francisco.mejia@email.com', NULL, 1, NULL),
+  (202, 'Gloria Echavarría', '6041000202', '3001000202', 'gloria.echavarria@email.com', NULL, 2, NULL),
+  (203, 'Hernando Velásquez', '6041000203', '3001000203', 'hernando.velasquez@email.com', NULL, 1, NULL),
+  (204, 'Amparo Londoño', '6041000204', '3001000204', 'amparo.londono@email.com', NULL, 2, NULL);
+
+-- Mark itinerantes
+UPDATE public.people SET is_itinerante = true WHERE id IN (61, 201, 202, 203, 204);
 
 -- ------------------------------------------------------------
 -- Team types
@@ -702,6 +705,15 @@ INSERT INTO public.community_step_log (id, community_id, step_way_id, date_of_st
   (17, 1, 10, '2026-02-01', 'Francisco Mejía, Gloria Echavarría y Amparo Londoño', false, '3er Escrutinio Bautismal: en proceso. 48 hermanos convocados. Pendiente cierre.');
 
 -- ------------------------------------------------------------
+-- Parish Catechesis (historical catechesis cycles per parish)
+-- ------------------------------------------------------------
+INSERT INTO public.parish_catechesis (id, parish_id, planned_start_date, actual_start_date, birth_retreat_date, attendance_count, catechist_team) VALUES
+  (1, 1, '2024-02-01', '2024-02-10', '2024-03-15', 45, 'Juan Pérez y María Gómez'),
+  (2, 1, '2024-09-01', '2024-09-08', '2024-10-20', 38, 'Carlos Rodríguez y Ana Martínez'),
+  (3, 1, '2025-02-01', '2025-02-15', NULL, 52, 'Pedro López y Laura Torres'),
+  (4, 2, '2024-03-01', '2024-03-10', '2024-04-20', 30, 'Andrés Ramírez y Paula Sánchez');
+
+-- ------------------------------------------------------------
 -- Parish teams
 -- ------------------------------------------------------------
 INSERT INTO public.parish_teams (id, parish_id, team_id) VALUES
@@ -754,6 +766,7 @@ select setval(pg_get_serial_sequence('public.community_step_log', 'id'), coalesc
 select setval(pg_get_serial_sequence('public.parish_teams', 'id'), coalesce((select max(id) from public.parish_teams), 0), true);
 select setval(pg_get_serial_sequence('public.priests', 'id'), coalesce((select max(id) from public.priests), 0), true);
 select setval(pg_get_serial_sequence('public.dioceses', 'id'), coalesce((select max(id) from public.dioceses), 0), true);
+select setval(pg_get_serial_sequence('public.parish_catechesis', 'id'), coalesce((select max(id) from public.parish_catechesis), 0), true);
 
 commit;
 

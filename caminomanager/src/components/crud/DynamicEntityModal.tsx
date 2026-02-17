@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { BaseEntity, FormField as FormFieldType } from "@/types/database";
 import { X } from "lucide-react";
+import { needsLocationFields } from "@/config/carisma";
 import {
   useCountryOptions,
   useStateOptions,
@@ -89,6 +90,9 @@ export function DynamicEntityModal<T extends BaseEntity>({
   });
   const { options: cathechistTeamOptions } = useCathechistTeamOptions();
 
+  // Ciudades filtradas por país de ubicación (para campos location_country_id → location_city_id)
+  const { options: locationCityOptions } = useCityOptions(formData.location_country_id, undefined);
+
   useEffect(() => {
     if (open) {
       const initialData: Record<string, any> = {};
@@ -97,7 +101,9 @@ export function DynamicEntityModal<T extends BaseEntity>({
         let value: any = rawValue;
         
         // Handle different field types properly
-        if (field.type === 'select') {
+        if (field.type === 'checkbox') {
+          value = rawValue === true;
+        } else if (field.type === 'select') {
           // For select fields, convert to string or empty string
           value = rawValue !== null && rawValue !== undefined ? String(rawValue) : "";
         } else {
@@ -187,7 +193,15 @@ export function DynamicEntityModal<T extends BaseEntity>({
       // Update the previous value
       previousValues.current.city_id = formData.city_id;
     }
-  }, [formData.country_id, formData.state_id, formData.city_id, fields]);
+
+    // Limpiar location_city_id cuando cambia location_country_id
+    if (formData.location_country_id !== previousValues.current.location_country_id) {
+      if (fields.some(f => f.name === 'location_city_id')) {
+        setFormData((prev) => ({ ...prev, location_city_id: "" }));
+      }
+      previousValues.current.location_country_id = formData.location_country_id;
+    }
+  }, [formData.country_id, formData.state_id, formData.city_id, formData.location_country_id, fields]);
 
   const validateField = (field: FormFieldType, value: any): string | null => {
     // Validación para campos requeridos
@@ -254,7 +268,9 @@ export function DynamicEntityModal<T extends BaseEntity>({
       const val = preparedData[field.name];
       const isEmpty = val === '' || val === null || val === undefined;
 
-      if (field.name.includes('_id')) {
+      if (field.type === 'checkbox') {
+        preparedData[field.name] = val === true;
+      } else if (field.name.includes('_id')) {
         preparedData[field.name] = isEmpty ? null : parseInt(val, 10);
       } else if (field.type === 'number') {
         preparedData[field.name] = isEmpty ? null : Number(val);
@@ -277,11 +293,25 @@ export function DynamicEntityModal<T extends BaseEntity>({
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: value };
       
-      // Si se cambia el person_type_id y no es "Casado" (valor 1), limpiar spouse_id
+      // Si se cambia el person_type_id, limpiar campos condicionales
       if (fieldName === 'person_type_id') {
-        const isMarried = value === '1' || value === 1;
+        const numValue = value ? Number(value) : null;
+        const isMarried = numValue === 1;
         if (!isMarried) {
-          newData.spouse_id = null; // Limpiar el cónyuge si no está casado
+          newData.spouse_id = null;
+        }
+        if (!needsLocationFields(numValue, newData.is_itinerante)) {
+          newData.location_country_id = '';
+          newData.location_city_id = '';
+        }
+      }
+
+      // Si se cambia is_itinerante, recalcular visibilidad de ubicación
+      if (fieldName === 'is_itinerante') {
+        const numType = newData.person_type_id ? Number(newData.person_type_id) : null;
+        if (!needsLocationFields(numType, value)) {
+          newData.location_country_id = '';
+          newData.location_city_id = '';
         }
       }
       
@@ -326,6 +356,10 @@ export function DynamicEntityModal<T extends BaseEntity>({
         return stepWayOptions && stepWayOptions.length > 0 ? stepWayOptions : [];
       case "cathechist_team_id":
         return cathechistTeamOptions && cathechistTeamOptions.length > 0 ? cathechistTeamOptions : [];
+      case "location_country_id":
+        return countryOptions && countryOptions.length > 0 ? countryOptions : [];
+      case "location_city_id":
+        return locationCityOptions && locationCityOptions.length > 0 ? locationCityOptions : [];
       default:
         console.log(`❌ Field ${fieldName} has no options`);
         return fieldName.includes("_id") ? [] : undefined;
@@ -369,6 +403,14 @@ export function DynamicEntityModal<T extends BaseEntity>({
               }
             }
 
+            // Solo mostrar ubicación si el tipo requiere ubicación o es itinerante
+            if (field.name === 'location_country_id' || field.name === 'location_city_id') {
+              const numType = formData.person_type_id ? Number(formData.person_type_id) : null;
+              if (!needsLocationFields(numType, formData.is_itinerante)) {
+                return null;
+              }
+            }
+
             // Lógica condicional para mostrar/ocultar el campo cónyuge
             // Solo mostrar spouse_id si person_type_id es 1 (Casado)
             if (field.name === 'spouse_id') {
@@ -376,6 +418,27 @@ export function DynamicEntityModal<T extends BaseEntity>({
               if (!isMarried) {
                 return null; // No renderizar el campo si no está casado
               }
+            }
+
+            // Render checkbox fields with their own layout
+            if (field.type === 'checkbox') {
+              return (
+                <FormField key={field.name} name={field.name}>
+                  <label className="flex items-center gap-2 cursor-pointer py-2">
+                    <input
+                      type="checkbox"
+                      checked={formData[field.name] === true}
+                      onChange={(e) => handleInputChange(field.name, e.target.checked)}
+                      disabled={loading}
+                      className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                    />
+                    <span className="text-sm font-medium">{field.label}</span>
+                  </label>
+                  {errors[field.name] && (
+                    <FormMessage>{errors[field.name]}</FormMessage>
+                  )}
+                </FormField>
+              );
             }
 
             return (

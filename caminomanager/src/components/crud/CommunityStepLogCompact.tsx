@@ -157,12 +157,15 @@ export function CommunityStepLogCompact({ communityId, communityNumber, onStepLo
     try {
       // Eliminar el registro directamente con Supabase para tener más control
       const supabase = createClient();
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('community_step_log')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', deletingId);
-      
+
       if (error) throw error;
+      if (count === 0) {
+        throw new Error('No se pudo eliminar el registro. Es posible que no tengas permisos.');
+      }
       
       setIsDeleteDialogOpen(false);
       setDeletingId(null);

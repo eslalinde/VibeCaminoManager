@@ -16,6 +16,7 @@ import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserMinus, Crown, UserPlus, Pencil } from 'lucide-react';
 import { getCarismaLabel } from '@/config/carisma';
 import { CarismaBadge } from '@/components/ui/carisma-badge';
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 
 interface TeamSectionProps {
   team: Team;
@@ -29,12 +30,27 @@ interface TeamSectionProps {
   onEditMember?: (personId: number) => void;
 }
 
+interface MergedMember {
+  id: string;
+  name: string;
+  carisma: string;
+  mobile: string;
+  isResponsible: boolean;
+  isMarriage: boolean;
+  isPresbitero: boolean;
+  personIds: number[];
+  belongsIds: number[];
+}
+
 export function TeamSection({ team, members, parishes, loading, teamNumber, communityId, onDelete, onAddMember, onEditMember }: TeamSectionProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [removingResponsibleId, setRemovingResponsibleId] = useState<string | null>(null);
   const [assigningResponsibleId, setAssigningResponsibleId] = useState<string | null>(null);
   const [deletingTeam, setDeletingTeam] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteTeamDialog, setShowDeleteTeamDialog] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<MergedMember | null>(null);
+  const [memberToRemoveResponsible, setMemberToRemoveResponsible] = useState<MergedMember | null>(null);
+  const [memberToAssignResponsible, setMemberToAssignResponsible] = useState<MergedMember | null>(null);
 
   if (loading) {
     return (
@@ -56,17 +72,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
   // Merge married couples in team members
   const mergedMembers = (() => {
     const processedIds = new Set<number>();
-    const merged: Array<{
-      id: string;
-      name: string;
-      carisma: string;
-      mobile: string;
-      isResponsible: boolean;
-      isMarriage: boolean;
-      isPresbitero: boolean;
-      personIds: number[];
-      belongsIds: number[]; // IDs de los registros belongs para poder actualizarlos
-    }> = [];
+    const merged: MergedMember[] = [];
 
     members.forEach(member => {
       if (processedIds.has(member.person_id)) return;
@@ -76,8 +82,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
 
       // Check if this person is married and spouse is also in the team
       if (person.spouse_id) {
-        const spouseMember = members.find(m => 
-          m.person_id === person.spouse_id && 
+        const spouseMember = members.find(m =>
+          m.person_id === person.spouse_id &&
           !processedIds.has(m.person_id)
         );
 
@@ -85,7 +91,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
           // Create merged marriage entry
           const husband = person.gender_id === 1 ? person : spouseMember.person;
           const wife = person.gender_id === 2 ? person : spouseMember.person;
-          
+
           merged.push({
             id: `marriage-${person.id}-${spouseMember.person_id}`,
             name: `${husband.person_name} y ${wife.person_name}`,
@@ -131,21 +137,18 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
   // Verificar si ya existe un responsable en el equipo
   const hasResponsible = mergedMembers.some(member => member.isResponsible);
 
-  const handleDelete = async (member: { id: string; name: string; personIds: number[]; belongsIds: number[] }) => {
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar a ${member.name} de este equipo?`)) {
-      return;
-    }
-
-    setDeletingId(member.id);
+  const handleDeleteMember = async () => {
+    if (!memberToDelete) return;
+    setDeletingId(memberToDelete.id);
     try {
       const supabase = createClient();
 
       // Delete belongs records directly by their IDs
-      if (member.belongsIds.length > 0) {
+      if (memberToDelete.belongsIds.length > 0) {
         const { error, count } = await supabase
           .from('belongs')
           .delete({ count: 'exact' })
-          .in('id', member.belongsIds);
+          .in('id', memberToDelete.belongsIds);
 
         if (error) throw error;
         if (count === 0) {
@@ -153,29 +156,24 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
         }
       }
 
-      // Refresh the community data
-      if (onDelete) {
-        onDelete();
-      }
+      if (onDelete) onDelete();
     } catch (error) {
       console.error('Error deleting team member:', error);
       alert('Error al eliminar el miembro del equipo. Por favor, intenta de nuevo.');
     } finally {
       setDeletingId(null);
+      setMemberToDelete(null);
     }
   };
 
-  const handleRemoveResponsible = async (member: { id: string; name: string; belongsIds: number[] }) => {
-    if (!window.confirm(`¿Estás seguro de que deseas quitar la responsabilidad a ${member.name}? La persona permanecerá en el equipo como corresponsable.`)) {
-      return;
-    }
-
-    setRemovingResponsibleId(member.id);
+  const handleRemoveResponsible = async () => {
+    if (!memberToRemoveResponsible) return;
+    setRemovingResponsibleId(memberToRemoveResponsible.id);
     try {
       const supabase = createClient();
-      
+
       // Update all belongs records to set is_responsible_for_the_team to false
-      for (const belongsId of member.belongsIds) {
+      for (const belongsId of memberToRemoveResponsible.belongsIds) {
         const { error } = await supabase
           .from('belongs')
           .update({ is_responsible_for_the_team: false })
@@ -184,30 +182,24 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
         if (error) throw error;
       }
 
-      // Refresh the community data
-      if (onDelete) {
-        onDelete();
-      }
+      if (onDelete) onDelete();
     } catch (error) {
       console.error('Error removing responsible:', error);
       alert('Error al quitar la responsabilidad. Por favor, intenta de nuevo.');
     } finally {
       setRemovingResponsibleId(null);
+      setMemberToRemoveResponsible(null);
     }
   };
 
-  const handleAssignResponsible = async (member: { id: string; name: string; belongsIds: number[] }) => {
-    if (!window.confirm(`¿Estás seguro de que deseas asignar la responsabilidad a ${member.name}?${hasResponsible ? ' Esto quitará la responsabilidad del responsable actual.' : ''}`)) {
-      return;
-    }
-
-    setAssigningResponsibleId(member.id);
+  const handleAssignResponsible = async () => {
+    if (!memberToAssignResponsible) return;
+    setAssigningResponsibleId(memberToAssignResponsible.id);
     try {
       const supabase = createClient();
-      
+
       // Primero, quitar la responsabilidad de todos los demás miembros del equipo
       if (hasResponsible) {
-        // Obtener todos los registros belongs de este equipo que tienen is_responsible_for_the_team = true
         const { data: currentResponsibles, error: fetchError } = await supabase
           .from('belongs')
           .select('id')
@@ -216,7 +208,6 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
 
         if (fetchError) throw fetchError;
 
-        // Quitar la responsabilidad de todos los responsables actuales
         if (currentResponsibles && currentResponsibles.length > 0) {
           const responsibleIds = currentResponsibles.map(r => r.id);
           const { error: updateError } = await supabase
@@ -227,9 +218,9 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
           if (updateError) throw updateError;
         }
       }
-      
+
       // Luego, asignar la responsabilidad al nuevo miembro
-      for (const belongsId of member.belongsIds) {
+      for (const belongsId of memberToAssignResponsible.belongsIds) {
         const { error } = await supabase
           .from('belongs')
           .update({ is_responsible_for_the_team: true })
@@ -238,15 +229,13 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
         if (error) throw error;
       }
 
-      // Refresh the community data
-      if (onDelete) {
-        onDelete();
-      }
+      if (onDelete) onDelete();
     } catch (error) {
       console.error('Error assigning responsible:', error);
       alert('Error al asignar la responsabilidad. Por favor, intenta de nuevo.');
     } finally {
       setAssigningResponsibleId(null);
+      setMemberToAssignResponsible(null);
     }
   };
 
@@ -260,11 +249,11 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
   };
 
   const handleDeleteTeam = async () => {
-    setShowDeleteDialog(false);
+    setShowDeleteTeamDialog(false);
     setDeletingTeam(true);
     try {
       const supabase = createClient();
-      
+
       // 1. Eliminar todos los registros de belongs asociados al equipo
       const { error: belongsError } = await supabase
         .from('belongs')
@@ -282,12 +271,15 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       if (parishTeamsError) throw parishTeamsError;
 
       // 3. Eliminar el equipo
-      const { error: teamError } = await supabase
+      const { error: teamError, count: teamCount } = await supabase
         .from('teams')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', team.id);
 
       if (teamError) throw teamError;
+      if (teamCount === 0) {
+        throw new Error('No se pudo eliminar el equipo. Es posible que no tengas permisos.');
+      }
 
       // Refresh the community data
       if (onDelete) {
@@ -325,7 +317,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
               variant="outline"
               radius="small"
               color="red"
-              onClick={() => setShowDeleteDialog(true)}
+              onClick={() => setShowDeleteTeamDialog(true)}
               disabled={deletingTeam || deletingId !== null || removingResponsibleId !== null || assigningResponsibleId !== null}
               title="Eliminar equipo completo"
             >
@@ -418,7 +410,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                             variant="outline"
                             radius="small"
                             color="orange"
-                            onClick={() => handleRemoveResponsible(member)}
+                            onClick={() => setMemberToRemoveResponsible(member)}
                             disabled={removingResponsibleId === member.id || deletingId === member.id || assigningResponsibleId === member.id}
                             title="Quitar responsabilidad (la persona permanecerá en el equipo)"
                           >
@@ -430,7 +422,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                             variant="outline"
                             radius="small"
                             color="green"
-                            onClick={() => handleAssignResponsible(member)}
+                            onClick={() => setMemberToAssignResponsible(member)}
                             disabled={hasResponsible || assigningResponsibleId === member.id || deletingId === member.id || removingResponsibleId === member.id}
                             title={hasResponsible ? "Ya existe un responsable en el equipo. Quita la responsabilidad del actual para asignar a otro." : "Asignar responsabilidad"}
                           >
@@ -442,7 +434,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                           variant="outline"
                           radius="small"
                           color="red"
-                          onClick={() => handleDelete(member)}
+                          onClick={() => setMemberToDelete(member)}
                           disabled={deletingId === member.id || removingResponsibleId === member.id || assigningResponsibleId === member.id}
                           title="Eliminar miembro del equipo"
                         >
@@ -459,31 +451,88 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       </CardContent>
 
       {/* Diálogo de confirmación para eliminar equipo */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <ConfirmDeleteDialog
+        open={showDeleteTeamDialog}
+        onClose={() => setShowDeleteTeamDialog(false)}
+        onConfirm={handleDeleteTeam}
+        title="¿Eliminar equipo?"
+        description={`¿Estás seguro de que deseas eliminar el ${getTeamTitle()}? Se eliminarán todos los miembros del equipo.`}
+        preview={[
+          `${mergedMembers.length} miembro(s) del equipo`,
+          ...(parishes.length > 0 ? [`${parishes.length} parroquia(s) asignada(s)`] : []),
+        ]}
+        loading={deletingTeam}
+      />
+
+      {/* Diálogo de confirmación para eliminar miembro */}
+      <ConfirmDeleteDialog
+        open={memberToDelete !== null}
+        onClose={() => setMemberToDelete(null)}
+        onConfirm={handleDeleteMember}
+        title="¿Eliminar miembro del equipo?"
+        description={`¿Estás seguro de que deseas eliminar a ${memberToDelete?.name} de este equipo?`}
+        loading={deletingId !== null}
+      />
+
+      {/* Diálogo de confirmación para quitar responsabilidad */}
+      <Dialog open={memberToRemoveResponsible !== null} onOpenChange={(isOpen) => !isOpen && setMemberToRemoveResponsible(null)}>
         <DialogContent>
           <Theme>
             <DialogHeader>
-              <DialogTitle>¿Eliminar equipo?</DialogTitle>
+              <DialogTitle>¿Quitar responsabilidad?</DialogTitle>
               <DialogDescription>
-                ¿Estás seguro de que deseas eliminar el {getTeamTitle()}? Esta acción eliminará el equipo y todos sus miembros. Esta acción no se puede deshacer.
+                ¿Estás seguro de que deseas quitar la responsabilidad a {memberToRemoveResponsible?.name}? La persona permanecerá en el equipo como corresponsable.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="gap-3">
               <Button
                 variant="outline"
                 size="2"
-                onClick={() => setShowDeleteDialog(false)}
-                disabled={deletingTeam}
+                onClick={() => setMemberToRemoveResponsible(null)}
+                disabled={removingResponsibleId !== null}
               >
                 Cancelar
               </Button>
               <Button
-                color="red"
+                color="orange"
                 size="2"
-                onClick={handleDeleteTeam}
-                disabled={deletingTeam}
+                onClick={handleRemoveResponsible}
+                disabled={removingResponsibleId !== null}
               >
-                {deletingTeam ? 'Eliminando...' : 'Eliminar Equipo'}
+                {removingResponsibleId ? 'Quitando...' : 'Quitar Responsabilidad'}
+              </Button>
+            </DialogFooter>
+          </Theme>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de confirmación para asignar responsabilidad */}
+      <Dialog open={memberToAssignResponsible !== null} onOpenChange={(isOpen) => !isOpen && setMemberToAssignResponsible(null)}>
+        <DialogContent>
+          <Theme>
+            <DialogHeader>
+              <DialogTitle>¿Asignar responsabilidad?</DialogTitle>
+              <DialogDescription>
+                ¿Estás seguro de que deseas asignar la responsabilidad a {memberToAssignResponsible?.name}?
+                {hasResponsible && ' Esto quitará la responsabilidad del responsable actual.'}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-3">
+              <Button
+                variant="outline"
+                size="2"
+                onClick={() => setMemberToAssignResponsible(null)}
+                disabled={assigningResponsibleId !== null}
+              >
+                Cancelar
+              </Button>
+              <Button
+                color="green"
+                size="2"
+                onClick={handleAssignResponsible}
+                disabled={assigningResponsibleId !== null}
+              >
+                {assigningResponsibleId ? 'Asignando...' : 'Asignar Responsabilidad'}
               </Button>
             </DialogFooter>
           </Theme>

@@ -9,6 +9,7 @@ import { Trash2, UserPlus, Plus, ChevronDown, ChevronRight, Heart, User } from '
 import { SelectBrotherModal } from './SelectBrotherModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
 import { MarriageModal } from './MarriageModal';
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 import { personConfig } from '@/config/entities';
 import { CARISMA_BADGE_COLORS, CARISMA_GROUP_ORDER } from '@/config/carisma';
 import { CarismaBadge } from '@/components/ui/carisma-badge';
@@ -35,6 +36,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
   const [isMarriageModalOpen, setIsMarriageModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [brotherToDelete, setBrotherToDelete] = useState<MergedBrother | null>(null);
 
   const toggleGroup = (carisma: string) => {
     setCollapsedGroups((prev) => {
@@ -90,22 +92,23 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
     return brother.personIds.some(personId => allTeamPersonIds.has(personId));
   };
 
-  const handleDelete = async (brother: MergedBrother) => {
+  const handleRequestDelete = (brother: MergedBrother) => {
     if (isBrotherInTeam(brother)) {
       alert('No se puede eliminar este hermano porque está asociado a un equipo dentro de la comunidad.');
       return;
     }
+    setBrotherToDelete(brother);
+  };
 
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar a ${brother.name} de esta comunidad?`)) {
-      return;
-    }
+  const handleDeleteConfirmed = async () => {
+    if (!brotherToDelete) return;
 
-    setDeletingId(brother.id);
+    setDeletingId(brotherToDelete.id);
     try {
       const supabase = createClient();
 
       // Delete all brother records for all person IDs in this merged brother
-      for (const personId of brother.personIds) {
+      for (const personId of brotherToDelete.personIds) {
         const { error } = await supabase
           .from('brothers')
           .delete()
@@ -124,6 +127,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
       alert('Error al eliminar el hermano. Por favor, intenta de nuevo.');
     } finally {
       setDeletingId(null);
+      setBrotherToDelete(null);
     }
   };
 
@@ -324,6 +328,9 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
                           <TableRow key={brother.id}>
                             <TableCell className="font-medium pl-8">
                               {brother.name}
+                              {brother.isItinerante && (
+                                <CarismaBadge carisma="Itinerante" size="sm" showLabel={false} className="ml-2" />
+                              )}
                               {brother.isMarriage && (
                                 <span className="ml-2 text-xs bg-pink-100 text-pink-800 px-2 py-1 rounded">
                                   Matrimonio
@@ -337,7 +344,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
                                 variant="outline"
                                 radius="small"
                                 color={isInTeam ? "gray" : "red"}
-                                onClick={() => handleDelete(brother)}
+                                onClick={() => handleRequestDelete(brother)}
                                 disabled={isInTeam || isDeleting}
                                 title={isInTeam ? 'Este hermano está asociado a un equipo y no puede ser eliminado' : 'Eliminar hermano de la comunidad'}
                               >
@@ -381,6 +388,16 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
       open={isMarriageModalOpen}
       onClose={() => setIsMarriageModalOpen(false)}
       onSuccess={handleMarriageSuccess}
+    />
+
+    {/* Diálogo de confirmación para eliminar hermano */}
+    <ConfirmDeleteDialog
+      open={brotherToDelete !== null}
+      onClose={() => setBrotherToDelete(null)}
+      onConfirm={handleDeleteConfirmed}
+      title="¿Eliminar hermano de la comunidad?"
+      description={`¿Estás seguro de que deseas eliminar a ${brotherToDelete?.name} de esta comunidad?`}
+      loading={deletingId !== null}
     />
   </>
   );

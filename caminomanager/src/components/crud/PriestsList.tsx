@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Priest, Person } from '@/types/database';
+import { Priest } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
-import { Trash2, UserPlus, Plus } from 'lucide-react';
+import { Trash2, UserPlus, Plus, Phone, Mail, User, Pencil } from 'lucide-react';
 import { SelectPriestModal } from './SelectPriestModal';
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 
 interface PriestsListProps {
   priests: Priest[];
@@ -19,39 +19,53 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [priestToDelete, setPriestToDelete] = useState<Priest | null>(null);
+  const [editingPriest, setEditingPriest] = useState<Priest | null>(null);
 
-  // New priest form state
-  const [newName, setNewName] = useState('');
-  const [newPhone, setNewPhone] = useState('');
-  const [newMobile, setNewMobile] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [newRole, setNewRole] = useState<boolean>(false);
+  // Form state (shared for create and edit)
+  const [formName, setFormName] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formMobile, setFormMobile] = useState('');
+  const [formEmail, setFormEmail] = useState('');
+  const [formRole, setFormRole] = useState<boolean>(false);
 
-  const resetCreateForm = () => {
-    setNewName('');
-    setNewPhone('');
-    setNewMobile('');
-    setNewEmail('');
-    setNewRole(false);
+  const openCreateForm = () => {
+    setEditingPriest(null);
+    setFormName('');
+    setFormPhone('');
+    setFormMobile('');
+    setFormEmail('');
+    setFormRole(false);
+    setIsFormModalOpen(true);
   };
 
-  const handleDelete = async (priest: Priest) => {
-    const personName = priest.person?.person_name || 'este sacerdote';
-    if (!window.confirm(`¿Estás seguro de que deseas remover a ${personName} de esta parroquia?`)) {
-      return;
-    }
+  const openEditForm = (priest: Priest) => {
+    setEditingPriest(priest);
+    setFormName(priest.person?.person_name || '');
+    setFormPhone(priest.person?.phone || '');
+    setFormMobile(priest.person?.mobile || '');
+    setFormEmail(priest.person?.email || '');
+    setFormRole(priest.is_parish_priest);
+    setIsFormModalOpen(true);
+  };
 
-    setDeletingId(priest.id!);
+  const handleDeleteConfirmed = async () => {
+    if (!priestToDelete) return;
+
+    setDeletingId(priestToDelete.id!);
     try {
       const supabase = createClient();
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('priests')
-        .delete()
-        .eq('id', priest.id);
+        .delete({ count: 'exact' })
+        .eq('id', priestToDelete.id);
 
       if (error) throw error;
+      if (count === 0) {
+        throw new Error('No se pudo eliminar el sacerdote. Es posible que no tengas permisos.');
+      }
 
       if (onRefresh) onRefresh();
     } catch (error) {
@@ -59,6 +73,7 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
       alert('Error al eliminar el sacerdote. Por favor, intenta de nuevo.');
     } finally {
       setDeletingId(null);
+      setPriestToDelete(null);
     }
   };
 
@@ -97,9 +112,9 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
     if (onRefresh) onRefresh();
   };
 
-  const handleCreateNewPriest = async (e: React.FormEvent) => {
+  const handleSavePriest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName.trim()) {
+    if (!formName.trim()) {
       alert('El nombre es requerido');
       return;
     }
@@ -108,38 +123,62 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
     try {
       const supabase = createClient();
 
-      // Create the person with person_type_id = 3 (Presbítero)
-      const { data: newPerson, error: personError } = await supabase
-        .from('people')
-        .insert({
-          person_name: newName.trim(),
-          phone: newPhone.trim() || null,
-          mobile: newMobile.trim() || null,
-          email: newEmail.trim() || null,
-          person_type_id: 3,
-        })
-        .select()
-        .single();
+      if (editingPriest) {
+        // Update existing person
+        const { error: personError } = await supabase
+          .from('people')
+          .update({
+            person_name: formName.trim(),
+            phone: formPhone.trim() || null,
+            mobile: formMobile.trim() || null,
+            email: formEmail.trim() || null,
+          })
+          .eq('id', editingPriest.person_id);
 
-      if (personError) throw personError;
+        if (personError) throw personError;
 
-      // Create the priest relationship
-      const { error: priestError } = await supabase
-        .from('priests')
-        .insert({
-          person_id: newPerson.id,
-          parish_id: parishId,
-          is_parish_priest: newRole,
-        });
+        // Update priest role if changed
+        if (formRole !== editingPriest.is_parish_priest) {
+          const { error: priestError } = await supabase
+            .from('priests')
+            .update({ is_parish_priest: formRole })
+            .eq('id', editingPriest.id);
 
-      if (priestError) throw priestError;
+          if (priestError) throw priestError;
+        }
+      } else {
+        // Create new person
+        const { data: newPerson, error: personError } = await supabase
+          .from('people')
+          .insert({
+            person_name: formName.trim(),
+            phone: formPhone.trim() || null,
+            mobile: formMobile.trim() || null,
+            email: formEmail.trim() || null,
+            person_type_id: 3,
+          })
+          .select()
+          .single();
+
+        if (personError) throw personError;
+
+        const { error: priestError } = await supabase
+          .from('priests')
+          .insert({
+            person_id: newPerson.id,
+            parish_id: parishId,
+            is_parish_priest: formRole,
+          });
+
+        if (priestError) throw priestError;
+      }
 
       if (onRefresh) onRefresh();
-      setIsCreateModalOpen(false);
-      resetCreateForm();
+      setIsFormModalOpen(false);
+      setEditingPriest(null);
     } catch (error: any) {
-      console.error('Error creating new priest:', error);
-      alert(error.message || 'Error al crear el sacerdote. Por favor, intenta de nuevo.');
+      console.error('Error saving priest:', error);
+      alert(error.message || 'Error al guardar el sacerdote. Por favor, intenta de nuevo.');
     } finally {
       setIsSaving(false);
     }
@@ -147,14 +186,14 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
 
   if (loading) {
     return (
-      <Card className="h-full">
+      <Card>
         <CardHeader>
-          <CardTitle>Cargando sacerdotes...</CardTitle>
+          <CardTitle className="text-lg">Sacerdotes</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-4 bg-gray-200 rounded animate-pulse" />
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />
             ))}
           </div>
         </CardContent>
@@ -164,105 +203,109 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
 
   return (
     <>
-      <Card className="h-full flex flex-col">
-        <CardHeader className="flex-shrink-0">
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>Sacerdotes de la Parroquia</CardTitle>
-              <p className="text-sm text-gray-600">
-                Total: {priests.length} {priests.length === 1 ? 'sacerdote' : 'sacerdotes'}
-              </p>
-            </div>
-            <div className="flex gap-2">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Sacerdotes ({priests.length})</CardTitle>
+            <div className="flex gap-1.5">
               <Button
-                size="2"
+                size="1"
                 variant="outline"
                 onClick={() => setIsSelectModalOpen(true)}
-                className="flex items-center gap-2"
+                title="Asignar sacerdote existente"
               >
-                <UserPlus className="h-4 w-4" />
-                Asignar Existente
+                <UserPlus className="h-3.5 w-3.5" />
               </Button>
               <Button
-                size="2"
-                onClick={() => {
-                  resetCreateForm();
-                  setIsCreateModalOpen(true);
-                }}
-                className="flex items-center gap-2"
+                size="1"
+                variant="outline"
+                onClick={openCreateForm}
+                title="Nuevo sacerdote"
               >
-                <Plus className="h-4 w-4" />
-                Nuevo Sacerdote
+                <Plus className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Rol</TableHead>
-                  <TableHead>Teléfono</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {priests.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-500 py-8">
-                      No hay sacerdotes asignados
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  priests.map((priest) => {
-                    const isDeleting = deletingId === priest.id;
-                    const isToggling = togglingId === priest.id;
+        <CardContent>
+          {priests.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <User className="w-8 h-8 mx-auto mb-2" />
+              <p className="text-sm">No hay sacerdotes asignados</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {priests.map((priest) => {
+                const isDeleting = deletingId === priest.id;
+                const isToggling = togglingId === priest.id;
+                const phone = priest.person?.mobile || priest.person?.phone;
+                const email = priest.person?.email;
 
-                    return (
-                      <TableRow key={priest.id}>
-                        <TableCell className="font-medium">
+                return (
+                  <div
+                    key={priest.id}
+                    className="flex items-start justify-between p-3 rounded-lg border hover:bg-gray-50 transition-colors group"
+                  >
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900 text-sm">
                           {priest.person?.person_name || 'Sin nombre'}
-                        </TableCell>
-                        <TableCell>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleRole(priest)}
-                            disabled={isToggling}
-                            className={`px-2 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
-                              priest.is_parish_priest
-                                ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                                : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                            }`}
-                            title="Clic para cambiar rol"
-                          >
-                            {isToggling ? '...' : priest.is_parish_priest ? 'Párroco' : 'Vicario'}
-                          </button>
-                        </TableCell>
-                        <TableCell>{priest.person?.phone || priest.person?.mobile || '-'}</TableCell>
-                        <TableCell>{priest.person?.email || '-'}</TableCell>
-                        <TableCell>
-                          <Button
-                            size="1"
-                            variant="outline"
-                            radius="small"
-                            color="red"
-                            onClick={() => handleDelete(priest)}
-                            disabled={isDeleting}
-                            title="Remover sacerdote de la parroquia"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleRole(priest)}
+                          disabled={isToggling}
+                          className={`px-2 py-0.5 rounded text-xs font-medium transition-colors cursor-pointer ${
+                            priest.is_parish_priest
+                              ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                              : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                          }`}
+                          title="Clic para cambiar rol"
+                        >
+                          {isToggling ? '...' : priest.is_parish_priest ? 'Parroco' : 'Vicario'}
+                        </button>
+                      </div>
+                      {(phone || email) && (
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          {phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3 h-3" />
+                              {phone}
+                            </span>
+                          )}
+                          {email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-3 h-3" />
+                              {email}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => openEditForm(priest)}
+                        title="Editar sacerdote"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        onClick={() => setPriestToDelete(priest)}
+                        disabled={isDeleting}
+                        title="Remover sacerdote"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -274,13 +317,25 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
         parishId={parishId}
       />
 
-      {/* Modal para crear nuevo sacerdote */}
-      {isCreateModalOpen && (
+      {/* Dialogo de confirmacion para eliminar sacerdote */}
+      <ConfirmDeleteDialog
+        open={priestToDelete !== null}
+        onClose={() => setPriestToDelete(null)}
+        onConfirm={handleDeleteConfirmed}
+        title="¿Remover sacerdote?"
+        description={`¿Estas seguro de que deseas remover a ${priestToDelete?.person?.person_name || 'este sacerdote'} de esta parroquia?`}
+        loading={deletingId !== null}
+      />
+
+      {/* Modal para crear/editar sacerdote */}
+      {isFormModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-bold mb-4">Nuevo Sacerdote</h2>
+            <h2 className="text-lg font-bold mb-4">
+              {editingPriest ? 'Editar Sacerdote' : 'Nuevo Sacerdote'}
+            </h2>
 
-            <form onSubmit={handleCreateNewPriest} className="space-y-4">
+            <form onSubmit={handleSavePriest} className="space-y-4">
               {/* Role selector */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
@@ -290,34 +345,33 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
                   <button
                     type="button"
                     className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                      !newRole
+                      !formRole
                         ? 'bg-blue-50 border-blue-500 text-blue-700'
                         : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                     }`}
-                    onClick={() => setNewRole(false)}
+                    onClick={() => setFormRole(false)}
                   >
                     Vicario
                   </button>
                   <button
                     type="button"
                     className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                      newRole
+                      formRole
                         ? 'bg-amber-50 border-amber-500 text-amber-700'
                         : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                     }`}
-                    onClick={() => setNewRole(true)}
+                    onClick={() => setFormRole(true)}
                   >
-                    Párroco
+                    Parroco
                   </button>
                 </div>
               </div>
 
-              {/* Person fields */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Nombre *</label>
                 <Input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
                   placeholder="Ingrese el nombre completo"
                   required
                   maxLength={256}
@@ -326,11 +380,11 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Teléfono</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Telefono</label>
                 <Input
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                  placeholder="Ingrese el número de teléfono"
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
+                  placeholder="Ingrese el numero de telefono"
                   maxLength={50}
                   disabled={isSaving}
                 />
@@ -339,21 +393,21 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Celular</label>
                 <Input
-                  value={newMobile}
-                  onChange={(e) => setNewMobile(e.target.value)}
-                  placeholder="Ingrese el número de celular"
+                  value={formMobile}
+                  onChange={(e) => setFormMobile(e.target.value)}
+                  placeholder="Ingrese el numero de celular"
                   maxLength={50}
                   disabled={isSaving}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Correo electrónico</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Correo electronico</label>
                 <Input
                   type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="Ingrese el correo electrónico"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  placeholder="Ingrese el correo electronico"
                   maxLength={256}
                   disabled={isSaving}
                 />
@@ -363,7 +417,10 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsCreateModalOpen(false)}
+                  onClick={() => {
+                    setIsFormModalOpen(false);
+                    setEditingPriest(null);
+                  }}
                   disabled={isSaving}
                 >
                   Cancelar

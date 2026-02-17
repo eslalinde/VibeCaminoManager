@@ -1,6 +1,6 @@
 import React from 'react';
 import { EntityConfig, FormField } from '@/types/database';
-import { Country, State, City, CityZone, Diocese, Parish, StepWay, TeamType, Person, Community, CommunityStepLog } from '@/types/database';
+import { Country, State, City, CityZone, Diocese, Parish, StepWay, TeamType, Person, Community, CommunityStepLog, ParishCatechesis } from '@/types/database';
 import { CARISMA_OPTIONS } from '@/config/carisma';
 import { CarismaBadge } from '@/components/ui/carisma-badge';
 
@@ -388,6 +388,14 @@ export const personConfig: EntityConfig<Person> = {
       placeholder: 'Seleccione el estado'
     },
     {
+      name: 'is_itinerante',
+      label: 'Itinerante',
+      tableLabel: 'Itin.',
+      type: 'checkbox',
+      required: false,
+      columnWidth: '60px',
+    },
+    {
       name: 'gender_id',
       label: 'Género',
       type: 'select',
@@ -397,6 +405,24 @@ export const personConfig: EntityConfig<Person> = {
         { value: 2, label: 'Femenino' }
       ],
       placeholder: 'Seleccione el género'
+    },
+    {
+      name: 'location_country_id',
+      label: 'País donde se encuentra',
+      type: 'select',
+      required: false,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione el país',
+      hiddenInTable: true,
+    },
+    {
+      name: 'location_city_id',
+      label: 'Ciudad donde se encuentra',
+      type: 'select',
+      required: false,
+      options: [], // Se llenará dinámicamente
+      placeholder: 'Seleccione la ciudad',
+      hiddenInTable: true,
     },
     {
       name: 'spouse_id',
@@ -416,10 +442,29 @@ export const personConfig: EntityConfig<Person> = {
       tableName: 'people',
       displayField: 'person_name',
       alias: 'spouse'
+    },
+    {
+      foreignKey: 'location_country_id',
+      tableName: 'countries',
+      displayField: 'name',
+      alias: 'location_country'
+    },
+    {
+      foreignKey: 'location_city_id',
+      tableName: 'cities',
+      displayField: 'name',
+      alias: 'location_city'
     }
   ],
   // Función para renderizar valores personalizados en la tabla
   renderValue: (fieldName: string, value: any): React.ReactNode => {
+    if (fieldName === 'is_itinerante') {
+      if (value === true) {
+        return React.createElement(CarismaBadge, { carisma: 'Itinerante', size: 'sm', showLabel: false });
+      }
+      return '';
+    }
+
     if (fieldName === 'person_type_id') {
       const option = CARISMA_OPTIONS.find(opt => opt.value === value);
       if (option) {
@@ -622,6 +667,60 @@ export const communityStepLogConfig: EntityConfig<CommunityStepLog> = {
   }
 };
 
+// Configuración para Histórico de Catequesis por Parroquia
+export const parishCatechesisConfig: EntityConfig<ParishCatechesis> = {
+  tableName: 'parish_catechesis',
+  displayName: 'Catequesis de Parroquia',
+  fields: [
+    {
+      name: 'parish_id',
+      label: 'Parroquia',
+      type: 'select',
+      required: true,
+      options: [],
+      placeholder: 'Seleccione una parroquia'
+    },
+    {
+      name: 'planned_start_date',
+      label: 'Fecha Tentativa de Inicio',
+      type: 'date',
+      required: false,
+      placeholder: 'Seleccione la fecha tentativa'
+    },
+    {
+      name: 'actual_start_date',
+      label: 'Fecha de Inicio Real',
+      type: 'date',
+      required: false,
+      placeholder: 'Seleccione la fecha de inicio real'
+    },
+    {
+      name: 'birth_retreat_date',
+      label: 'Fecha Convivencia de Nacimiento',
+      type: 'date',
+      required: false,
+      placeholder: 'Seleccione la fecha de convivencia'
+    },
+    {
+      name: 'attendance_count',
+      label: 'Censo de Asistencia',
+      type: 'number',
+      required: false,
+      placeholder: 'Número de asistentes'
+    },
+    {
+      name: 'catechist_team',
+      label: 'Equipo de Catequistas',
+      type: 'textarea',
+      required: false,
+      placeholder: 'Ingrese el equipo de catequistas'
+    }
+  ],
+  searchFields: ['catechist_team'],
+  sortableFields: ['actual_start_date', 'planned_start_date', 'attendance_count'],
+  defaultSort: { field: 'id', asc: false }
+};
+
 // Exportar todas las configuraciones
 export const entityConfigs = {
   countries: countryConfig,
@@ -634,5 +733,6 @@ export const entityConfigs = {
   teamTypes: teamTypeConfig,
   people: personConfig,
   communities: communityConfig,
-  communityStepLog: communityStepLogConfig
+  communityStepLog: communityStepLogConfig,
+  parishCatechesis: parishCatechesisConfig
 }; 

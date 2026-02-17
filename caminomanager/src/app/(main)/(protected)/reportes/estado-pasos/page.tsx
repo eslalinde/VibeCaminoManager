@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, RefreshCw, Printer } from "lucide-react";
+import { ArrowLeft, RefreshCw, Printer, Download } from "lucide-react";
 import Link from "next/link";
 import { routes } from "@/lib/routes";
 
@@ -26,6 +26,7 @@ export default function ReporteEstadoPasos() {
   const [communities, setCommunities] = useState<CommunityRow[]>([]);
   const [stepWays, setStepWays] = useState<StepWay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -151,6 +152,55 @@ export default function ReporteEstadoPasos() {
 
   const toOrdinal = (num: string) => `${num}ª`;
 
+  const handleExportCSV = () => {
+    setIsExporting(true);
+    try {
+      const headers = [
+        "Parroquia",
+        ...stepWays.map((s) => s.name),
+        "Total",
+      ];
+      const rows = parishes.map((parish) => [
+        parish.name,
+        ...stepWays.map((s) => {
+          const nums = matrix[parish.id][s.id];
+          return nums.length > 0 ? nums.map(toOrdinal).join(", ") : "";
+        }),
+        String(totalsByParish[parish.id]),
+      ]);
+      // Totals row
+      rows.push([
+        "Total por Paso",
+        ...stepWays.map((s) => String(totalsByStep[s.id])),
+        String(grandTotal),
+      ]);
+
+      const csvContent = [headers, ...rows]
+        .map((row) =>
+          row
+            .map((cell) => {
+              const escaped = cell.replace(/"/g, '""');
+              return `"${escaped}"`;
+            })
+            .join(",")
+        )
+        .join("\n");
+
+      const BOM = "\uFEFF";
+      const blob = new Blob([BOM + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "estado_pasos.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -163,7 +213,7 @@ export default function ReporteEstadoPasos() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900">
               Estado de Comunidades
             </h1>
             <p className="text-gray-600">
@@ -178,6 +228,13 @@ export default function ReporteEstadoPasos() {
               className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
             />
             Actualizar
+          </Button>
+          <Button
+            onClick={handleExportCSV}
+            disabled={loading || isExporting || parishes.length === 0}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            {isExporting ? "Exportando..." : "Exportar CSV"}
           </Button>
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="w-4 h-4 mr-2" />

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCommunityData } from '@/hooks/useCommunityData';
 import { CommunityInfo } from '@/components/crud/CommunityInfo';
 import { BrothersList } from '@/components/crud/BrothersList';
@@ -13,7 +14,8 @@ import { communityConfig } from '@/config/entities';
 import { SelectBrotherForTeamModal } from '@/components/crud/SelectBrotherForTeamModal';
 import { Button } from '@/components/ui/button';
 import { MergeCommunityModal } from '@/components/crud/MergeCommunityModal';
-import { ArrowLeft, Merge, Plus, Printer } from 'lucide-react';
+import { ConfirmDeleteDialog } from '@/components/crud/ConfirmDeleteDialog';
+import { ArrowLeft, Merge, Plus, Printer, Trash2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Community } from '@/types/database';
 import { routes } from '@/lib/routes';
@@ -21,11 +23,14 @@ import { routes } from '@/lib/routes';
 export default function CommunityDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const communityId = parseInt(params.id as string);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [addToTeamId, setAddToTeamId] = useState<number | null>(null);
   const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const {
     community,
@@ -139,6 +144,79 @@ export default function CommunityDetailPage() {
     }
   };
 
+  const handleDeleteCommunity = async () => {
+    if (!community?.id) return;
+    setIsDeleting(true);
+    try {
+      const supabase = createClient();
+
+      // Delete in order: belongs → brothers → teams → community_step_log → community
+      // 1. Get all team IDs for this community
+      const { data: communityTeams } = await supabase
+        .from('teams')
+        .select('id')
+        .eq('community_id', community.id);
+      const teamIds = communityTeams?.map(t => t.id) || [];
+
+      if (teamIds.length > 0) {
+        // 2. Delete belongs records for those teams
+        const { error: belongsError } = await supabase
+          .from('belongs')
+          .delete()
+          .in('team_id', teamIds);
+        if (belongsError) throw belongsError;
+
+        // 3. Delete parish_teams records for those teams
+        const { error: parishTeamsError } = await supabase
+          .from('parish_teams')
+          .delete()
+          .in('team_id', teamIds);
+        if (parishTeamsError) throw parishTeamsError;
+
+        // 4. Delete teams
+        const { error: teamsError } = await supabase
+          .from('teams')
+          .delete()
+          .eq('community_id', community.id);
+        if (teamsError) throw teamsError;
+      }
+
+      // 5. Delete brothers
+      const { error: brothersError } = await supabase
+        .from('brothers')
+        .delete()
+        .eq('community_id', community.id);
+      if (brothersError) throw brothersError;
+
+      // 6. Delete community step logs
+      const { error: logsError } = await supabase
+        .from('community_step_log')
+        .delete()
+        .eq('community_id', community.id);
+      if (logsError) throw logsError;
+
+      // 7. Delete the community itself
+      const { error: communityError, count } = await supabase
+        .from('communities')
+        .delete({ count: 'exact' })
+        .eq('id', community.id);
+      if (communityError) throw communityError;
+      if (count === 0) {
+        throw new Error('No se pudo eliminar la comunidad. Es posible que no tengas permisos.');
+      }
+
+      // Invalidate the communities list cache before navigating
+      await queryClient.invalidateQueries({ queryKey: ['crud', 'communities'] });
+      router.push(routes.comunidades);
+    } catch (err: any) {
+      console.error('Error deleting community:', err);
+      alert(err.message || 'Error al eliminar la comunidad. Por favor, intenta de nuevo.');
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
   const handleAddBrotherToTeam = async (personIds: number[]) => {
     if (!addToTeamId) return;
     const supabase = createClient();
@@ -203,6 +281,17 @@ export default function CommunityDetailPage() {
                 Fusionar
               </Button>
             )}
+            <Button
+              variant="outline"
+              size="2"
+              color="red"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="flex items-center gap-2"
+              disabled={loading}
+            >
+              <Trash2 className="h-4 w-4" />
+              Eliminar
+            </Button>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
             Comunidad {community?.number || 'Cargando...'}
@@ -352,6 +441,21 @@ export default function CommunityDetailPage() {
         onSelect={handleAddBrotherToTeam}
         brothers={mergedBrothers}
         teamMembers={addToTeamId ? teamMembers[addToTeamId] || [] : []}
+      />
+
+      {/* Diálogo de confirmación de eliminación */}
+      <ConfirmDeleteDialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDeleteCommunity}
+        title="¿Eliminar comunidad?"
+        description={`¿Estás seguro de que deseas eliminar la Comunidad ${community?.number || ''}? Se eliminarán todos los datos asociados.`}
+        preview={[
+          `${mergedBrothers.length} hermano(s)`,
+          `${teams.responsables.length + teams.catequistas.length} equipo(s)`,
+          `${stepLogs.length} registro(s) de bitácora`,
+        ]}
+        loading={isDeleting}
       />
 
       {/* Modal de fusión de comunidades */}

@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { BaseEntity } from '@/types/database';
 import { Pencil, Trash2 } from 'lucide-react';
+import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 
 interface Column<T> {
   key: keyof T;
@@ -23,9 +25,10 @@ interface EntityTableProps<T extends BaseEntity> {
   sort: { field: keyof T; asc: boolean };
   onSort: (field: keyof T) => void;
   onEdit: (item: T) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: number) => void | Promise<void>;
   onRowClick?: (item: T) => void;
   emptyMessage?: string;
+  hideDeleteInTable?: boolean;
 }
 
 // Helper function to render foreign key values
@@ -57,12 +60,25 @@ export function EntityTable<T extends BaseEntity>({
   onEdit,
   onDelete,
   onRowClick,
-  emptyMessage = "No hay datos"
+  emptyMessage = "No hay datos",
+  hideDeleteInTable = false
 }: EntityTableProps<T>) {
-  const handleDelete = (id: number | undefined) => {
-    if (!id) return;
-    if (!window.confirm("¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.")) return;
-    onDelete(id);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; label: string } | null>(null);
+
+  const handleDeleteConfirmed = async () => {
+    if (!deleteTarget) return;
+    try {
+      await onDelete(deleteTarget.id);
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  // Try to get a display label for the item being deleted
+  const getItemLabel = (item: T): string => {
+    // Try common name fields
+    const nameField = (item as any).name || (item as any).person_name || (item as any).number;
+    return nameField ? String(nameField) : `#${item.id}`;
   };
 
   return (
@@ -134,19 +150,23 @@ export function EntityTable<T extends BaseEntity>({
                       <Pencil className="w-4 h-4" />
                       Editar
                     </Button>
-                    <Button
-                      size="2"
-                      variant="outline"
-                      radius="small"
-                      color="red"
-                      onClick={(e: React.MouseEvent) => {
-                        e.stopPropagation();
-                        handleDelete(item.id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Eliminar
-                    </Button>
+                    {!hideDeleteInTable && (
+                      <Button
+                        size="2"
+                        variant="outline"
+                        radius="small"
+                        color="red"
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          if (item.id) {
+                            setDeleteTarget({ id: item.id, label: getItemLabel(item) });
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Eliminar
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -154,6 +174,15 @@ export function EntityTable<T extends BaseEntity>({
           )}
         </TableBody>
       </Table>
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDeleteDialog
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirmed}
+        title="¿Eliminar registro?"
+        description={`¿Estás seguro de que deseas eliminar "${deleteTarget?.label}"? Esta acción no se puede deshacer.`}
+      />
     </div>
   );
 }

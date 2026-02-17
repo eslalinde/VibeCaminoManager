@@ -18,6 +18,7 @@ interface EntityPageProps<T extends BaseEntity> {
   onCreated?: (item: T) => void;
   hideDefaultAddButton?: boolean;
   extraActions?: React.ReactNode;
+  hideDeleteInTable?: boolean;
 }
 
 export function EntityPage<T extends BaseEntity>({
@@ -26,7 +27,8 @@ export function EntityPage<T extends BaseEntity>({
   onRowClick,
   onCreated,
   hideDefaultAddButton = false,
-  extraActions
+  extraActions,
+  hideDeleteInTable = false
 }: EntityPageProps<T>) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<T | null>(null);
@@ -202,6 +204,7 @@ export function EntityPage<T extends BaseEntity>({
         onDelete={handleDelete}
         onRowClick={onRowClick}
         emptyMessage={`No hay ${config.displayName.toLowerCase()}s`}
+        hideDeleteInTable={hideDeleteInTable}
       />
 
       {/* Pagination */}

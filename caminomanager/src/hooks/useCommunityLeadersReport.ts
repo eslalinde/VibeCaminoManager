@@ -51,7 +51,7 @@ async function fetchCommunityLeaders(): Promise<CommunityLeaderRow[]> {
           )
         ),
         brothers(
-          person:people(person_name, person_type_id)
+          person:people(person_name, person_type_id, is_itinerante)
         ),
         teams!community_id(
           id,
@@ -148,7 +148,8 @@ async function fetchCommunityLeaders(): Promise<CommunityLeaderRow[]> {
         seminarians.push(person.person_name);
       } else if (person.person_type_id === 6) {
         nuns.push(person.person_name);
-      } else if (person.person_type_id === 8) {
+      }
+      if (person.is_itinerante === true) {
         itinerantNames.push(person.person_name);
       }
     }

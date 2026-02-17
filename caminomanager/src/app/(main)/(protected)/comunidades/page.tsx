@@ -26,6 +26,7 @@ export default function CommunitiesPage() {
         pageSize={10}
         onRowClick={handleRowClick}
         onCreated={handleCreated}
+        hideDeleteInTable
       />
     </div>
   );

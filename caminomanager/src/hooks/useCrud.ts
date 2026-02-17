@@ -347,8 +347,11 @@ export function useCrud<T extends BaseEntity>({
 
   const deleteMutation = useMutation<void, Error, number, { previousData?: CrudQueryData<T> }>({
     mutationFn: async (id) => {
-      const { error } = await supabase.from(tableName).delete().eq('id', id);
+      const { error, count } = await supabase.from(tableName).delete({ count: 'exact' }).eq('id', id);
       if (error) throw error;
+      if (count === 0) {
+        throw new Error('No se pudo eliminar el registro. Es posible que no tengas permisos o que el registro ya haya sido eliminado.');
+      }
     },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['crud', tableName] });
