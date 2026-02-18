@@ -5,6 +5,7 @@ import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import "@radix-ui/themes/styles.css";
 import { routes } from "@/lib/routes";
+import { createClient } from "@/utils/supabase/client";
 
 interface HeaderProps {
   userEmail?: string;
@@ -124,19 +125,9 @@ export default function Header({ userEmail, userName, title }: HeaderProps) {
                 onClick={async () => {
                   try {
                     setMenuOpen(false);
-                    const response = await fetch('/auth/signout', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                    });
-
-                    if (response.ok) {
-                      // Redirect to login page
-                      window.location.href = '/login';
-                    } else {
-                      console.error('Failed to sign out');
-                    }
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                    window.location.href = '/login';
                   } catch (error) {
                     console.error('Error signing out:', error);
                   }

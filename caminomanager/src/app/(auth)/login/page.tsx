@@ -3,7 +3,6 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { loginAction } from "./actions";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
@@ -45,13 +44,25 @@ function LoginForm() {
     setError(null);
 
     try {
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
       const redirectTo = searchParams.get('redirectTo') || '/';
-      formData.append('redirectTo', redirectTo);
 
-      const result = await loginAction(formData);
-      if (result?.error) {
-        setError(result.error);
+      const supabase = createClient();
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (authError) {
+        if (authError.message.includes('Invalid login credentials')) {
+          setError('Credenciales inválidas. Verifica tu email y contraseña.');
+        } else if (authError.message.includes('Email not confirmed')) {
+          setError('Por favor, confirma tu email antes de iniciar sesión. Revisa tu bandeja de entrada.');
+        } else {
+          setError(authError.message);
+        }
+        return;
       }
+
+      router.replace(redirectTo);
     } catch {
       setError('Error al iniciar sesión. Intenta de nuevo.');
     } finally {

@@ -4,6 +4,8 @@ import "./globals.css";
 import React from "react";
 import "@radix-ui/themes/styles.css";
 import { QueryProvider } from "./QueryProvider";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { UpdateNotification } from "@/components/electron/UpdateNotification";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,7 +43,10 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${roboto.variable} antialiased`}>
         <QueryProvider>
-          {children}
+          <AuthProvider>
+            {children}
+            <UpdateNotification />
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

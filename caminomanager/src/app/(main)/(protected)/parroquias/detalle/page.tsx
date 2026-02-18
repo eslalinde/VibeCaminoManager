@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useMemo, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useParishData } from '@/hooks/useParishData';
 import { PriestsList } from '@/components/crud/PriestsList';
 import { ParishCatechesisHistory } from '@/components/crud/ParishCatechesisHistory';
@@ -23,10 +23,10 @@ function getStepColor(orderNum?: number): string {
   return 'bg-emerald-50 text-emerald-700 border-emerald-200';
 }
 
-export default function ParishDetailPage() {
-  const params = useParams();
+function ParishDetailContent() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const parishId = parseInt(params.id as string);
+  const parishId = parseInt(searchParams.get('id') as string);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -95,7 +95,7 @@ export default function ParishDetailPage() {
 
   return (
     <div className="container mx-auto space-y-6">
-      {/* ── Unified Header ── */}
+      {/* Unified Header */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Button
@@ -180,7 +180,7 @@ export default function ParishDetailPage() {
         )}
       </div>
 
-      {/* ── Two columns: Communities + Priests ── */}
+      {/* Two columns: Communities + Priests */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Communities with step badges */}
         <Card>
@@ -241,7 +241,7 @@ export default function ParishDetailPage() {
         />
       </div>
 
-      {/* ── Full-width: Catechesis History ── */}
+      {/* Full-width: Catechesis History */}
       <ParishCatechesisHistory parishId={parishId} parishName={parish?.name || ''} />
 
       {/* Modal de edicion */}
@@ -255,5 +255,19 @@ export default function ParishDetailPage() {
         loading={isSaving}
       />
     </div>
+  );
+}
+
+export default function ParishDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+        </div>
+      }
+    >
+      <ParishDetailContent />
+    </Suspense>
   );
 }
