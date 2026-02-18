@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useMemo, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { useCommunityData } from '@/hooks/useCommunityData';
@@ -21,18 +21,18 @@ import { createClient } from '@/utils/supabase/client';
 import { Community } from '@/types/database';
 import { routes } from '@/lib/routes';
 
-export default function CommunityDetailPage() {
-  const params = useParams();
+function CommunityDetailContent() {
+  const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const communityId = parseInt(params.id as string);
+  const communityId = parseInt(searchParams.get('id') as string);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [addToTeamId, setAddToTeamId] = useState<number | null>(null);
   const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   const {
     community,
     mergedBrothers,
@@ -97,10 +97,10 @@ export default function CommunityDetailPage() {
 
   const handleCreateResponsablesTeam = async () => {
     if (!community?.id) return;
-    
+
     try {
       const supabase = createClient();
-      const { data: newTeam, error: teamError } = await supabase
+      const { error: teamError } = await supabase
         .from('teams')
         .insert({
           name: `Equipo de Responsables - Comunidad ${community.number}`,
@@ -121,15 +121,15 @@ export default function CommunityDetailPage() {
 
   const handleCreateCatequistasTeam = async () => {
     if (!community?.id) return;
-    
+
     try {
       const supabase = createClient();
-      
+
       // Contar cuántos equipos de catequistas ya existen para numerarlos
       const existingCatequistasCount = teams.catequistas.length;
       const teamNumber = existingCatequistasCount + 1;
-      
-      const { data: newTeam, error: teamError } = await supabase
+
+      const { error: teamError } = await supabase
         .from('teams')
         .insert({
           name: `Equipo de Catequistas ${teamNumber} - Comunidad ${community.number}`,
@@ -476,5 +476,19 @@ export default function CommunityDetailPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function CommunityDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+        </div>
+      }
+    >
+      <CommunityDetailContent />
+    </Suspense>
   );
 }

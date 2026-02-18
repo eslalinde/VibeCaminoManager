@@ -1,0 +1,28 @@
+appId: com.comunidadcat.app
+productName: ComunidadCat
+copyright: Copyright © 2024 ComunidadCat
+
+directories:
+  output: release
+  buildResources: build-resources
+
+files:
+  - dist-electron/**/*
+  - out/**/*
+  - package.json
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build-resources/icon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: build-resources/icon.ico
+
+publish:
+  provider: github
+  releaseType: release

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { signupAction } from "./actions";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
@@ -37,28 +36,67 @@ export default function SignupPage() {
     setSuccess(null);
 
     try {
-      const result = await signupAction(formData);
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
+      const confirmPassword = formData.get('confirmPassword') as string;
+      const full_name = formData.get('full_name') as string;
 
-      if (result?.error) {
-        setError(result.error);
+      if (!email || !password || !confirmPassword || !full_name) {
+        setError('Todos los campos son requeridos');
+        setLoading(false);
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Las contraseñas no coinciden');
+        setLoading(false);
+        return;
+      }
+      if (password.length < 6) {
+        setError('La contraseña debe tener al menos 6 caracteres');
+        setLoading(false);
+        return;
+      }
+      if (!email.includes('@')) {
+        setError('El email no es válido');
         setLoading(false);
         return;
       }
 
-      // Si hay redirección indicada (usuario autenticado automáticamente)
-      if (result?.redirectTo) {
-        router.refresh();
-        router.replace(result.redirectTo);
+      const supabase = createClient();
+      const siteUrl = window.location.origin;
+
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name },
+          emailRedirectTo: `${siteUrl}/auth/confirm`,
+        },
+      });
+
+      if (authError) {
+        if (authError.message.includes('already registered')) {
+          setError('Este email ya está registrado. Intenta iniciar sesión.');
+        } else if (authError.message.includes('password')) {
+          setError('La contraseña no cumple con los requisitos de seguridad.');
+        } else {
+          setError(authError.message);
+        }
+        setLoading(false);
         return;
       }
 
-      // Si requiere confirmación de email
-      if (result?.success) {
-        setSuccess(result.success);
+      if (data.session) {
+        router.replace('/');
+        return;
+      }
+
+      if (data.user && !data.session) {
+        setSuccess('¡Cuenta creada exitosamente! Por favor, revisa tu email para confirmar tu cuenta antes de iniciar sesión.');
       }
     } catch (err) {
-      console.error("Error en signup:", err);
-      setError("Error interno del servidor. Intenta nuevamente.");
+      console.error('Error en signup:', err);
+      setError('Error interno. Intenta nuevamente.');
     }
 
     setLoading(false);

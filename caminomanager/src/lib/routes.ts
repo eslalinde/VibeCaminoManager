@@ -8,12 +8,12 @@ export const routes = {
   zonas: '/zonas',
   diocesis: '/diocesis',
   parroquias: '/parroquias',
-  parroquia: (id: string | number) => `/parroquias/${id}`,
+  parroquia: (id: string | number) => `/parroquias/detalle?id=${id}`,
   etapas: '/etapas',
   tiposEquipo: '/tipos-equipo',
   personas: '/personas',
   comunidades: '/comunidades',
-  comunidad: (id: string | number) => `/comunidades/${id}`,
+  comunidad: (id: string | number) => `/comunidades/detalle?id=${id}`,
   equipoNacional: '/equipo-nacional',
   reportes: '/reportes',
   reporteCatequistas: '/reportes/equipos-catequistas',
@@ -25,10 +25,9 @@ export const routes = {
   admin: '/admin',
   publico: '/publico',
   authConfirm: '/auth/confirm',
-  authSignout: '/auth/signout',
 } as const;
 
 export const publicRoutes = [
   routes.login, routes.signup, routes.publico,
-  routes.authConfirm, routes.authSignout,
+  routes.authConfirm,
 ];
