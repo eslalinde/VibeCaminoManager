@@ -43,3 +43,14 @@ next-env.d.ts
 # Ignorar archivos de entorno locales
 .env
 .env.local
+
+# IDE
+.vscode/
+
+# Claude
+.claude/
+CLAUDE.md
+
+# Electron
+/dist-electron/
+/release/

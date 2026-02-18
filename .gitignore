@@ -1,3 +1,10 @@
 .env.cloud.local
 .env
 node_modules
+
+# IDE
+.vscode/
+
+# Claude
+.claude/
+CLAUDE.md
