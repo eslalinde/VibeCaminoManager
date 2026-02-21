@@ -33,18 +33,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const supabase = createClient();
 
     async function init() {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      setUser(currentUser);
+      try {
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 3000)
+        );
+        const { data: { session } } = await Promise.race([
+          supabase.auth.getSession(),
+          timeout,
+        ]);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
 
-      if (currentUser) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('id', currentUser.id)
-          .single();
-        setProfile(profileData);
+        if (currentUser) {
+          const { data: profileData } = await Promise.race([
+            supabase.from('profiles').select('full_name').eq('id', currentUser.id).single(),
+            timeout,
+          ]);
+          setProfile(profileData);
+        }
+      } catch (error) {
+        console.error('Failed to initialize auth:', error);
+        setUser(null);
+        setProfile(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     init();

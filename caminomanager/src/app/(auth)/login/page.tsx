@@ -18,13 +18,23 @@ function LoginForm() {
   // el token con el servidor y evitar loops si la sesión expiró)
   useEffect(() => {
     async function checkAuth() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 3000)
+        );
+        const { data: { session } } = await Promise.race([
+          supabase.auth.getSession(),
+          timeout,
+        ]);
 
-      if (user) {
-        const redirectTo = searchParams.get('redirectTo') || '/';
-        router.replace(redirectTo);
-        return;
+        if (session?.user) {
+          const redirectTo = searchParams.get('redirectTo') || '/';
+          router.replace(redirectTo);
+          return;
+        }
+      } catch {
+        // Timeout or network error — show login form
       }
       setCheckingAuth(false);
     }

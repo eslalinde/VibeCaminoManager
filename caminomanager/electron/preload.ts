@@ -11,4 +11,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener('update-downloaded', callback);
   },
   installUpdate: () => ipcRenderer.invoke('install-update'),
+  windowMinimize: () => ipcRenderer.invoke('window-minimize'),
+  windowMaximize: () => ipcRenderer.invoke('window-maximize'),
+  windowClose: () => ipcRenderer.invoke('window-close'),
+  windowIsMaximized: () => ipcRenderer.invoke('window-is-maximized'),
+  onMaximizedChange: (callback: (isMaximized: boolean) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, isMaximized: boolean) => callback(isMaximized);
+    ipcRenderer.on('window-maximized-changed', handler);
+    return () => ipcRenderer.removeListener('window-maximized-changed', handler);
+  },
 });

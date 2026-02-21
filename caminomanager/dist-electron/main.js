@@ -16,6 +16,7 @@ function createWindow() {
         height: 900,
         minWidth: 800,
         minHeight: 600,
+        frame: false,
         webPreferences: {
             preload: path_1.default.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -23,12 +24,19 @@ function createWindow() {
         },
         icon: path_1.default.join(__dirname, '..', 'build-resources', 'icon.ico'),
     });
+    electron_1.Menu.setApplicationMenu(null);
     loadURL(mainWindow);
     if (!isProd) {
         mainWindow.webContents.openDevTools();
     }
     mainWindow.on('closed', () => {
         mainWindow = null;
+    });
+    mainWindow.on('maximize', () => {
+        mainWindow?.webContents.send('window-maximized-changed', true);
+    });
+    mainWindow.on('unmaximize', () => {
+        mainWindow?.webContents.send('window-maximized-changed', false);
     });
 }
 electron_1.app.whenReady().then(() => {
@@ -60,5 +68,23 @@ electron_1.ipcMain.handle('get-app-version', () => {
 });
 electron_1.ipcMain.handle('install-update', () => {
     electron_updater_1.autoUpdater.quitAndInstall();
+});
+// Window control handlers
+electron_1.ipcMain.handle('window-minimize', () => {
+    mainWindow?.minimize();
+});
+electron_1.ipcMain.handle('window-maximize', () => {
+    if (mainWindow?.isMaximized()) {
+        mainWindow.unmaximize();
+    }
+    else {
+        mainWindow?.maximize();
+    }
+});
+electron_1.ipcMain.handle('window-close', () => {
+    mainWindow?.close();
+});
+electron_1.ipcMain.handle('window-is-maximized', () => {
+    return mainWindow?.isMaximized() ?? false;
 });
 //# sourceMappingURL=main.js.map

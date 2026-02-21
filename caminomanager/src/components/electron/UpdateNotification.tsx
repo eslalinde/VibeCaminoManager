@@ -2,19 +2,6 @@
 
 import { useState, useEffect } from 'react';
 
-interface ElectronAPI {
-  getAppVersion: () => Promise<string>;
-  onUpdateAvailable: (callback: () => void) => () => void;
-  onUpdateDownloaded: (callback: () => void) => () => void;
-  installUpdate: () => Promise<void>;
-}
-
-declare global {
-  interface Window {
-    electronAPI?: ElectronAPI;
-  }
-}
-
 export function UpdateNotification() {
   const [updateReady, setUpdateReady] = useState(false);
 

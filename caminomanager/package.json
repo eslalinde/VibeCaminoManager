@@ -1,7 +1,16 @@
 {
   "name": "comunidadcat",
+  "description": "Manejo de comunidades neocatecumenales",
+  "author": {
+    "name": "Esteban Lalinde",
+    "email": "esteban.lalinde@gmail.com"
+  },
   "version": "1.0.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eslalinde/VibeCaminoManager"
+  },
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "next dev --turbopack",

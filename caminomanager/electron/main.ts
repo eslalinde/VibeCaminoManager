@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import path from 'path';
 import serve from 'electron-serve';
 import { autoUpdater } from 'electron-updater';
@@ -15,6 +15,7 @@ function createWindow() {
     height: 900,
     minWidth: 800,
     minHeight: 600,
+    frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -22,6 +23,8 @@ function createWindow() {
     },
     icon: path.join(__dirname, '..', 'build-resources', 'icon.ico'),
   });
+
+  Menu.setApplicationMenu(null);
 
   loadURL(mainWindow);
 
@@ -31,6 +34,14 @@ function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  mainWindow.on('maximize', () => {
+    mainWindow?.webContents.send('window-maximized-changed', true);
+  });
+
+  mainWindow.on('unmaximize', () => {
+    mainWindow?.webContents.send('window-maximized-changed', false);
   });
 }
 
@@ -70,4 +81,25 @@ ipcMain.handle('get-app-version', () => {
 
 ipcMain.handle('install-update', () => {
   autoUpdater.quitAndInstall();
+});
+
+// Window control handlers
+ipcMain.handle('window-minimize', () => {
+  mainWindow?.minimize();
+});
+
+ipcMain.handle('window-maximize', () => {
+  if (mainWindow?.isMaximized()) {
+    mainWindow.unmaximize();
+  } else {
+    mainWindow?.maximize();
+  }
+});
+
+ipcMain.handle('window-close', () => {
+  mainWindow?.close();
+});
+
+ipcMain.handle('window-is-maximized', () => {
+  return mainWindow?.isMaximized() ?? false;
 });
