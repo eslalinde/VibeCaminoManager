@@ -35,7 +35,7 @@ jobs:
           action: "upload"
           app_location: "/caminomanager"
           api_location: ""
-          output_location: ".next"
+          output_location: "out"
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.INTEGRATION_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: ${{ secrets.INTEGRATION_SUPABASE_PUBLISHABLE_DEFAULT_KEY }}
