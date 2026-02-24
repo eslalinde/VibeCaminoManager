@@ -12,5 +12,14 @@ electron_1.contextBridge.exposeInMainWorld('electronAPI', {
         return () => electron_1.ipcRenderer.removeListener('update-downloaded', callback);
     },
     installUpdate: () => electron_1.ipcRenderer.invoke('install-update'),
+    windowMinimize: () => electron_1.ipcRenderer.invoke('window-minimize'),
+    windowMaximize: () => electron_1.ipcRenderer.invoke('window-maximize'),
+    windowClose: () => electron_1.ipcRenderer.invoke('window-close'),
+    windowIsMaximized: () => electron_1.ipcRenderer.invoke('window-is-maximized'),
+    onMaximizedChange: (callback) => {
+        const handler = (_event, isMaximized) => callback(isMaximized);
+        electron_1.ipcRenderer.on('window-maximized-changed', handler);
+        return () => electron_1.ipcRenderer.removeListener('window-maximized-changed', handler);
+    },
 });
 //# sourceMappingURL=preload.js.map

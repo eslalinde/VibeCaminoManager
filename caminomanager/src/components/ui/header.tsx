@@ -6,6 +6,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import "@radix-ui/themes/styles.css";
 import { routes } from "@/lib/routes";
 import { createClient } from "@/utils/supabase/client";
+import { WindowControls } from "@/components/electron/WindowControls";
 
 interface HeaderProps {
   userEmail?: string;
@@ -58,10 +59,13 @@ export default function Header({ userEmail, userName, title }: HeaderProps) {
   }, [menuOpen]);
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-amber-100 h-16 flex items-center px-4 justify-between">
+    <header
+      className="bg-white dark:bg-gray-900 shadow-sm border-b border-amber-100 h-16 flex items-center px-4 justify-between"
+      style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+    >
       <div className="flex items-center gap-3">
       </div>
-      <div className="flex items-center space-x-4 relative">
+      <div className="flex items-center space-x-4 relative" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
         <DropdownMenu.Root open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenu.Trigger asChild>
             <button
@@ -123,14 +127,15 @@ export default function Header({ userEmail, userName, title }: HeaderProps) {
                 type="button"
                 className="flex items-center gap-2 w-full px-2 py-2 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
                 onClick={async () => {
+                  setMenuOpen(false);
+                  const supabase = createClient();
                   try {
-                    setMenuOpen(false);
-                    const supabase = createClient();
-                    await supabase.auth.signOut();
-                    window.location.href = '/login';
-                  } catch (error) {
-                    console.error('Error signing out:', error);
-                  }
+                    await Promise.race([
+                      supabase.auth.signOut(),
+                      new Promise(r => setTimeout(r, 1000)),
+                    ]);
+                  } catch {}
+                  window.location.reload();
                 }}
               >
                 <LogOut className="w-4 h-4" />
@@ -139,6 +144,7 @@ export default function Header({ userEmail, userName, title }: HeaderProps) {
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
+        <WindowControls />
       </div>
     </header>
   );
