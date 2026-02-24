@@ -39,7 +39,7 @@ async function fetchCatechistTeams(): Promise<CatechistTeamRow[]> {
 
   // Fetch parish_teams for all teams
   const teamIds = teamsData?.map((t) => t.id) || [];
-  let parishTeamsMap: Record<number, string[]> = {};
+  const parishTeamsMap: Record<number, string[]> = {};
 
   if (teamIds.length > 0) {
     const { data: parishTeamsData, error: ptError } = await supabase

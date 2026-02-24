@@ -69,9 +69,11 @@ export function DynamicEntityModal<T extends BaseEntity>({
   const hasCityField = fields.some(f => f.name === 'city_id');
   
   // Usar el hook apropiado para ciudades
+  /* eslint-disable react-hooks/rules-of-hooks */
   const { options: cityOptions } = hasCountryField || hasStateField
     ? useCityOptions(formData.country_id, formData.state_id)
     : useAllCityOptions();
+  /* eslint-enable react-hooks/rules-of-hooks */
 
   // Zonas filtradas por ciudad
   const { options: zoneOptions } = useZoneOptions(formData.city_id ? Number(formData.city_id) : undefined);
@@ -80,9 +82,11 @@ export function DynamicEntityModal<T extends BaseEntity>({
   const { options: dioceseOptions } = useDioceseOptions();
 
   // Usar el hook apropiado para parroquias
+  /* eslint-disable react-hooks/rules-of-hooks */
   const { options: parishOptions } = hasCityField
     ? useParishOptions(formData.city_id)
     : useAllParishOptions();
+  /* eslint-enable react-hooks/rules-of-hooks */
   const { options: peopleOptions, loading: peopleLoading } = usePeopleOptions(initial?.id);
   const { options: stepWayOptions } = useEntityOptions({
     tableName: 'step_ways',

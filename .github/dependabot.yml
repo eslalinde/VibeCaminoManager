@@ -1,0 +1,47 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /caminomanager
+    schedule:
+      interval: weekly
+      day: monday
+    reviewers:
+      - eslalinde
+    groups:
+      production-dependencies:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+        exclude-patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+          - "electron"
+          - "electron-builder"
+          - "electron-updater"
+          - "electron-serve"
+          - "@supabase/*"
+      electron:
+        patterns:
+          - "electron"
+          - "electron-builder"
+          - "electron-updater"
+          - "electron-serve"
+      next-react:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+          - "eslint-config-next"
+      supabase:
+        patterns:
+          - "@supabase/*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    reviewers:
+      - eslalinde

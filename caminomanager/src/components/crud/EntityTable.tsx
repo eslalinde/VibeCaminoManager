@@ -144,7 +144,7 @@ export function EntityTable<T extends BaseEntity>({
                       radius="small"
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
-                        onRowClick ? onRowClick(item) : onEdit(item);
+                        if (onRowClick) { onRowClick(item); } else { onEdit(item); }
                       }}
                     >
                       <Pencil className="w-4 h-4" />
