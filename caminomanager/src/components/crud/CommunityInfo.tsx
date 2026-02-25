@@ -89,7 +89,6 @@ export function CommunityInfo({ community, loading, onEdit }: CommunityInfoProps
           {onEdit && (
             <Button
               variant="outline"
-              size="2"
               onClick={onEdit}
               className="flex items-center gap-2 print-hidden"
             >

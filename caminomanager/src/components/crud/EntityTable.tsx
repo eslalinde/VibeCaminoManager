@@ -139,9 +139,6 @@ export function EntityTable<T extends BaseEntity>({
                 <TableCell>
                   <div className="flex gap-2 items-center">
                     <Button
-                      size="2"
-                      variant="solid"
-                      radius="small"
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         if (onRowClick) { onRowClick(item); } else { onEdit(item); }
@@ -152,10 +149,8 @@ export function EntityTable<T extends BaseEntity>({
                     </Button>
                     {!hideDeleteInTable && (
                       <Button
-                        size="2"
                         variant="outline"
-                        radius="small"
-                        color="red"
+                        className="text-destructive border-destructive/50 hover:bg-destructive/10"
                         onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           if (item.id) {

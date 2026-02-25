@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Theme } from '@radix-ui/themes';
 import { createClient } from '@/utils/supabase/client';
 import { Person } from '@/types/database';
 import { normalizeText } from '@/lib/utils';
@@ -111,7 +110,6 @@ export function SelectBrotherModal({
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <Theme>
           <DialogHeader>
             <DialogTitle>Agregar Hermano Existente</DialogTitle>
             <DialogDescription>
@@ -174,7 +172,6 @@ export function SelectBrotherModal({
               Agregar Hermano
             </Button>
           </DialogFooter>
-        </Theme>
       </DialogContent>
     </Dialog>
   );

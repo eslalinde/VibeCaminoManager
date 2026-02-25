@@ -100,7 +100,6 @@ function ParishDetailContent() {
         <div className="flex items-center justify-between">
           <Button
             variant="outline"
-            size="2"
             onClick={() => router.push(routes.parroquias)}
             className="flex items-center gap-2"
           >
@@ -109,7 +108,6 @@ function ParishDetailContent() {
           </Button>
           <Button
             variant="outline"
-            size="2"
             onClick={() => setIsEditModalOpen(true)}
             className="flex items-center gap-2"
           >

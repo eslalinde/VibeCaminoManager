@@ -1,8 +1,6 @@
 "use client";
 import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Theme } from "@radix-ui/themes";
-import "@radix-ui/themes/styles.css";
 import { WindowControls } from "@/components/electron/WindowControls";
 
 const geistSans = Geist({
@@ -33,9 +31,7 @@ export default function AuthLayout({
           <WindowControls />
         </div>
       </div>
-      <Theme accentColor="amber" grayColor="mauve" panelBackground="solid">
-        {children}
-      </Theme>
+      {children}
     </div>
   );
 }

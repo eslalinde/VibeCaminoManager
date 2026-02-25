@@ -109,9 +109,9 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
             <FileText className="w-5 h-5" />
             Log de Pasos - Comunidad {communityNumber}
           </CardTitle>
-          <Button 
+          <Button
             onClick={() => setShowAddForm(!showAddForm)}
-            size="1"
+            size="sm"
             className="flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
@@ -198,13 +198,13 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
             </div>
             
             <div className="flex gap-2">
-              <Button onClick={handleAddEntry} size="1">
+              <Button onClick={handleAddEntry} size="sm">
                 Guardar Entrada
               </Button>
-              <Button 
-                onClick={() => setShowAddForm(false)} 
-                variant="outline" 
-                size="1"
+              <Button
+                onClick={() => setShowAddForm(false)}
+                variant="outline"
+                size="sm"
               >
                 Cancelar
               </Button>

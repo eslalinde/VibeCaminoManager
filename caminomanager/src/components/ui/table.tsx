@@ -1,12 +1,11 @@
 import * as React from "react"
-import { Table as RadixTable } from "@radix-ui/themes"
 import { cn } from "@/lib/utils"
 
 const Table = React.forwardRef<
-  React.ElementRef<typeof RadixTable.Root>,
-  React.ComponentPropsWithoutRef<typeof RadixTable.Root>
+  HTMLTableElement,
+  React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <RadixTable.Root
+  <table
     ref={ref}
     className={cn("w-full caption-bottom text-sm", className)}
     {...props}
@@ -15,10 +14,10 @@ const Table = React.forwardRef<
 Table.displayName = "Table"
 
 const TableHeader = React.forwardRef<
-  React.ElementRef<typeof RadixTable.Header>,
-  React.ComponentPropsWithoutRef<typeof RadixTable.Header>
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <RadixTable.Header
+  <thead
     ref={ref}
     className={cn("[&_tr]:border-b", className)}
     {...props}
@@ -27,10 +26,10 @@ const TableHeader = React.forwardRef<
 TableHeader.displayName = "TableHeader"
 
 const TableBody = React.forwardRef<
-  React.ElementRef<typeof RadixTable.Body>,
-  React.ComponentPropsWithoutRef<typeof RadixTable.Body>
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <RadixTable.Body
+  <tbody
     ref={ref}
     className={cn("[&_tr:last-child]:border-0", className)}
     {...props}
@@ -39,10 +38,10 @@ const TableBody = React.forwardRef<
 TableBody.displayName = "TableBody"
 
 const TableFooter = React.forwardRef<
-  React.ElementRef<typeof RadixTable.Body>,
-  React.ComponentPropsWithoutRef<typeof RadixTable.Body>
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <RadixTable.Body
+  <tfoot
     ref={ref}
     className={cn(
       "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
@@ -54,10 +53,10 @@ const TableFooter = React.forwardRef<
 TableFooter.displayName = "TableFooter"
 
 const TableRow = React.forwardRef<
-  React.ElementRef<typeof RadixTable.Row>,
-  React.ComponentPropsWithoutRef<typeof RadixTable.Row>
+  HTMLTableRowElement,
+  React.HTMLAttributes<HTMLTableRowElement>
 >(({ className, ...props }, ref) => (
-  <RadixTable.Row
+  <tr
     ref={ref}
     className={cn(
       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted text-sm min-h-0 h-6",
@@ -69,10 +68,10 @@ const TableRow = React.forwardRef<
 TableRow.displayName = "TableRow"
 
 const TableHead = React.forwardRef<
-  React.ElementRef<typeof RadixTable.ColumnHeaderCell>,
-  React.ComponentPropsWithoutRef<typeof RadixTable.ColumnHeaderCell>
+  HTMLTableCellElement,
+  React.ThHTMLAttributes<HTMLTableCellElement>
 >(({ className, ...props }, ref) => (
-  <RadixTable.ColumnHeaderCell
+  <th
     ref={ref}
     className={cn(
       "h-6 px-0 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
@@ -84,16 +83,16 @@ const TableHead = React.forwardRef<
 TableHead.displayName = "TableHead"
 
 const TableCell = React.forwardRef<
-  React.ElementRef<typeof RadixTable.Cell>,
-  React.ComponentPropsWithoutRef<typeof RadixTable.Cell>
+  HTMLTableCellElement,
+  React.TdHTMLAttributes<HTMLTableCellElement>
 >(({ className, style, ...props }, ref) => (
-  <RadixTable.Cell
+  <td
     ref={ref}
     className={cn(
-      "p-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "p-0 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     )}
-    style={{ verticalAlign: 'middle', ...style }}
+    style={style}
     {...props}
   />
 ))
@@ -107,4 +106,4 @@ export {
   TableHead,
   TableRow,
   TableCell,
-} 
+}

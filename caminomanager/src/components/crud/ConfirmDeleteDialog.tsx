@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Theme } from '@radix-ui/themes';
 
 interface ConfirmDeleteDialogProps {
   open: boolean;
@@ -55,7 +54,6 @@ export function ConfirmDeleteDialog({
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-lg">
-        <Theme>
           <DialogHeader>
             <DialogTitle className="text-red-600">
               {title}
@@ -103,14 +101,13 @@ export function ConfirmDeleteDialog({
               Cancelar
             </Button>
             <Button
-              color="red"
+              variant="destructive"
               onClick={handleConfirm}
               disabled={!isConfirmValid || loading}
             >
               {loading ? 'Eliminando...' : 'Eliminar'}
             </Button>
           </DialogFooter>
-        </Theme>
       </DialogContent>
     </Dialog>
   );

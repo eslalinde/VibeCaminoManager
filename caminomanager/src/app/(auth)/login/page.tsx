@@ -136,7 +136,7 @@ function LoginForm() {
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full" size="3" disabled={loading}>
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
               {loading ? "Ingresando..." : "Ingresar"}
             </Button>
           </form>

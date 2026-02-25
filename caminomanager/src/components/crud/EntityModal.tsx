@@ -142,7 +142,9 @@ export function EntityModal<T extends BaseEntity>({
                     onValueChange={(value: string) => handleInputChange(field.name, value)}
                     disabled={loading}
                   >
-                    <SelectTrigger placeholder={field.placeholder || "Seleccionar..."} />
+                    <SelectTrigger>
+                      <SelectValue placeholder={field.placeholder || "Seleccionar..."} />
+                    </SelectTrigger>
                     <SelectContent>
                       {field.options?.map(option => (
                         <SelectItem key={option.value} value={option.value.toString()}>
@@ -175,14 +177,13 @@ export function EntityModal<T extends BaseEntity>({
             <Button
               type="button"
               variant="outline"
-              size="2"
               onClick={onClose}
               disabled={loading}
             >
               Cancelar
             </Button>
             <FormSubmit asChild>
-              <Button type="submit" size="2" color="amber" highContrast disabled={loading}>
+              <Button type="submit" disabled={loading}>
                 {loading ? "Guardando..." : "Guardar"}
               </Button>
             </FormSubmit>

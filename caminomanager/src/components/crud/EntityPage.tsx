@@ -8,7 +8,6 @@ import { EntityModal } from './EntityModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
 import { useCrud } from '@/hooks/useCrud';
 import { BaseEntity, FormField, EntityConfig } from '@/types/database';
-import { TextField } from '@radix-ui/themes';
 import { Search, X, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface EntityPageProps<T extends BaseEntity> {
@@ -146,44 +145,36 @@ export function EntityPage<T extends BaseEntity>({
 
       {/* Search and Add Button */}
       <div className="flex items-center justify-between gap-4 mb-4">
-        <TextField.Root
-          radius="large"
-          size="2"
-          placeholder={
-            config.displayName === 'Comunidad'
-              ? 'Buscar por número o parroquia...'
-              : `Buscar ${config.displayName.toLowerCase()}...`
-          }
-          value={search}
-          onChange={e => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="w-full max-w-sm"
-        >
-          <TextField.Slot>
-            <Search className="w-4 h-4 text-gray-400" />
-          </TextField.Slot>
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder={
+              config.displayName === 'Comunidad'
+                ? 'Buscar por número o parroquia...'
+                : `Buscar ${config.displayName.toLowerCase()}...`
+            }
+            value={search}
+            onChange={e => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="pl-9 pr-9"
+          />
           {search && (
-            <TextField.Slot>
-              <button
-                type="button"
-                onClick={() => { setSearch(''); setPage(1); }}
-                className="p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
-                aria-label="Limpiar búsqueda"
-              >
-                <X className="w-4 h-4 text-gray-400" />
-              </button>
-            </TextField.Slot>
+            <button
+              type="button"
+              onClick={() => { setSearch(''); setPage(1); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+              aria-label="Limpiar búsqueda"
+            >
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
           )}
-        </TextField.Root>
+        </div>
         <div className="flex items-center gap-2">
           {extraActions}
           {!hideDefaultAddButton && (
             <Button
-              color="amber"
-              highContrast
-              size="2"
               onClick={handleAddNew}
             >
               <Plus className="w-4 h-4" />
@@ -216,7 +207,6 @@ export function EntityPage<T extends BaseEntity>({
         <div className="flex items-center gap-1">
           <Button
             variant="outline"
-            size="2"
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
           >
@@ -244,11 +234,8 @@ export function EntityPage<T extends BaseEntity>({
               ) : (
                 <Button
                   key={p}
-                  variant={p === page ? "solid" : "outline"}
-                  size="2"
+                  variant={p === page ? "default" : "outline"}
                   onClick={() => setPage(p)}
-                  color={p === page ? "amber" : undefined}
-                  highContrast={p === page}
                 >
                   {p}
                 </Button>
@@ -258,7 +245,6 @@ export function EntityPage<T extends BaseEntity>({
 
           <Button
             variant="outline"
-            size="2"
             onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
           >

@@ -10,7 +10,6 @@ import { ParishCatechesis } from '@/types/database';
 import { Calendar, FileText, ExternalLink, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { parishCatechesisConfig } from '@/config/entities';
-import { Theme } from '@radix-ui/themes';
 import { createClient } from '@/utils/supabase/client';
 
 interface ParishCatechesisHistoryProps {
@@ -177,7 +176,6 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
           <div className="flex items-center gap-2 print-hidden">
             <Button
               variant="outline"
-              size="2"
               onClick={() => setIsAddModalOpen(true)}
             >
               <Plus className="w-4 h-4 mr-1" />
@@ -186,7 +184,7 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
             {count > itemsPerPage && (
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="2">
+                  <Button variant="ghost">
                     <ExternalLink className="w-4 h-4 mr-1" />
                     Ver todos
                   </Button>
@@ -398,7 +396,6 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
         }
       }}>
         <DialogContent>
-          <Theme>
             <DialogHeader>
               <DialogTitle>¿Eliminar catequesis?</DialogTitle>
               <DialogDescription>
@@ -408,7 +405,6 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
             <DialogFooter className="gap-3">
               <Button
                 variant="outline"
-                size="2"
                 onClick={() => {
                   setIsDeleteDialogOpen(false);
                   setDeletingId(null);
@@ -418,15 +414,13 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
                 Cancelar
               </Button>
               <Button
-                color="red"
-                size="2"
+                variant="destructive"
                 onClick={handleDeleteConfirm}
                 disabled={isDeleting || !deletingId}
               >
                 {isDeleting ? 'Eliminando...' : 'Eliminar'}
               </Button>
             </DialogFooter>
-          </Theme>
         </DialogContent>
       </Dialog>
     </Card>

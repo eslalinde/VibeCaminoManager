@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Theme } from '@radix-ui/themes';
 import { createClient } from '@/utils/supabase/client';
 import { Parish } from '@/types/database';
 import { normalizeText } from '@/lib/utils';
@@ -93,67 +92,65 @@ export function SelectParishModal({
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <Theme>
-          <DialogHeader>
-            <DialogTitle>Agregar Parroquia</DialogTitle>
-            <DialogDescription>
-              Selecciona una parroquia para vincularla al equipo nacional.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Agregar Parroquia</DialogTitle>
+          <DialogDescription>
+            Selecciona una parroquia para vincularla al equipo nacional.
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div>
-              <Input
-                placeholder="Buscar por nombre..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            {loading ? (
-              <div className="text-center py-8 text-gray-500">
-                Cargando parroquias disponibles...
-              </div>
-            ) : error ? (
-              <div className="text-center py-8 text-red-500">{error}</div>
-            ) : filteredParishes.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                {searchTerm
-                  ? 'No se encontraron parroquias con ese nombre'
-                  : 'No hay parroquias disponibles'}
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {filteredParishes.map((parish) => (
-                  <div
-                    key={parish.id}
-                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                      selectedParishId === parish.id
-                        ? 'bg-blue-50 border-blue-500'
-                        : 'hover:bg-gray-50'
-                    }`}
-                    onClick={() => setSelectedParishId(parish.id!)}
-                  >
-                    <div className="font-medium">{parish.name}</div>
-                    <div className="text-sm text-gray-500">
-                      {parish.diocese?.name && `Diócesis: ${parish.diocese.name}`}
-                      {parish.address && ` · ${parish.address}`}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        <div className="space-y-4 py-4">
+          <div>
+            <Input
+              placeholder="Buscar por nombre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
 
-          <DialogFooter className="gap-3">
-            <Button variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSelect} disabled={!selectedParishId || loading}>
-              Agregar Parroquia
-            </Button>
-          </DialogFooter>
-        </Theme>
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">
+              Cargando parroquias disponibles...
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">{error}</div>
+          ) : filteredParishes.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              {searchTerm
+                ? 'No se encontraron parroquias con ese nombre'
+                : 'No hay parroquias disponibles'}
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {filteredParishes.map((parish) => (
+                <div
+                  key={parish.id}
+                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                    selectedParishId === parish.id
+                      ? 'bg-blue-50 border-blue-500'
+                      : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setSelectedParishId(parish.id!)}
+                >
+                  <div className="font-medium">{parish.name}</div>
+                  <div className="text-sm text-gray-500">
+                    {parish.diocese?.name && `Diócesis: ${parish.diocese.name}`}
+                    {parish.address && ` · ${parish.address}`}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="gap-3">
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSelect} disabled={!selectedParishId || loading}>
+            Agregar Parroquia
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

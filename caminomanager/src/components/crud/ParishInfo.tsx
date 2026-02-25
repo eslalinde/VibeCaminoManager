@@ -48,7 +48,7 @@ export function ParishInfo({ parish, loading, onEdit }: ParishInfoProps) {
           {onEdit && (
             <Button
               variant="outline"
-              size="1"
+              size="sm"
               onClick={onEdit}
               className="flex items-center gap-2"
             >

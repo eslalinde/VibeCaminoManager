@@ -233,7 +233,6 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
             </div>
             <div className="flex gap-2">
               <Button
-                size="2"
                 variant="outline"
                 onClick={() => setIsSelectModalOpen(true)}
                 className="flex items-center gap-2"
@@ -244,7 +243,6 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <Button
-                    size="2"
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
@@ -340,10 +338,8 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
                             <TableCell>{brother.celular || '-'}</TableCell>
                             <TableCell>
                               <Button
-                                size="2"
-                                variant="outline"
-                                radius="small"
-                                color={isInTeam ? "gray" : "red"}
+                                variant={isInTeam ? "secondary" : "outline"}
+                                className={!isInTeam ? "text-destructive border-destructive/50 hover:bg-destructive/10" : ""}
                                 onClick={() => handleRequestDelete(brother)}
                                 disabled={isInTeam || isDeleting}
                                 title={isInTeam ? 'Este hermano está asociado a un equipo y no puede ser eliminado' : 'Eliminar hermano de la comunidad'}

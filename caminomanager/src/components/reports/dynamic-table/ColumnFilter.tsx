@@ -1,6 +1,7 @@
 "use client";
 import { Column } from "@tanstack/react-table";
-import { Select, TextField } from "@radix-ui/themes";
+import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { DynamicColumnMeta } from "./types";
 
 interface ColumnFilterProps<TData> {
@@ -24,37 +25,33 @@ export function ColumnFilter<TData>({ column }: ColumnFilterProps<TData>) {
     const ALL_VALUE = "__all__";
 
     return (
-      <Select.Root
-        size="1"
+      <Select
         value={filterValue || ALL_VALUE}
         onValueChange={(val) =>
           column.setFilterValue(val === ALL_VALUE ? undefined : val)
         }
       >
-        <Select.Trigger
-          variant="surface"
-          placeholder="Todos"
-          className="w-full text-xs"
-        />
-        <Select.Content>
-          <Select.Item value={ALL_VALUE}>Todos</Select.Item>
+        <SelectTrigger className="w-full text-xs h-8">
+          <SelectValue placeholder="Todos" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL_VALUE}>Todos</SelectItem>
           {sortedUniqueValues.map((value) => (
-            <Select.Item key={String(value)} value={String(value)}>
+            <SelectItem key={String(value)} value={String(value)}>
               {String(value)}
-            </Select.Item>
+            </SelectItem>
           ))}
-        </Select.Content>
-      </Select.Root>
+        </SelectContent>
+      </Select>
     );
   }
 
   return (
-    <TextField.Root
-      size="1"
+    <Input
       value={filterValue}
       onChange={(e) => column.setFilterValue(e.target.value || undefined)}
       placeholder="Filtrar..."
-      className="w-full"
+      className="w-full h-8"
     />
   );
 }

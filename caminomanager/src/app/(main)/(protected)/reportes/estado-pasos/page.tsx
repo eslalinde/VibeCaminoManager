@@ -207,7 +207,7 @@ export default function ReporteEstadoPasos() {
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-3">
           <Link href={routes.reportes}>
-            <Button variant="outline" size="1">
+            <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Volver
             </Button>
