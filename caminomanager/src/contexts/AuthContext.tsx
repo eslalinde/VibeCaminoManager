@@ -31,32 +31,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const supabase = createClient();
+    let cancelled = false;
 
     async function init() {
       try {
-        const timeout = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout')), 3000)
-        );
-        const { data: { session } } = await Promise.race([
-          supabase.auth.getSession(),
-          timeout,
-        ]);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (cancelled) return;
+
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
-          const { data: profileData } = await Promise.race([
-            supabase.from('profiles').select('full_name').eq('id', currentUser.id).single(),
-            timeout,
-          ]);
-          setProfile(profileData);
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', currentUser.id)
+            .single();
+          if (!cancelled) setProfile(profileData);
         }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
-        setUser(null);
-        setProfile(null);
+        if (!cancelled) {
+          setUser(null);
+          setProfile(null);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
@@ -85,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => {
+      cancelled = true;
       subscription.unsubscribe();
     };
   }, [router]);
