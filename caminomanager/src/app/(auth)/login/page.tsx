@@ -20,13 +20,7 @@ function LoginForm() {
     async function checkAuth() {
       try {
         const supabase = createClient();
-        const timeout = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout')), 3000)
-        );
-        const { data: { session } } = await Promise.race([
-          supabase.auth.getSession(),
-          timeout,
-        ]);
+        const { data: { session } } = await supabase.auth.getSession();
 
         if (session?.user) {
           const redirectTo = searchParams.get('redirectTo') || '/';
@@ -34,7 +28,7 @@ function LoginForm() {
           return;
         }
       } catch {
-        // Timeout or network error — show login form
+        // Network error — show login form
       }
       setCheckingAuth(false);
     }
