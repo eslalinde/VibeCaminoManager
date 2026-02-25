@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
-import { TextField } from "@radix-ui/themes";
+import { Input } from "@/components/ui/input";
 
 interface GlobalFilterProps {
   value: string;
@@ -28,29 +28,24 @@ export function GlobalFilter({
   }, [localValue, onChange]);
 
   return (
-    <TextField.Root
-      radius="large"
-      size="2"
-      value={localValue}
-      onChange={(e) => setLocalValue(e.target.value)}
-      placeholder={placeholder}
-      style={{ width: "28rem" }}
-    >
-      <TextField.Slot>
-        <Search className="h-4 w-4 text-gray-400" />
-      </TextField.Slot>
+    <div className="relative" style={{ width: "28rem" }}>
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Input
+        value={localValue}
+        onChange={(e) => setLocalValue(e.target.value)}
+        placeholder={placeholder}
+        className="pl-9 pr-9"
+      />
       {localValue && (
-        <TextField.Slot>
-          <button
-            type="button"
-            onClick={() => setLocalValue("")}
-            className="p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
-            aria-label="Limpiar búsqueda"
-          >
-            <X className="h-4 w-4 text-gray-400" />
-          </button>
-        </TextField.Slot>
+        <button
+          type="button"
+          onClick={() => setLocalValue("")}
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+          aria-label="Limpiar búsqueda"
+        >
+          <X className="h-4 w-4 text-gray-400" />
+        </button>
       )}
-    </TextField.Root>
+    </div>
   );
 }

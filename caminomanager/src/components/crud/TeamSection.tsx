@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Theme } from '@radix-ui/themes';
 import { Team, Belongs, Parish } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserMinus, Crown, UserPlus, Pencil } from 'lucide-react';
@@ -304,9 +303,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
           <div className="flex items-center gap-2 print-hidden">
             {onAddMember && (
               <Button
-                size="2"
                 variant="outline"
-                radius="small"
                 onClick={onAddMember}
                 disabled={deletingTeam || deletingId !== null}
                 title="Agregar miembro al equipo"
@@ -316,10 +313,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
               </Button>
             )}
             <Button
-              size="2"
               variant="outline"
-              radius="small"
-              color="red"
+              className="text-destructive border-destructive/50 hover:bg-destructive/10"
               onClick={() => setShowDeleteTeamDialog(true)}
               disabled={deletingTeam || deletingId !== null || removingResponsibleId !== null || assigningResponsibleId !== null}
               title="Eliminar equipo completo"
@@ -397,9 +392,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                       <div className="flex gap-2">
                         {onEditMember && (
                           <Button
-                            size="2"
                             variant="outline"
-                            radius="small"
                             onClick={() => onEditMember(member.personIds[0])}
                             disabled={deletingId === member.id || removingResponsibleId === member.id || assigningResponsibleId === member.id}
                             title="Editar persona"
@@ -409,10 +402,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                         )}
                         {member.isResponsible ? (
                           <Button
-                            size="2"
                             variant="outline"
-                            radius="small"
-                            color="orange"
+                            className="text-orange-500 border-orange-300 hover:bg-orange-50"
                             onClick={() => setMemberToRemoveResponsible(member)}
                             disabled={removingResponsibleId === member.id || deletingId === member.id || assigningResponsibleId === member.id}
                             title="Quitar responsabilidad (la persona permanecerá en el equipo)"
@@ -421,10 +412,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                           </Button>
                         ) : (
                           <Button
-                            size="2"
                             variant="outline"
-                            radius="small"
-                            color="green"
+                            className="text-green-600 border-green-300 hover:bg-green-50"
                             onClick={() => setMemberToAssignResponsible(member)}
                             disabled={hasResponsible || assigningResponsibleId === member.id || deletingId === member.id || removingResponsibleId === member.id}
                             title={hasResponsible ? "Ya existe un responsable en el equipo. Quita la responsabilidad del actual para asignar a otro." : "Asignar responsabilidad"}
@@ -433,10 +422,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                           </Button>
                         )}
                         <Button
-                          size="2"
                           variant="outline"
-                          radius="small"
-                          color="red"
+                          className="text-destructive border-destructive/50 hover:bg-destructive/10"
                           onClick={() => setMemberToDelete(member)}
                           disabled={deletingId === member.id || removingResponsibleId === member.id || assigningResponsibleId === member.id}
                           title="Eliminar miembro del equipo"
@@ -480,7 +467,6 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       {/* Diálogo de confirmación para quitar responsabilidad */}
       <Dialog open={memberToRemoveResponsible !== null} onOpenChange={(isOpen) => !isOpen && setMemberToRemoveResponsible(null)}>
         <DialogContent>
-          <Theme>
             <DialogHeader>
               <DialogTitle>¿Quitar responsabilidad?</DialogTitle>
               <DialogDescription>
@@ -490,29 +476,25 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
             <DialogFooter className="gap-3">
               <Button
                 variant="outline"
-                size="2"
                 onClick={() => setMemberToRemoveResponsible(null)}
                 disabled={removingResponsibleId !== null}
               >
                 Cancelar
               </Button>
               <Button
-                color="orange"
-                size="2"
+                variant="warning"
                 onClick={handleRemoveResponsible}
                 disabled={removingResponsibleId !== null}
               >
                 {removingResponsibleId ? 'Quitando...' : 'Quitar Responsabilidad'}
               </Button>
             </DialogFooter>
-          </Theme>
         </DialogContent>
       </Dialog>
 
       {/* Diálogo de confirmación para asignar responsabilidad */}
       <Dialog open={memberToAssignResponsible !== null} onOpenChange={(isOpen) => !isOpen && setMemberToAssignResponsible(null)}>
         <DialogContent>
-          <Theme>
             <DialogHeader>
               <DialogTitle>¿Asignar responsabilidad?</DialogTitle>
               <DialogDescription>
@@ -523,22 +505,19 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
             <DialogFooter className="gap-3">
               <Button
                 variant="outline"
-                size="2"
                 onClick={() => setMemberToAssignResponsible(null)}
                 disabled={assigningResponsibleId !== null}
               >
                 Cancelar
               </Button>
               <Button
-                color="green"
-                size="2"
+                variant="success"
                 onClick={handleAssignResponsible}
                 disabled={assigningResponsibleId !== null}
               >
                 {assigningResponsibleId ? 'Asignando...' : 'Asignar Responsabilidad'}
               </Button>
             </DialogFooter>
-          </Theme>
         </DialogContent>
       </Dialog>
     </Card>

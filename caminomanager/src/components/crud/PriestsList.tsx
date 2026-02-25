@@ -209,7 +209,7 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
             <CardTitle className="text-lg">Sacerdotes ({priests.length})</CardTitle>
             <div className="flex gap-1.5">
               <Button
-                size="1"
+                size="sm"
                 variant="outline"
                 onClick={() => setIsSelectModalOpen(true)}
                 title="Asignar sacerdote existente"
@@ -217,7 +217,7 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
                 <UserPlus className="h-3.5 w-3.5" />
               </Button>
               <Button
-                size="1"
+                size="sm"
                 variant="outline"
                 onClick={openCreateForm}
                 title="Nuevo sacerdote"

@@ -8,7 +8,7 @@ export { CommunityStepLog } from './CommunityStepLog';
 export { CommunityStepLogCompact } from './CommunityStepLogCompact';
 
 // UI Components
-export { Textarea, TextareaPrimitive } from '@/components/ui/textarea';
+export { Textarea } from '@/components/ui/textarea';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Hooks CRUD

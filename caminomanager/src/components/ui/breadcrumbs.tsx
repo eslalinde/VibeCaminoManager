@@ -56,7 +56,7 @@ export function Breadcrumbs() {
   if (crumbs.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-gray-500 mb-4">
+    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-gray-500">
       <Link
         href={routes.home}
         className="flex items-center gap-1 hover:text-amber-700 transition-colors"

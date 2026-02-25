@@ -473,9 +473,9 @@ export function DynamicEntityModal<T extends BaseEntity>({
                       }
                       disabled={loading}
                     >
-                      <SelectTrigger
-                        placeholder={field.placeholder || "Seleccionar..."}
-                      />
+                      <SelectTrigger>
+                        <SelectValue placeholder={field.placeholder || "Seleccionar..."} />
+                      </SelectTrigger>
                       <SelectContent>
                         {(fieldOptions || field.options || []).map((option) => (
                           <SelectItem
@@ -520,14 +520,13 @@ export function DynamicEntityModal<T extends BaseEntity>({
             <Button
               type="button"
               variant="outline"
-              size="2"
               onClick={onClose}
               disabled={loading}
             >
               Cancelar
             </Button>
             <FormSubmit asChild>
-              <Button type="submit" size="2" color="amber" highContrast disabled={loading}>
+              <Button type="submit" disabled={loading}>
                 {loading ? "Guardando..." : "Guardar"}
               </Button>
             </FormSubmit>

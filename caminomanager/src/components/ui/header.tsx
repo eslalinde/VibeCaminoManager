@@ -3,7 +3,6 @@ import { Moon, Sun, User as UserIcon, LogOut } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import "@radix-ui/themes/styles.css";
 import { routes } from "@/lib/routes";
 import { createClient } from "@/utils/supabase/client";
 import { WindowControls } from "@/components/electron/WindowControls";

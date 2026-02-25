@@ -1,10 +1,15 @@
 'use client';
 
-import Sidebar from "@/components/ui/sidebar";
-import Header from "@/components/ui/header";
+import { AppSidebar } from "@/components/ui/app-sidebar";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { WindowControls } from "@/components/electron/WindowControls";
 import React from "react";
-import { Theme } from "@radix-ui/themes";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function MainLayout({
@@ -27,21 +32,33 @@ export default function MainLayout({
   }
 
   return (
-    <Theme accentColor="amber" grayColor="mauve" panelBackground="solid">
-      <div className="flex h-screen bg-amber-50/40 print:block print:h-auto print:bg-white">
-        <div className="print-hidden">
-          <Sidebar />
-        </div>
-        <div className="flex-1 flex flex-col h-screen print:block print:h-auto">
-          <div className="print-hidden">
-            <Header userEmail={user.email} userName={profile?.full_name ?? undefined} title="ComunidadCat" />
-          </div>
-          <main className="flex-1 overflow-y-auto p-4 print:p-0 print:overflow-visible">
+    <SidebarProvider>
+      <AppSidebar
+        userName={profile?.full_name ?? undefined}
+        userEmail={user.email}
+        className="print-hidden"
+      />
+      <SidebarInset>
+        <header
+          className="flex h-16 shrink-0 items-center gap-2 border-b px-4 print-hidden"
+          style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+        >
+          <div className="flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
             <Breadcrumbs />
-            {children}
-          </main>
-        </div>
-      </div>
-    </Theme>
+          </div>
+          <div className="ml-auto" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+            <WindowControls />
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto p-4 print:p-0 print:overflow-visible">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Roboto } from "next/font/google";
 import "./globals.css";
 import React from "react";
-import "@radix-ui/themes/styles.css";
 import { QueryProvider } from "./QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UpdateNotification } from "@/components/electron/UpdateNotification";

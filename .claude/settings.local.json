@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd F:/repos/playground/VibeCaminoManager/supabase && npx supabase status 2>&1)",
+      "WebSearch",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(ls:*)",
+      "Bash(cd:*)",
+      "mcp__shadcn__view_items_in_registries",
+      "mcp__shadcn__get_item_examples_from_registries"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "shadcn",
+    "supabase"
+  ]
+}

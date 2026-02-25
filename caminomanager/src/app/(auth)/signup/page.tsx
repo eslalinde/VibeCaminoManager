@@ -208,7 +208,7 @@ export default function SignupPage() {
             )}
 
             {!success && (
-              <Button type="submit" className="w-full" size="3" disabled={loading}>
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
                 {loading ? "Creando cuenta..." : "Crear cuenta"}
               </Button>
             )}

@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectValue,
 } from "@/components/ui/select";
 import { Shield, Search, RefreshCw } from "lucide-react";
 
@@ -238,10 +239,9 @@ export default function AdminPage() {
                                 handleRoleChange(user, val)
                               }
                             >
-                              <SelectTrigger
-                                variant="ghost"
-                                className="h-7 text-xs"
-                              />
+                              <SelectTrigger className="h-7 text-xs border-none shadow-none">
+                                <SelectValue />
+                              </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="viewer">Viewer</SelectItem>
                                 <SelectItem value="contributor">
@@ -301,16 +301,13 @@ export default function AdminPage() {
           </DialogHeader>
           <DialogFooter>
             <Button
-              variant="outline"
-              color="gray"
+              variant="secondary"
               onClick={() => setConfirmDialog(null)}
               disabled={isUpdatingRole}
             >
               Cancelar
             </Button>
             <Button
-              color="amber"
-              highContrast
               onClick={confirmRoleChange}
               disabled={isUpdatingRole}
             >

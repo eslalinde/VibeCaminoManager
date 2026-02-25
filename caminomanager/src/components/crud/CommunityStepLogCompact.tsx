@@ -9,7 +9,6 @@ import { FileText, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { communityStepLogConfig } from '@/config/entities';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Theme } from '@radix-ui/themes';
 import { createClient } from '@/utils/supabase/client';
 
 interface CommunityStepLogCompactProps {
@@ -182,7 +181,6 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
           <div className="flex items-center gap-2 print-hidden">
             <Button
               variant="outline"
-              size="2"
               onClick={() => setIsAddModalOpen(true)}
             >
               <Plus className="w-4 h-4 mr-1" />
@@ -193,7 +191,6 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
                 <DialogTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="2"
                   >
                     <ExternalLink className="w-4 h-4 mr-1" />
                     Ver todos ({count})
@@ -230,7 +227,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
                             </div>
                             <Button
                               variant="ghost"
-                              size="1"
+                              size="sm"
                               className="opacity-0 group-hover/entry:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 -mt-1"
                               onClick={() => handleDeleteClick(entry.id!)}
                               disabled={deletingId === entry.id}
@@ -283,7 +280,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
                       </div>
                       <Button
                         variant="ghost"
-                        size="1"
+                        size="sm"
                         className="opacity-0 group-hover/entry:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 -mt-1"
                         onClick={() => handleDeleteClick(entry.id!)}
                         disabled={deletingId === entry.id}
@@ -351,7 +348,6 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
         }
       }}>
         <DialogContent>
-          <Theme>
             <DialogHeader>
               <DialogTitle>¿Eliminar evento de bitácora?</DialogTitle>
               <DialogDescription>
@@ -361,7 +357,6 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
             <DialogFooter className="gap-3">
               <Button
                 variant="outline"
-                size="2"
                 onClick={() => {
                   setIsDeleteDialogOpen(false);
                   setDeletingId(null);
@@ -371,15 +366,13 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
                 Cancelar
               </Button>
               <Button
-                color="red"
-                size="2"
+                variant="destructive"
                 onClick={handleDeleteConfirm}
                 disabled={isDeleting || !deletingId}
               >
                 {isDeleting ? 'Eliminando...' : 'Eliminar'}
               </Button>
             </DialogFooter>
-          </Theme>
         </DialogContent>
       </Dialog>
     </Card>

@@ -257,7 +257,6 @@ function CommunityDetailContent() {
           <div className="flex items-center gap-4 mb-4">
             <Button
               variant="outline"
-              size="2"
               onClick={() => router.push(routes.comunidades)}
               className="flex items-center gap-2"
             >
@@ -266,7 +265,6 @@ function CommunityDetailContent() {
             </Button>
             <Button
               variant="outline"
-              size="2"
               onClick={() => window.print()}
               className="flex items-center gap-2"
             >
@@ -276,7 +274,6 @@ function CommunityDetailContent() {
             {community?.parish_id && (
               <Button
                 variant="outline"
-                size="2"
                 onClick={() => setIsMergeModalOpen(true)}
                 className="flex items-center gap-2 text-orange-600 border-orange-300 hover:bg-orange-50"
               >
@@ -286,10 +283,8 @@ function CommunityDetailContent() {
             )}
             <Button
               variant="outline"
-              size="2"
-              color="red"
               onClick={() => setIsDeleteDialogOpen(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-destructive border-destructive/50 hover:bg-destructive/10"
               disabled={loading}
             >
               <Trash2 className="h-4 w-4" />

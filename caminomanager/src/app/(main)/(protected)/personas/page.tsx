@@ -23,9 +23,7 @@ export default function PeoplePage() {
         pageSize={10}
         extraActions={
           <Button
-            color="green"
-            highContrast
-            size="2"
+            variant="success"
             onClick={() => setMarriageModalOpen(true)}
           >
             <Plus className="w-4 h-4" />

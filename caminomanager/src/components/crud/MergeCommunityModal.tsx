@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Theme } from '@radix-ui/themes';
 import { createClient } from '@/utils/supabase/client';
 
 interface CommunityOption {
@@ -163,7 +162,6 @@ export function MergeCommunityModal({
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogContent className="max-w-lg">
-        <Theme>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-orange-600">
               Fusionar Comunidades
@@ -256,7 +254,6 @@ export function MergeCommunityModal({
               {loading ? 'Fusionando comunidades...' : 'Fusionar'}
             </Button>
           </DialogFooter>
-        </Theme>
       </DialogContent>
     </Dialog>
   );
