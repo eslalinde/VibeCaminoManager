@@ -82,8 +82,8 @@ export function EntityTable<T extends BaseEntity>({
   };
 
   return (
-    <div className="overflow-x-auto">
-      <Table className="table-fixed w-full">
+    <div className="overflow-hidden">
+      <Table className="w-full">
         <TableHeader>
           <TableRow>
             {columns.map(column => (
@@ -103,7 +103,7 @@ export function EntityTable<T extends BaseEntity>({
                 </div>
               </TableHead>
             ))}
-            <TableHead className="whitespace-nowrap" style={{ width: '140px' }}>Acciones</TableHead>
+            <TableHead className="whitespace-nowrap">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -136,21 +136,24 @@ export function EntityTable<T extends BaseEntity>({
                     }
                   </TableCell>
                 ))}
-                <TableCell>
-                  <div className="flex gap-2 items-center">
+                <TableCell className="whitespace-nowrap">
+                  <div className="flex gap-1.5 items-center">
                     <Button
+                      size="sm"
+                      className="shrink-0"
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         if (onRowClick) { onRowClick(item); } else { onEdit(item); }
                       }}
                     >
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="w-3.5 h-3.5" />
                       Editar
                     </Button>
                     {!hideDeleteInTable && (
                       <Button
+                        size="sm"
                         variant="outline"
-                        className="text-destructive border-destructive/50 hover:bg-destructive/10"
+                        className="shrink-0 text-destructive border-destructive/50 hover:bg-destructive/10"
                         onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           if (item.id) {
@@ -158,7 +161,7 @@ export function EntityTable<T extends BaseEntity>({
                           }
                         }}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                         Eliminar
                       </Button>
                     )}
