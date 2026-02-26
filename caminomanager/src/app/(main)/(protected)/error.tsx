@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, RotateCcw, Home } from "lucide-react";
 import { routes } from "@/lib/routes";
+import { trackException } from "@/lib/appinsights";
 
 export default function Error({
   error,
@@ -15,7 +16,7 @@ export default function Error({
   const router = useRouter();
 
   useEffect(() => {
-    console.error("Error occurred:", error);
+    trackException(error);
   }, [error]);
 
   return (
