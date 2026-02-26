@@ -110,6 +110,7 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
             Log de Pasos - Comunidad {communityNumber}
           </CardTitle>
           <Button
+            variant="outline"
             onClick={() => setShowAddForm(!showAddForm)}
             size="sm"
             className="flex items-center gap-2"

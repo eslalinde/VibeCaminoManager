@@ -193,6 +193,7 @@ export default function NationalTeamPage() {
               Agregar Persona Existente
             </Button>
             <Button
+              variant="outline"
               onClick={() => setIsCreatePersonOpen(true)}
               className="flex items-center gap-2"
               disabled={loading || !team}

@@ -104,7 +104,7 @@ export function EntityTable<T extends BaseEntity>({
                 </div>
               </TableHead>
             ))}
-            <TableHead className="whitespace-nowrap text-right" style={{ width: '100px' }}>Acciones</TableHead>
+            <TableHead className="whitespace-nowrap text-center w-[80px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -137,9 +137,9 @@ export function EntityTable<T extends BaseEntity>({
                     }
                   </TableCell>
                 ))}
-                <TableCell className="text-right">
+                <TableCell>
                   <TooltipProvider>
-                    <div className="flex gap-1 items-center justify-end">
+                    <div className="flex gap-0.5 items-center justify-center">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
