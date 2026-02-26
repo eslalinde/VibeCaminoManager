@@ -117,17 +117,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
         
         initialData[field.name] = value;
         previousValues.current[field.name] = value;
-        
-        // Debug logging for person fields
-        if (field.name === 'person_type_id' || field.name === 'gender_id') {
-          console.log(`🔍 Person field ${field.name}:`, {
-            rawValue,
-            processedValue: value,
-            fieldType: field.type,
-            hasOptions: field.options && field.options.length > 0,
-            options: field.options
-          });
-        }
       });
       
       setFormData(initialData);
@@ -152,24 +141,19 @@ export function DynamicEntityModal<T extends BaseEntity>({
       peopleOptions.length > 0 &&
       initialSpouseId
     ) {
-      const currentSpouseValue = form.getValues("spouse_id");
+      const currentSpouseValue = formData.spouse_id;
       const expectedSpouseValue = String(initialSpouseId);
 
       if (currentSpouseValue !== expectedSpouseValue) {
-        console.log('🔄 Re-syncing spouse_id after options loaded:', {
-          currentSpouseValue,
-          expectedSpouseValue,
-          peopleOptions: peopleOptions.length
-        });
         setFormData(prev => ({ ...prev, spouse_id: expectedSpouseValue }));
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- formData is intentionally omitted to avoid infinite loops
   }, [
     peopleOptions,
     peopleLoading,
     initialSpouseId,
     open,
-    form,
   ]);
 
   // Limpiar campos dependientes cuando cambia el padre (solo después de la inicialización)
