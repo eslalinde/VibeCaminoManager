@@ -11,6 +11,7 @@ import { Calendar, FileText, ExternalLink, Pencil, Plus, Trash2, Users } from 'l
 import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { parishCatechesisConfig } from '@/config/entities';
 import { createClient } from '@/utils/supabase/client';
+import { toast } from 'sonner';
 
 interface ParishCatechesisHistoryProps {
   parishId: number;
@@ -66,6 +67,7 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
       };
 
       await create(entryData);
+      toast.success('Catequesis registrada');
       setIsAddModalOpen(false);
       await fetchData({ filters: { parish_id: parishId } });
     } catch (error) {
@@ -86,6 +88,7 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
         attendance_count: data.attendance_count ? parseInt(data.attendance_count, 10) : null,
       };
       await update(editingEntry.id, entryData);
+      toast.success('Catequesis actualizada');
       setIsEditModalOpen(false);
       setEditingEntry(null);
       await fetchData({ filters: { parish_id: parishId } });
@@ -127,13 +130,14 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
         throw new Error('No se pudo eliminar el registro. Es posible que no tengas permisos.');
       }
 
+      toast.success('Catequesis eliminada');
       setIsDeleteDialogOpen(false);
       setDeletingId(null);
 
       await fetchData({ filters: { parish_id: parishId } });
     } catch (error) {
       console.error('Error deleting catechesis entry:', error);
-      alert('Error al eliminar el registro. Por favor, intenta de nuevo.');
+      toast.error('Error al eliminar el registro');
     } finally {
       setIsDeleting(false);
     }

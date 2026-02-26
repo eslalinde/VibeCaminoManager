@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { MergeCommunityModal } from '@/components/crud/MergeCommunityModal';
 import { ConfirmDeleteDialog } from '@/components/crud/ConfirmDeleteDialog';
 import { ArrowLeft, Merge, Plus, Printer, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { createClient } from '@/utils/supabase/client';
 import { Community } from '@/types/database';
 import { routes } from '@/lib/routes';
@@ -84,6 +85,7 @@ function CommunityDetailContent() {
         throw new Error('No tienes permisos para editar comunidades. Contacta al administrador para que te asigne el rol de contributor o admin.');
       }
 
+      toast.success('Comunidad actualizada');
       // Refrescar solo el detalle de la comunidad
       await invalidateDetail();
       setIsEditModalOpen(false);
@@ -112,10 +114,11 @@ function CommunityDetailContent() {
 
       if (teamError) throw teamError;
 
+      toast.success('Equipo de responsables creado');
       await invalidateTeams();
     } catch (err) {
       console.error('Error creating responsables team:', err);
-      alert('Error al crear el equipo de responsables. Por favor, intenta de nuevo.');
+      toast.error('Error al crear el equipo de responsables');
     }
   };
 
@@ -141,10 +144,11 @@ function CommunityDetailContent() {
 
       if (teamError) throw teamError;
 
+      toast.success('Equipo de catequistas creado');
       await invalidateTeams();
     } catch (err) {
       console.error('Error creating catequistas team:', err);
-      alert('Error al crear el equipo de catequistas. Por favor, intenta de nuevo.');
+      toast.error('Error al crear el equipo de catequistas');
     }
   };
 
@@ -210,10 +214,11 @@ function CommunityDetailContent() {
       }
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.crud.table('communities') });
+      toast.success('Comunidad eliminada correctamente');
       router.push(routes.comunidades);
     } catch (err: any) {
       console.error('Error deleting community:', err);
-      alert(err.message || 'Error al eliminar la comunidad. Por favor, intenta de nuevo.');
+      toast.error(err.message || 'Error al eliminar la comunidad');
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
