@@ -1,11 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FormRoot, FormField, FormLabel, FormControl, FormMessage, FormSubmit } from '@/components/ui/form';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import { BaseEntity, FormField as FormFieldType } from '@/types/database';
 import { X } from 'lucide-react';
+import { buildZodSchema, buildDefaultValues, prepareFormData } from '@/lib/form-schema';
 
 interface EntityModalProps<T extends BaseEntity> {
   open: boolean;
@@ -26,77 +36,25 @@ export function EntityModal<T extends BaseEntity>({
   title,
   loading = false
 }: EntityModalProps<T>) {
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const schema = useMemo(() => buildZodSchema(fields), [fields]);
+
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: buildDefaultValues(fields, initial as Record<string, unknown> | null),
+  });
 
   useEffect(() => {
     if (open) {
-      const initialData: Record<string, any> = {};
-      fields.forEach(field => {
-        initialData[field.name] = initial?.[field.name as keyof T] || '';
-      });
-      setFormData(initialData);
-      setErrors({});
+      form.reset(buildDefaultValues(fields, initial as Record<string, unknown> | null));
     }
-  }, [open, initial, fields]);
+  }, [open, initial, fields, form]);
 
-  const validateField = (field: FormFieldType, value: any): string | null => {
-    if (field.required && (!value || value.toString().trim() === '')) {
-      return `${field.label} es requerido`;
-    }
-
-    if (field.minLength && value && value.toString().length < field.minLength) {
-      return `${field.label} debe tener al menos ${field.minLength} caracteres`;
-    }
-
-    if (field.maxLength && value && value.toString().length > field.maxLength) {
-      return `${field.label} debe tener máximo ${field.maxLength} caracteres`;
-    }
-
-    if (field.validation) {
-      return field.validation(value);
-    }
-
-    return null;
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    let isValid = true;
-
-    fields.forEach(field => {
-      const value = formData[field.name];
-      const error = validateField(field, value);
-      if (error) {
-        newErrors[field.name] = error;
-        isValid = false;
-      }
-    });
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+  const onSubmit = async (data: Record<string, unknown>) => {
     try {
-      await onSave(formData as Omit<T, 'id' | 'created_at' | 'updated_at'>);
+      const prepared = prepareFormData(data, fields);
+      await onSave(prepared as Omit<T, 'id' | 'created_at' | 'updated_at'>);
     } catch (error) {
       console.error('Error saving entity:', error);
-    }
-  };
-
-  const handleInputChange = (fieldName: string, value: any) => {
-    setFormData(prev => ({ ...prev, [fieldName]: value }));
-
-    // Clear error when user starts typing
-    if (errors[fieldName]) {
-      setErrors(prev => ({ ...prev, [fieldName]: '' }));
     }
   };
 
@@ -117,78 +75,83 @@ export function EntityModal<T extends BaseEntity>({
 
         <h2 className="text-xl font-bold mb-5 pr-8">{title}</h2>
 
-        <FormRoot onSubmit={handleSubmit}>
-          {fields.map(field => (
-                       <FormField key={field.name} name={field.name}>
-               <FormLabel>
-                 {field.label}
-                 {field.required && <span className="text-red-500 ml-1">*</span>}
-               </FormLabel>
-               <FormControl asChild className="w-full">
-                {field.type === 'textarea' ? (
-                  <Textarea
-                    value={formData[field.name] || ''}
-                    onChange={e => handleInputChange(field.name, e.target.value)}
-                    required={field.required}
-                    maxLength={field.maxLength}
-                    minLength={field.minLength}
-                    placeholder={field.placeholder}
-                    disabled={loading}
-                    rows={3}
-                  />
-                ) : field.type === 'select' ? (
-                  <Select
-                    value={formData[field.name] || ''}
-                    onValueChange={(value: string) => handleInputChange(field.name, value)}
-                    disabled={loading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={field.placeholder || "Seleccionar..."} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {field.options?.map(option => (
-                        <SelectItem key={option.value} value={option.value.toString()}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    type={field.type}
-                    value={formData[field.name] || ''}
-                    onChange={e => handleInputChange(field.name, e.target.value)}
-                    required={field.required}
-                    maxLength={field.maxLength}
-                    minLength={field.minLength}
-                    placeholder={field.placeholder}
-                    disabled={loading}
-                    className={field.name === 'code' ? 'uppercase' : ''}
-                  />
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {fields.map(field => (
+              <FormField
+                key={field.name}
+                control={form.control}
+                name={field.name}
+                render={({ field: rhfField }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {field.label}
+                      {field.required && <span className="text-red-500 ml-1">*</span>}
+                    </FormLabel>
+                    <FormControl>
+                      {field.type === 'textarea' ? (
+                        <Textarea
+                          value={(rhfField.value as string) || ''}
+                          onChange={rhfField.onChange}
+                          onBlur={rhfField.onBlur}
+                          maxLength={field.maxLength}
+                          minLength={field.minLength}
+                          placeholder={field.placeholder}
+                          disabled={loading}
+                          rows={3}
+                        />
+                      ) : field.type === 'select' ? (
+                        <Select
+                          value={(rhfField.value as string) || ''}
+                          onValueChange={rhfField.onChange}
+                          disabled={loading}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={field.placeholder || "Seleccionar..."} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options?.map(option => (
+                              <SelectItem key={option.value} value={option.value.toString()}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          type={field.type}
+                          value={(rhfField.value as string) || ''}
+                          onChange={rhfField.onChange}
+                          onBlur={rhfField.onBlur}
+                          maxLength={field.maxLength}
+                          minLength={field.minLength}
+                          placeholder={field.placeholder}
+                          disabled={loading}
+                          className={field.name === 'code' ? 'uppercase' : ''}
+                        />
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </FormControl>
-              {errors[field.name] && (
-                <FormMessage>{errors[field.name]}</FormMessage>
-              )}
-            </FormField>
-          ))}
+              />
+            ))}
 
-          <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
-            <FormSubmit asChild>
+            <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
               <Button type="submit" disabled={loading}>
                 {loading ? "Guardando..." : "Guardar"}
               </Button>
-            </FormSubmit>
-          </div>
-        </FormRoot>
+            </div>
+          </form>
+        </Form>
       </div>
     </div>
   );

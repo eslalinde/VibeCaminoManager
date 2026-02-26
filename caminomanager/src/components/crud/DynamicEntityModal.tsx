@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,16 +12,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  FormRoot,
+  Form,
   FormField,
+  FormItem,
   FormLabel,
   FormControl,
   FormMessage,
-  FormSubmit,
 } from "@/components/ui/form";
 import { BaseEntity, FormField as FormFieldType } from "@/types/database";
 import { X } from "lucide-react";
 import { needsLocationFields } from "@/config/carisma";
+import { buildZodSchema, buildDefaultValues, prepareFormData } from "@/lib/form-schema";
 import {
   useCountryOptions,
   useStateOptions,
@@ -53,30 +56,54 @@ export function DynamicEntityModal<T extends BaseEntity>({
   title,
   loading = false,
 }: DynamicEntityModalProps<T>) {
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [formKey, setFormKey] = useState(0); // Key para forzar re-render
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const schema = useMemo(() => buildZodSchema(fields), [fields]);
+
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: buildDefaultValues(fields, initial as Record<string, unknown> | null),
+  });
+
+  // Refs for tracking previous cascading values
+  const prevCountryId = useRef<string>("");
+  const prevStateId = useRef<string>("");
+  const prevCityId = useRef<string>("");
+  const prevLocationCountryId = useRef<string>("");
   const isInitialized = useRef(false);
-  const previousValues = useRef<Record<string, any>>({});
+
+  // Watch values for cascading and conditional visibility
+  const countryId = form.watch("country_id") as string;
+  const stateId = form.watch("state_id") as string;
+  const cityId = form.watch("city_id") as string;
+  const locationCountryId = form.watch("location_country_id") as string;
+  const personTypeId = form.watch("person_type_id") as string;
+  const isItinerante = form.watch("is_itinerante") as boolean;
+
+  // Helper to convert string form values to number | undefined for hooks
+  const toNum = (val: string | undefined): number | undefined => {
+    if (!val) return undefined;
+    const n = Number(val);
+    return isNaN(n) ? undefined : n;
+  };
 
   // Hooks para opciones dependientes
-  const { options: countryOptions, loading: countryLoading, error: countryError } = useCountryOptions();
-  const { options: stateOptions } = useStateOptions(formData.country_id);
-  
+  const { options: countryOptions } = useCountryOptions();
+  const { options: stateOptions } = useStateOptions(toNum(countryId));
+
   // Determinar si el formulario tiene campos de país y departamento
-  const hasCountryField = fields.some(f => f.name === 'country_id');
-  const hasStateField = fields.some(f => f.name === 'state_id');
-  const hasCityField = fields.some(f => f.name === 'city_id');
-  
+  const hasCountryField = fields.some((f) => f.name === "country_id");
+  const hasStateField = fields.some((f) => f.name === "state_id");
+  const hasCityField = fields.some((f) => f.name === "city_id");
+
   // Usar el hook apropiado para ciudades
   /* eslint-disable react-hooks/rules-of-hooks */
-  const { options: cityOptions } = hasCountryField || hasStateField
-    ? useCityOptions(formData.country_id, formData.state_id)
-    : useAllCityOptions();
+  const { options: cityOptions } =
+    hasCountryField || hasStateField
+      ? useCityOptions(toNum(countryId), toNum(stateId))
+      : useAllCityOptions();
   /* eslint-enable react-hooks/rules-of-hooks */
 
   // Zonas filtradas por ciudad
-  const { options: zoneOptions } = useZoneOptions(formData.city_id ? Number(formData.city_id) : undefined);
+  const { options: zoneOptions } = useZoneOptions(toNum(cityId));
 
   // Diócesis
   const { options: dioceseOptions } = useDioceseOptions();
@@ -84,266 +111,163 @@ export function DynamicEntityModal<T extends BaseEntity>({
   // Usar el hook apropiado para parroquias
   /* eslint-disable react-hooks/rules-of-hooks */
   const { options: parishOptions } = hasCityField
-    ? useParishOptions(formData.city_id)
+    ? useParishOptions(toNum(cityId))
     : useAllParishOptions();
   /* eslint-enable react-hooks/rules-of-hooks */
-  const { options: peopleOptions, loading: peopleLoading } = usePeopleOptions(initial?.id);
+  const { options: peopleOptions, loading: peopleLoading } = usePeopleOptions(
+    initial?.id
+  );
   const { options: stepWayOptions } = useEntityOptions({
-    tableName: 'step_ways',
-    orderBy: { field: 'order_num', asc: true }
+    tableName: "step_ways",
+    orderBy: { field: "order_num", asc: true },
   });
   const { options: cathechistTeamOptions } = useCathechistTeamOptions();
 
   // Ciudades filtradas por país de ubicación (para campos location_country_id → location_city_id)
-  const { options: locationCityOptions } = useCityOptions(formData.location_country_id, undefined);
+  const { options: locationCityOptions } = useCityOptions(
+    toNum(locationCountryId),
+    undefined
+  );
 
+  // Initialize/reset form when modal opens
   useEffect(() => {
     if (open) {
-      const initialData: Record<string, any> = {};
-      fields.forEach((field) => {
-        const rawValue = initial?.[field.name as keyof T];
-        let value: any = rawValue;
-        
-        // Handle different field types properly
-        if (field.type === 'checkbox') {
-          value = rawValue === true;
-        } else if (field.type === 'select') {
-          // For select fields, convert to string or empty string
-          value = rawValue !== null && rawValue !== undefined ? String(rawValue) : "";
-        } else {
-          // For other fields, use the raw value or empty string
-          value = rawValue || "";
-        }
-        
-        initialData[field.name] = value;
-        previousValues.current[field.name] = value;
-        
-        // Debug logging for person fields
-        if (field.name === 'person_type_id' || field.name === 'gender_id') {
-          console.log(`🔍 Person field ${field.name}:`, {
-            rawValue,
-            processedValue: value,
-            fieldType: field.type,
-            hasOptions: field.options && field.options.length > 0,
-            options: field.options
-          });
-        }
-      });
-      
-      setFormData(initialData);
-      setErrors({});
-      setFormKey(prev => prev + 1); // Force re-render
+      const defaults = buildDefaultValues(
+        fields,
+        initial as Record<string, unknown> | null
+      );
+      form.reset(defaults);
+      // Initialize previous value refs
+      prevCountryId.current = (defaults.country_id as string) || "";
+      prevStateId.current = (defaults.state_id as string) || "";
+      prevCityId.current = (defaults.city_id as string) || "";
+      prevLocationCountryId.current =
+        (defaults.location_country_id as string) || "";
       isInitialized.current = true;
     } else {
-      // Reset when modal closes
       isInitialized.current = false;
-      previousValues.current = {};
     }
-  }, [open, initial, fields]);
+  }, [open, initial, fields, form]);
 
   // Re-sincronizar spouse_id cuando se carguen las opciones de personas
   useEffect(() => {
     if (!isInitialized.current || !open || peopleLoading) return;
-    
-    // Si las opciones de personas se cargaron y tenemos un spouse_id, asegurar que esté sincronizado
-    if (peopleOptions && peopleOptions.length > 0 && (initial as any)?.spouse_id) {
-      const currentSpouseValue = formData.spouse_id;
+
+    if (
+      peopleOptions &&
+      peopleOptions.length > 0 &&
+      (initial as any)?.spouse_id
+    ) {
+      const currentSpouseValue = form.getValues("spouse_id");
       const expectedSpouseValue = String((initial as any).spouse_id);
-      
+
       if (currentSpouseValue !== expectedSpouseValue) {
-        console.log('🔄 Re-syncing spouse_id after options loaded:', {
-          currentSpouseValue,
-          expectedSpouseValue,
-          peopleOptions: peopleOptions.length
-        });
-        setFormData(prev => ({ ...prev, spouse_id: expectedSpouseValue }));
+        form.setValue("spouse_id", expectedSpouseValue);
       }
     }
-  }, [peopleOptions, peopleLoading, (initial as any)?.spouse_id, formData.spouse_id, isInitialized.current, open]);
+  }, [
+    peopleOptions,
+    peopleLoading,
+    (initial as any)?.spouse_id,
+    open,
+    form,
+  ]);
 
-  // Limpiar campos dependientes cuando cambia el padre (solo después de la inicialización)
+  // Cascading: clear dependents when parent changes (only after init)
   useEffect(() => {
     if (!isInitialized.current) return;
 
-    // Check if country_id changed from its previous value
-    if (formData.country_id !== previousValues.current.country_id) {
-      // Solo limpiar campos que están definidos en la configuración
-      if (fields.some(f => f.name === 'state_id')) {
-        setFormData((prev) => ({ ...prev, state_id: "" }));
+    if (countryId !== prevCountryId.current) {
+      if (fields.some((f) => f.name === "state_id")) {
+        form.setValue("state_id", "");
       }
-      if (fields.some(f => f.name === 'city_id')) {
-        setFormData((prev) => ({ ...prev, city_id: "" }));
+      if (fields.some((f) => f.name === "city_id")) {
+        form.setValue("city_id", "");
       }
-      // Update the previous value
-      previousValues.current.country_id = formData.country_id;
+      prevCountryId.current = countryId;
     }
-    
-    // Check if state_id changed from its previous value
-    if (formData.state_id !== previousValues.current.state_id) {
-      // Solo limpiar campos que están definidos en la configuración
-      if (fields.some(f => f.name === 'city_id')) {
-        setFormData((prev) => ({ ...prev, city_id: "" }));
+  }, [countryId, fields, form]);
+
+  useEffect(() => {
+    if (!isInitialized.current) return;
+
+    if (stateId !== prevStateId.current) {
+      if (fields.some((f) => f.name === "city_id")) {
+        form.setValue("city_id", "");
       }
-      // Update the previous value
-      previousValues.current.state_id = formData.state_id;
+      prevStateId.current = stateId;
     }
+  }, [stateId, fields, form]);
 
-    // Check if city_id changed from its previous value
-    if (formData.city_id !== previousValues.current.city_id) {
-      // Limpiar zona cuando cambia la ciudad
-      if (fields.some(f => f.name === 'zone_id')) {
-        setFormData((prev) => ({ ...prev, zone_id: "" }));
+  useEffect(() => {
+    if (!isInitialized.current) return;
+
+    if (cityId !== prevCityId.current) {
+      if (fields.some((f) => f.name === "zone_id")) {
+        form.setValue("zone_id", "");
       }
-      // Update the previous value
-      previousValues.current.city_id = formData.city_id;
+      prevCityId.current = cityId;
     }
+  }, [cityId, fields, form]);
 
-    // Limpiar location_city_id cuando cambia location_country_id
-    if (formData.location_country_id !== previousValues.current.location_country_id) {
-      if (fields.some(f => f.name === 'location_city_id')) {
-        setFormData((prev) => ({ ...prev, location_city_id: "" }));
+  useEffect(() => {
+    if (!isInitialized.current) return;
+
+    if (locationCountryId !== prevLocationCountryId.current) {
+      if (fields.some((f) => f.name === "location_city_id")) {
+        form.setValue("location_city_id", "");
       }
-      previousValues.current.location_country_id = formData.location_country_id;
+      prevLocationCountryId.current = locationCountryId;
     }
-  }, [formData.country_id, formData.state_id, formData.city_id, formData.location_country_id, fields]);
+  }, [locationCountryId, fields, form]);
 
-  const validateField = (field: FormFieldType, value: any): string | null => {
-    // Validación para campos requeridos
-    if (field.required) {
-      if (!value || value.toString().trim() === "") {
-        return `${field.label} es requerido`;
-      }
+  // Side effects: person_type_id changes
+  useEffect(() => {
+    if (!isInitialized.current) return;
+
+    const numValue = personTypeId ? Number(personTypeId) : null;
+    const isMarried = numValue === 1;
+    if (!isMarried && fields.some((f) => f.name === "spouse_id")) {
+      form.setValue("spouse_id", "");
     }
-
-    // Validación para campos de ID que deben ser números válidos
-    if (field.name.includes('_id') && field.type === 'select' && value) {
-      const numValue = parseInt(value, 10);
-      if (isNaN(numValue) || numValue <= 0) {
-        return `${field.label} debe ser un ID válido`;
-      }
+    if (
+      !needsLocationFields(numValue, isItinerante) &&
+      fields.some((f) => f.name === "location_country_id")
+    ) {
+      form.setValue("location_country_id", "");
+      form.setValue("location_city_id", "");
     }
+  }, [personTypeId, fields, form, isItinerante]);
 
-    if (field.minLength && value && value.toString().length < field.minLength) {
-      return `${field.label} debe tener al menos ${field.minLength} caracteres`;
+  // Side effects: is_itinerante changes
+  useEffect(() => {
+    if (!isInitialized.current) return;
+
+    const numType = personTypeId ? Number(personTypeId) : null;
+    if (
+      !needsLocationFields(numType, isItinerante) &&
+      fields.some((f) => f.name === "location_country_id")
+    ) {
+      form.setValue("location_country_id", "");
+      form.setValue("location_city_id", "");
     }
-
-    if (field.maxLength && value && value.toString().length > field.maxLength) {
-      return `${field.label} debe tener máximo ${field.maxLength} caracteres`;
-    }
-
-    if (field.validation) {
-      return field.validation(value);
-    }
-
-    return null;
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    let isValid = true;
-
-    fields.forEach((field) => {
-      const value = formData[field.name];
-      const error = validateField(field, value);
-      if (error) {
-        newErrors[field.name] = error;
-        isValid = false;
-      }
-    });
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    // Log para debugging
-    console.log('Submitting form data:', formData);
-    console.log('Fields configuration:', fields);
-
-    // Preparar datos con tipos correctos
-    const preparedData = { ...formData };
-    fields.forEach(field => {
-      const val = preparedData[field.name];
-      const isEmpty = val === '' || val === null || val === undefined;
-
-      if (field.type === 'checkbox') {
-        preparedData[field.name] = val === true;
-      } else if (field.name.includes('_id')) {
-        preparedData[field.name] = isEmpty ? null : parseInt(val, 10);
-      } else if (field.type === 'number') {
-        preparedData[field.name] = isEmpty ? null : Number(val);
-      } else if (field.type === 'date') {
-        preparedData[field.name] = isEmpty ? null : val;
-      }
-    });
-
-    console.log('Prepared data:', preparedData);
-
-    try {
-      await onSave(preparedData as Omit<T, "id" | "created_at" | "updated_at">);
-    } catch (error: any) {
-      console.error("Error saving entity:", error);
-      alert(error?.message || 'Error al guardar. Por favor, intenta de nuevo.');
-    }
-  };
-
-  const handleInputChange = (fieldName: string, value: any) => {
-    setFormData((prev) => {
-      const newData = { ...prev, [fieldName]: value };
-      
-      // Si se cambia el person_type_id, limpiar campos condicionales
-      if (fieldName === 'person_type_id') {
-        const numValue = value ? Number(value) : null;
-        const isMarried = numValue === 1;
-        if (!isMarried) {
-          newData.spouse_id = null;
-        }
-        if (!needsLocationFields(numValue, newData.is_itinerante)) {
-          newData.location_country_id = '';
-          newData.location_city_id = '';
-        }
-      }
-
-      // Si se cambia is_itinerante, recalcular visibilidad de ubicación
-      if (fieldName === 'is_itinerante') {
-        const numType = newData.person_type_id ? Number(newData.person_type_id) : null;
-        if (!needsLocationFields(numType, value)) {
-          newData.location_country_id = '';
-          newData.location_city_id = '';
-        }
-      }
-      
-      return newData;
-    });
-
-    // Clear error when user starts typing
-    if (errors[fieldName]) {
-      setErrors((prev) => ({ ...prev, [fieldName]: "" }));
-    }
-  };
+  }, [isItinerante, personTypeId, fields, form]);
 
   const getFieldOptions = (fieldName: string) => {
-    // Solo devolver opciones para campos que están definidos en la configuración
-    if (!fields.some(f => f.name === fieldName)) {
+    if (!fields.some((f) => f.name === fieldName)) {
       return undefined;
     }
-    
-    // Buscar el campo en la configuración para obtener sus opciones
-    const fieldConfig = fields.find(f => f.name === fieldName);
+
+    const fieldConfig = fields.find((f) => f.name === fieldName);
     if (fieldConfig && fieldConfig.options && fieldConfig.options.length > 0) {
-      console.log(`✅ Field ${fieldName} using config options:`, fieldConfig.options);
       return fieldConfig.options;
     }
-    
+
     switch (fieldName) {
       case "country_id":
-        return countryOptions && countryOptions.length > 0 ? countryOptions : [];
+        return countryOptions && countryOptions.length > 0
+          ? countryOptions
+          : [];
       case "state_id":
         return stateOptions && stateOptions.length > 0 ? stateOptions : [];
       case "city_id":
@@ -351,22 +275,44 @@ export function DynamicEntityModal<T extends BaseEntity>({
       case "zone_id":
         return zoneOptions && zoneOptions.length > 0 ? zoneOptions : [];
       case "diocese_id":
-        return dioceseOptions && dioceseOptions.length > 0 ? dioceseOptions : [];
+        return dioceseOptions && dioceseOptions.length > 0
+          ? dioceseOptions
+          : [];
       case "parish_id":
         return parishOptions && parishOptions.length > 0 ? parishOptions : [];
       case "spouse_id":
         return peopleOptions && peopleOptions.length > 0 ? peopleOptions : [];
       case "step_way_id":
-        return stepWayOptions && stepWayOptions.length > 0 ? stepWayOptions : [];
+        return stepWayOptions && stepWayOptions.length > 0
+          ? stepWayOptions
+          : [];
       case "cathechist_team_id":
-        return cathechistTeamOptions && cathechistTeamOptions.length > 0 ? cathechistTeamOptions : [];
+        return cathechistTeamOptions && cathechistTeamOptions.length > 0
+          ? cathechistTeamOptions
+          : [];
       case "location_country_id":
-        return countryOptions && countryOptions.length > 0 ? countryOptions : [];
+        return countryOptions && countryOptions.length > 0
+          ? countryOptions
+          : [];
       case "location_city_id":
-        return locationCityOptions && locationCityOptions.length > 0 ? locationCityOptions : [];
+        return locationCityOptions && locationCityOptions.length > 0
+          ? locationCityOptions
+          : [];
       default:
-        console.log(`❌ Field ${fieldName} has no options`);
         return fieldName.includes("_id") ? [] : undefined;
+    }
+  };
+
+  const onSubmit = async (data: Record<string, unknown>) => {
+    const prepared = prepareFormData(data, fields);
+
+    try {
+      await onSave(
+        prepared as Omit<T, "id" | "created_at" | "updated_at">
+      );
+    } catch (error: any) {
+      console.error("Error saving entity:", error);
+      alert(error?.message || "Error al guardar. Por favor, intenta de nuevo.");
     }
   };
 
@@ -386,152 +332,168 @@ export function DynamicEntityModal<T extends BaseEntity>({
         </button>
         <h2 className="text-xl font-bold mb-5 pr-8">{title}</h2>
 
-        <FormRoot key={formKey} onSubmit={handleSubmit}>
-          {fields.map((field) => {
-            const fieldOptions = getFieldOptions(field.name);
-            
-            // Debug logging for person fields
-            if (field.name === 'person_type_id' || field.name === 'gender_id') {
-              console.log(`🎯 Rendering person field ${field.name}:`, {
-                formDataValue: formData[field.name],
-                fieldOptions: fieldOptions,
-                hasOptions: fieldOptions && fieldOptions.length > 0,
-                configOptions: field.options
-              });
-            }
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {fields.map((field) => {
+              const fieldOptions = getFieldOptions(field.name);
 
-            // Solo mostrar zone_id si la ciudad seleccionada tiene zonas
-            if (field.name === 'zone_id') {
-              if (!zoneOptions || zoneOptions.length === 0) {
-                return null;
+              // Solo mostrar zone_id si la ciudad seleccionada tiene zonas
+              if (field.name === "zone_id") {
+                if (!zoneOptions || zoneOptions.length === 0) {
+                  return null;
+                }
               }
-            }
 
-            // Solo mostrar ubicación si el tipo requiere ubicación o es itinerante
-            if (field.name === 'location_country_id' || field.name === 'location_city_id') {
-              const numType = formData.person_type_id ? Number(formData.person_type_id) : null;
-              if (!needsLocationFields(numType, formData.is_itinerante)) {
-                return null;
+              // Solo mostrar ubicación si el tipo requiere ubicación o es itinerante
+              if (
+                field.name === "location_country_id" ||
+                field.name === "location_city_id"
+              ) {
+                const numType = personTypeId ? Number(personTypeId) : null;
+                if (!needsLocationFields(numType, isItinerante)) {
+                  return null;
+                }
               }
-            }
 
-            // Lógica condicional para mostrar/ocultar el campo cónyuge
-            // Solo mostrar spouse_id si person_type_id es 1 (Casado)
-            if (field.name === 'spouse_id') {
-              const isMarried = formData.person_type_id === '1' || formData.person_type_id === 1;
-              if (!isMarried) {
-                return null; // No renderizar el campo si no está casado
+              // Lógica condicional para mostrar/ocultar el campo cónyuge
+              if (field.name === "spouse_id") {
+                const isMarried =
+                  personTypeId === "1" || personTypeId === (1 as any);
+                if (!isMarried) {
+                  return null;
+                }
               }
-            }
 
-            // Render checkbox fields with their own layout
-            if (field.type === 'checkbox') {
+              // Render checkbox fields with their own layout
+              if (field.type === "checkbox") {
+                return (
+                  <FormField
+                    key={field.name}
+                    control={form.control}
+                    name={field.name}
+                    render={({ field: rhfField }) => (
+                      <FormItem>
+                        <label className="flex items-center gap-2 cursor-pointer py-2">
+                          <input
+                            type="checkbox"
+                            checked={rhfField.value === true}
+                            onChange={(e) =>
+                              rhfField.onChange(e.target.checked)
+                            }
+                            disabled={loading}
+                            className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                          />
+                          <span className="text-sm font-medium">
+                            {field.label}
+                          </span>
+                        </label>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                );
+              }
+
               return (
-                <FormField key={field.name} name={field.name}>
-                  <label className="flex items-center gap-2 cursor-pointer py-2">
-                    <input
-                      type="checkbox"
-                      checked={formData[field.name] === true}
-                      onChange={(e) => handleInputChange(field.name, e.target.checked)}
-                      disabled={loading}
-                      className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                    />
-                    <span className="text-sm font-medium">{field.label}</span>
-                  </label>
-                  {errors[field.name] && (
-                    <FormMessage>{errors[field.name]}</FormMessage>
-                  )}
-                </FormField>
-              );
-            }
-
-            return (
-              <FormField key={field.name} name={field.name}>
-                <FormLabel>
-                  {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                </FormLabel>
-                <FormControl asChild className="w-full">
-                  {field.type === "textarea" ? (
-                    <Textarea
-                      value={formData[field.name] || ""}
-                      onChange={(e) =>
-                        handleInputChange(field.name, e.target.value)
-                      }
-                      required={field.required}
-                      maxLength={field.maxLength}
-                      minLength={field.minLength}
-                      placeholder={field.placeholder}
-                      disabled={loading}
-                      rows={3}
-                    />
-                  ) : field.type === "select" ? (
-                    <Select
-                      value={formData[field.name] !== null && formData[field.name] !== undefined ? String(formData[field.name]) : ""}
-                      onValueChange={(value: string) =>
-                        handleInputChange(field.name, value)
-                      }
-                      disabled={loading}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={field.placeholder || "Seleccionar..."} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(fieldOptions || field.options || []).map((option) => (
-                          <SelectItem
-                            key={option.value}
-                            value={String(option.value)}
+                <FormField
+                  key={field.name}
+                  control={form.control}
+                  name={field.name}
+                  render={({ field: rhfField }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {field.label}
+                        {field.required && (
+                          <span className="text-red-500 ml-1">*</span>
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        {field.type === "textarea" ? (
+                          <Textarea
+                            value={(rhfField.value as string) || ""}
+                            onChange={rhfField.onChange}
+                            onBlur={rhfField.onBlur}
+                            maxLength={field.maxLength}
+                            minLength={field.minLength}
+                            placeholder={field.placeholder}
+                            disabled={loading}
+                            rows={3}
+                          />
+                        ) : field.type === "select" ? (
+                          <Select
+                            value={
+                              rhfField.value !== null &&
+                              rhfField.value !== undefined
+                                ? String(rhfField.value)
+                                : ""
+                            }
+                            onValueChange={rhfField.onChange}
+                            disabled={loading}
                           >
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      type={field.type}
-                      value={formData[field.name] || ""}
-                      onChange={(e) =>
-                        handleInputChange(field.name, e.target.value)
-                      }
-                      required={field.required}
-                      maxLength={field.maxLength}
-                      minLength={field.minLength}
-                      placeholder={field.placeholder}
-                      disabled={loading}
-                      className={
-                        field.name === "code" 
-                          ? "uppercase" 
-                          : field.type === "date"
-                          ? "date-input"
-                          : ""
-                      }
-                    />
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={
+                                  field.placeholder || "Seleccionar..."
+                                }
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(
+                                fieldOptions ||
+                                field.options ||
+                                []
+                              ).map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={String(option.value)}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            type={field.type}
+                            value={(rhfField.value as string) || ""}
+                            onChange={rhfField.onChange}
+                            onBlur={rhfField.onBlur}
+                            maxLength={field.maxLength}
+                            minLength={field.minLength}
+                            placeholder={field.placeholder}
+                            disabled={loading}
+                            className={
+                              field.name === "code"
+                                ? "uppercase"
+                                : field.type === "date"
+                                  ? "date-input"
+                                  : ""
+                            }
+                          />
+                        )}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </FormControl>
-                {errors[field.name] && (
-                  <FormMessage>{errors[field.name]}</FormMessage>
-                )}
-              </FormField>
-            );
-          })}
+                />
+              );
+            })}
 
-          <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
-            <FormSubmit asChild>
+            <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
               <Button type="submit" disabled={loading}>
                 {loading ? "Guardando..." : "Guardar"}
               </Button>
-            </FormSubmit>
-          </div>
-        </FormRoot>
+            </div>
+          </form>
+        </Form>
       </div>
     </div>
   );

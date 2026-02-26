@@ -1,7 +1,18 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import { Priest } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserPlus, Plus, Phone, Mail, User, Pencil } from 'lucide-react';
@@ -16,6 +27,18 @@ interface PriestsListProps {
   onRefresh?: () => void;
 }
 
+const priestSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido'),
+  phone: z.string(),
+  mobile: z.string(),
+  email: z.string().refine((val) => val === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+    message: 'Email inválido',
+  }),
+  role: z.boolean(),
+});
+
+type PriestFormValues = z.infer<typeof priestSchema>;
+
 export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsListProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
@@ -25,30 +48,38 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
   const [priestToDelete, setPriestToDelete] = useState<Priest | null>(null);
   const [editingPriest, setEditingPriest] = useState<Priest | null>(null);
 
-  // Form state (shared for create and edit)
-  const [formName, setFormName] = useState('');
-  const [formPhone, setFormPhone] = useState('');
-  const [formMobile, setFormMobile] = useState('');
-  const [formEmail, setFormEmail] = useState('');
-  const [formRole, setFormRole] = useState<boolean>(false);
+  const form = useForm<PriestFormValues>({
+    resolver: zodResolver(priestSchema),
+    defaultValues: {
+      name: '',
+      phone: '',
+      mobile: '',
+      email: '',
+      role: false,
+    },
+  });
 
   const openCreateForm = () => {
     setEditingPriest(null);
-    setFormName('');
-    setFormPhone('');
-    setFormMobile('');
-    setFormEmail('');
-    setFormRole(false);
+    form.reset({
+      name: '',
+      phone: '',
+      mobile: '',
+      email: '',
+      role: false,
+    });
     setIsFormModalOpen(true);
   };
 
   const openEditForm = (priest: Priest) => {
     setEditingPriest(priest);
-    setFormName(priest.person?.person_name || '');
-    setFormPhone(priest.person?.phone || '');
-    setFormMobile(priest.person?.mobile || '');
-    setFormEmail(priest.person?.email || '');
-    setFormRole(priest.is_parish_priest);
+    form.reset({
+      name: priest.person?.person_name || '',
+      phone: priest.person?.phone || '',
+      mobile: priest.person?.mobile || '',
+      email: priest.person?.email || '',
+      role: priest.is_parish_priest,
+    });
     setIsFormModalOpen(true);
   };
 
@@ -115,13 +146,7 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
     if (onRefresh) onRefresh();
   };
 
-  const handleSavePriest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formName.trim()) {
-      toast.warning('El nombre es requerido');
-      return;
-    }
-
+  const handleSavePriest = async (values: PriestFormValues) => {
     setIsSaving(true);
     try {
       const supabase = createClient();
@@ -131,20 +156,20 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
         const { error: personError } = await supabase
           .from('people')
           .update({
-            person_name: formName.trim(),
-            phone: formPhone.trim() || null,
-            mobile: formMobile.trim() || null,
-            email: formEmail.trim() || null,
+            person_name: values.name.trim(),
+            phone: values.phone.trim() || null,
+            mobile: values.mobile.trim() || null,
+            email: values.email.trim() || null,
           })
           .eq('id', editingPriest.person_id);
 
         if (personError) throw personError;
 
         // Update priest role if changed
-        if (formRole !== editingPriest.is_parish_priest) {
+        if (values.role !== editingPriest.is_parish_priest) {
           const { error: priestError } = await supabase
             .from('priests')
-            .update({ is_parish_priest: formRole })
+            .update({ is_parish_priest: values.role })
             .eq('id', editingPriest.id);
 
           if (priestError) throw priestError;
@@ -154,10 +179,10 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
         const { data: newPerson, error: personError } = await supabase
           .from('people')
           .insert({
-            person_name: formName.trim(),
-            phone: formPhone.trim() || null,
-            mobile: formMobile.trim() || null,
-            email: formEmail.trim() || null,
+            person_name: values.name.trim(),
+            phone: values.phone.trim() || null,
+            mobile: values.mobile.trim() || null,
+            email: values.email.trim() || null,
             person_type_id: 3,
           })
           .select()
@@ -170,7 +195,7 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
           .insert({
             person_id: newPerson.id,
             parish_id: parishId,
-            is_parish_priest: formRole,
+            is_parish_priest: values.role,
           });
 
         if (priestError) throw priestError;
@@ -339,101 +364,136 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
               {editingPriest ? 'Editar Sacerdote' : 'Nuevo Sacerdote'}
             </h2>
 
-            <form onSubmit={handleSavePriest} className="space-y-4">
-              {/* Role selector */}
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Rol en la parroquia:
-                </label>
-                <div className="flex gap-3">
-                  <button
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSavePriest)} className="space-y-4">
+                {/* Role selector */}
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rol en la parroquia:</FormLabel>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                            !field.value
+                              ? 'bg-blue-50 border-blue-500 text-blue-700'
+                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                          }`}
+                          onClick={() => field.onChange(false)}
+                        >
+                          Vicario
+                        </button>
+                        <button
+                          type="button"
+                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                            field.value
+                              ? 'bg-amber-50 border-amber-500 text-amber-700'
+                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                          }`}
+                          onClick={() => field.onChange(true)}
+                        >
+                          Parroco
+                        </button>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ingrese el nombre completo"
+                          maxLength={256}
+                          disabled={isSaving}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telefono</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ingrese el numero de telefono"
+                          maxLength={50}
+                          disabled={isSaving}
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="mobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Celular</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ingrese el numero de celular"
+                          maxLength={50}
+                          disabled={isSaving}
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Correo electronico</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Ingrese el correo electronico"
+                          maxLength={256}
+                          disabled={isSaving}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex gap-2 justify-end pt-2">
+                  <Button
                     type="button"
-                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                      !formRole
-                        ? 'bg-blue-50 border-blue-500 text-blue-700'
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                    onClick={() => setFormRole(false)}
+                    variant="outline"
+                    onClick={() => {
+                      setIsFormModalOpen(false);
+                      setEditingPriest(null);
+                    }}
+                    disabled={isSaving}
                   >
-                    Vicario
-                  </button>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                      formRole
-                        ? 'bg-amber-50 border-amber-500 text-amber-700'
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                    onClick={() => setFormRole(true)}
-                  >
-                    Parroco
-                  </button>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? 'Guardando...' : 'Guardar'}
+                  </Button>
                 </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Nombre *</label>
-                <Input
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="Ingrese el nombre completo"
-                  required
-                  maxLength={256}
-                  disabled={isSaving}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Telefono</label>
-                <Input
-                  value={formPhone}
-                  onChange={(e) => setFormPhone(e.target.value)}
-                  placeholder="Ingrese el numero de telefono"
-                  maxLength={50}
-                  disabled={isSaving}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Celular</label>
-                <Input
-                  value={formMobile}
-                  onChange={(e) => setFormMobile(e.target.value)}
-                  placeholder="Ingrese el numero de celular"
-                  maxLength={50}
-                  disabled={isSaving}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Correo electronico</label>
-                <Input
-                  type="email"
-                  value={formEmail}
-                  onChange={(e) => setFormEmail(e.target.value)}
-                  placeholder="Ingrese el correo electronico"
-                  maxLength={256}
-                  disabled={isSaving}
-                />
-              </div>
-
-              <div className="flex gap-2 justify-end pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsFormModalOpen(false);
-                    setEditingPriest(null);
-                  }}
-                  disabled={isSaving}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={isSaving}>
-                  {isSaving ? 'Guardando...' : 'Guardar'}
-                </Button>
-              </div>
-            </form>
+              </form>
+            </Form>
           </div>
         </div>
       )}
