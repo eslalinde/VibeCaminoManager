@@ -37,13 +37,14 @@ function getBreadcrumbs(pathname: string) {
   for (const segment of segments) {
     currentPath += `/${segment}`;
 
-    // Check if it's a dynamic segment (numeric ID)
-    if (/^\d+$/.test(segment)) {
-      crumbs.push({ label: `Detalle`, href: currentPath });
-    } else {
-      const label = routeLabels[currentPath] || segment;
-      crumbs.push({ label, href: currentPath });
-    }
+    // Skip "detalle" segments - they don't add navigation value
+    if (segment === "detalle") continue;
+
+    // Skip dynamic numeric ID segments
+    if (/^\d+$/.test(segment)) continue;
+
+    const label = routeLabels[currentPath] || segment;
+    crumbs.push({ label, href: currentPath });
   }
 
   return crumbs;

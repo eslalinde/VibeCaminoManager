@@ -150,7 +150,7 @@ export function AppSidebar({
               </SidebarGroupLabel>
               <CollapsibleContent>
                 <SidebarGroupContent>
-                  <SidebarMenu className="border-l border-sidebar-border ml-4 pl-2 w-[calc(100%-1.5rem)]">
+                  <SidebarMenu className="border-l border-sidebar-border ml-4 pl-2 w-[calc(100%-1.5rem)] group-data-[collapsible=icon]:ml-0 group-data-[collapsible=icon]:pl-0 group-data-[collapsible=icon]:border-l-0 group-data-[collapsible=icon]:w-full">
                     {group.items.map((item) => {
                       const Icon = item.icon;
                       const isActive =

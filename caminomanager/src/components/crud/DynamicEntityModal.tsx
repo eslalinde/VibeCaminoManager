@@ -60,7 +60,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
   const previousValues = useRef<Record<string, any>>({});
 
   // Hooks para opciones dependientes
-  const { options: countryOptions, loading: countryLoading, error: countryError } = useCountryOptions();
+  const { options: countryOptions } = useCountryOptions();
   const { options: stateOptions } = useStateOptions(formData.country_id);
   
   // Determinar si el formulario tiene campos de país y departamento
@@ -257,10 +257,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
       return;
     }
 
-    // Log para debugging
-    console.log('Submitting form data:', formData);
-    console.log('Fields configuration:', fields);
-
     // Preparar datos con tipos correctos
     const preparedData = { ...formData };
     fields.forEach(field => {
@@ -277,8 +273,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
         preparedData[field.name] = isEmpty ? null : val;
       }
     });
-
-    console.log('Prepared data:', preparedData);
 
     try {
       await onSave(preparedData as Omit<T, "id" | "created_at" | "updated_at">);
@@ -332,7 +326,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
     // Buscar el campo en la configuración para obtener sus opciones
     const fieldConfig = fields.find(f => f.name === fieldName);
     if (fieldConfig && fieldConfig.options && fieldConfig.options.length > 0) {
-      console.log(`✅ Field ${fieldName} using config options:`, fieldConfig.options);
       return fieldConfig.options;
     }
     
@@ -360,7 +353,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
       case "location_city_id":
         return locationCityOptions && locationCityOptions.length > 0 ? locationCityOptions : [];
       default:
-        console.log(`❌ Field ${fieldName} has no options`);
         return fieldName.includes("_id") ? [] : undefined;
     }
   };
@@ -385,16 +377,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
           {fields.map((field) => {
             const fieldOptions = getFieldOptions(field.name);
             
-            // Debug logging for person fields
-            if (field.name === 'person_type_id' || field.name === 'gender_id') {
-              console.log(`🎯 Rendering person field ${field.name}:`, {
-                formDataValue: formData[field.name],
-                fieldOptions: fieldOptions,
-                hasOptions: fieldOptions && fieldOptions.length > 0,
-                configOptions: field.options
-              });
-            }
-
             // Solo mostrar zone_id si la ciudad seleccionada tiene zonas
             if (field.name === 'zone_id') {
               if (!zoneOptions || zoneOptions.length === 0) {
