@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
 import { QueryParams, BaseEntity } from '@/types/database';
 import { queryKeys } from '@/lib/queryKeys';
+import { toast } from 'sonner';
 
 /** Strip accents from a string (e.g. "Medellín" → "Medellin") */
 function stripAccents(term: string): string {
@@ -300,9 +301,13 @@ export function useCrud<T extends BaseEntity>({
 
       return { previousData };
     },
+    onSuccess: () => {
+      toast.success('Registro creado correctamente');
+    },
     onError: (err: any, _variables, context) => {
       const message = handleSupabaseError(err);
       setError(message);
+      toast.error(message);
       if (context?.previousData) {
         queryClient.setQueryData(queryKey, context.previousData);
       }
@@ -336,9 +341,13 @@ export function useCrud<T extends BaseEntity>({
 
       return { previousData };
     },
+    onSuccess: () => {
+      toast.success('Registro actualizado correctamente');
+    },
     onError: (err: any, _variables, context) => {
       const message = handleSupabaseError(err);
       setError(message);
+      toast.error(message);
       if (context?.previousData) {
         queryClient.setQueryData(queryKey, context.previousData);
       }
@@ -369,9 +378,13 @@ export function useCrud<T extends BaseEntity>({
 
       return { previousData };
     },
+    onSuccess: () => {
+      toast.success('Registro eliminado correctamente');
+    },
     onError: (err: any, _variables, context) => {
       const message = handleSupabaseError(err);
       setError(message);
+      toast.error(message);
       if (context?.previousData) {
         queryClient.setQueryData(queryKey, context.previousData);
       }

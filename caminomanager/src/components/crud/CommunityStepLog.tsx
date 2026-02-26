@@ -51,6 +51,7 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
     if (communityId) {
       fetchData({ filters: { community_id: communityId } });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData is intentionally unstable (depends on filters state); only re-run when communityId changes
   }, [communityId]);
 
   const handleAddEntry = async () => {
@@ -110,6 +111,7 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
             Log de Pasos - Comunidad {communityNumber}
           </CardTitle>
           <Button
+            variant="outline"
             onClick={() => setShowAddForm(!showAddForm)}
             size="sm"
             className="flex items-center gap-2"

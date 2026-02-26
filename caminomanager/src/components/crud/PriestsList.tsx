@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Priest } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserPlus, Plus, Phone, Mail, User, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
 import { SelectPriestModal } from './SelectPriestModal';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 
@@ -67,10 +68,11 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
         throw new Error('No se pudo eliminar el sacerdote. Es posible que no tengas permisos.');
       }
 
+      toast.success('Sacerdote removido correctamente');
       if (onRefresh) onRefresh();
     } catch (error) {
       console.error('Error deleting priest:', error);
-      alert('Error al eliminar el sacerdote. Por favor, intenta de nuevo.');
+      toast.error('Error al eliminar el sacerdote');
     } finally {
       setDeletingId(null);
       setPriestToDelete(null);
@@ -88,10 +90,11 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
 
       if (error) throw error;
 
+      toast.success('Rol actualizado');
       if (onRefresh) onRefresh();
     } catch (error) {
       console.error('Error toggling priest role:', error);
-      alert('Error al cambiar el rol. Por favor, intenta de nuevo.');
+      toast.error('Error al cambiar el rol');
     } finally {
       setTogglingId(null);
     }
@@ -115,7 +118,7 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
   const handleSavePriest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim()) {
-      alert('El nombre es requerido');
+      toast.warning('El nombre es requerido');
       return;
     }
 
@@ -173,12 +176,13 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
         if (priestError) throw priestError;
       }
 
+      toast.success(editingPriest ? 'Sacerdote actualizado' : 'Sacerdote creado correctamente');
       if (onRefresh) onRefresh();
       setIsFormModalOpen(false);
       setEditingPriest(null);
     } catch (error: any) {
       console.error('Error saving priest:', error);
-      alert(error.message || 'Error al guardar el sacerdote. Por favor, intenta de nuevo.');
+      toast.error(error.message || 'Error al guardar el sacerdote');
     } finally {
       setIsSaving(false);
     }

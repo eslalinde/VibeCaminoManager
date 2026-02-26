@@ -6,14 +6,15 @@ import { MergedBrother } from '@/hooks/useCommunityData';
 import { Belongs, Person } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserPlus, Plus, ChevronDown, ChevronRight, Heart, User } from 'lucide-react';
+import { toast } from 'sonner';
 import { SelectBrotherModal } from './SelectBrotherModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
 import { MarriageModal } from './MarriageModal';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 import { personConfig } from '@/config/entities';
-import { CARISMA_BADGE_COLORS, CARISMA_GROUP_ORDER } from '@/config/carisma';
+import { CARISMA_GROUP_ORDER } from '@/config/carisma';
 import { CarismaBadge } from '@/components/ui/carisma-badge';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { DropdownMenu } from 'radix-ui';
 
 interface BrothersListProps {
   brothers: MergedBrother[];
@@ -94,7 +95,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
 
   const handleRequestDelete = (brother: MergedBrother) => {
     if (isBrotherInTeam(brother)) {
-      alert('No se puede eliminar este hermano porque está asociado a un equipo dentro de la comunidad.');
+      toast.warning('No se puede eliminar este hermano porque está asociado a un equipo dentro de la comunidad.');
       return;
     }
     setBrotherToDelete(brother);
@@ -118,13 +119,14 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
         if (error) throw error;
       }
 
+      toast.success('Hermano eliminado de la comunidad');
       // Refresh the community data
       if (onDelete) {
         onDelete();
       }
     } catch (error) {
       console.error('Error deleting brother:', error);
-      alert('Error al eliminar el hermano. Por favor, intenta de nuevo.');
+      toast.error('Error al eliminar el hermano');
     } finally {
       setDeletingId(null);
       setBrotherToDelete(null);
@@ -162,7 +164,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
       if (onAdd) onAdd();
     } catch (error: any) {
       console.error('Error adding marriage to community:', error);
-      alert(error.message || 'El matrimonio fue creado pero hubo un error al agregarlo a la comunidad.');
+      toast.error(error.message || 'El matrimonio fue creado pero hubo un error al agregarlo a la comunidad.');
     }
   };
 
@@ -190,13 +192,14 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
 
       if (brotherError) throw brotherError;
 
+      toast.success('Hermano agregado a la comunidad');
       // Refresh the community data
       if (onAdd) {
         onAdd();
       }
     } catch (error: any) {
       console.error('Error creating new brother:', error);
-      alert(error.message || 'Error al crear el hermano. Por favor, intenta de nuevo.');
+      toast.error(error.message || 'Error al crear el hermano');
       throw error;
     } finally {
       setIsSaving(false);
@@ -243,6 +246,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <Button
+                    variant="outline"
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />

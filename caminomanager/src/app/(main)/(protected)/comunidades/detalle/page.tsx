@@ -16,7 +16,15 @@ import { SelectBrotherForTeamModal } from '@/components/crud/SelectBrotherForTea
 import { Button } from '@/components/ui/button';
 import { MergeCommunityModal } from '@/components/crud/MergeCommunityModal';
 import { ConfirmDeleteDialog } from '@/components/crud/ConfirmDeleteDialog';
-import { ArrowLeft, Merge, Plus, Printer, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Merge, Plus, Printer, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { PrintMode } from '@/components/crud/CommunityPrintView';
+import { toast } from 'sonner';
 import { createClient } from '@/utils/supabase/client';
 import { Community } from '@/types/database';
 import { routes } from '@/lib/routes';
@@ -32,9 +40,16 @@ function CommunityDetailContent() {
   const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [printMode, setPrintMode] = useState<PrintMode>('todo');
+
+  const handlePrint = (mode: PrintMode) => {
+    setPrintMode(mode);
+    setTimeout(() => window.print(), 0);
+  };
 
   const {
     community,
+    brothers,
     mergedBrothers,
     teams,
     teamMembers,
@@ -84,6 +99,7 @@ function CommunityDetailContent() {
         throw new Error('No tienes permisos para editar comunidades. Contacta al administrador para que te asigne el rol de contributor o admin.');
       }
 
+      toast.success('Comunidad actualizada');
       // Refrescar solo el detalle de la comunidad
       await invalidateDetail();
       setIsEditModalOpen(false);
@@ -112,10 +128,11 @@ function CommunityDetailContent() {
 
       if (teamError) throw teamError;
 
+      toast.success('Equipo de responsables creado');
       await invalidateTeams();
     } catch (err) {
       console.error('Error creating responsables team:', err);
-      alert('Error al crear el equipo de responsables. Por favor, intenta de nuevo.');
+      toast.error('Error al crear el equipo de responsables');
     }
   };
 
@@ -141,10 +158,11 @@ function CommunityDetailContent() {
 
       if (teamError) throw teamError;
 
+      toast.success('Equipo de catequistas creado');
       await invalidateTeams();
     } catch (err) {
       console.error('Error creating catequistas team:', err);
-      alert('Error al crear el equipo de catequistas. Por favor, intenta de nuevo.');
+      toast.error('Error al crear el equipo de catequistas');
     }
   };
 
@@ -210,10 +228,11 @@ function CommunityDetailContent() {
       }
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.crud.table('communities') });
+      toast.success('Comunidad eliminada correctamente');
       router.push(routes.comunidades);
     } catch (err: any) {
       console.error('Error deleting community:', err);
-      alert(err.message || 'Error al eliminar la comunidad. Por favor, intenta de nuevo.');
+      toast.error(err.message || 'Error al eliminar la comunidad');
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
@@ -263,14 +282,26 @@ function CommunityDetailContent() {
               <ArrowLeft className="h-4 w-4" />
               Regresar a Comunidades
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.print()}
-              className="flex items-center gap-2"
-            >
-              <Printer className="h-4 w-4" />
-              Imprimir Ficha
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Printer className="h-4 w-4" />
+                  Imprimir
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => handlePrint('ficha')}>
+                  Ficha completa
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePrint('hermanos')}>
+                  Lista de hermanos
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePrint('todo')}>
+                  Todo
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {community?.parish_id && (
               <Button
                 variant="outline"
@@ -327,6 +358,7 @@ function CommunityDetailContent() {
                     <p className="text-gray-500 text-lg">No hay equipo de responsables</p>
                     <p className="text-gray-400 text-sm">Crea el equipo de responsables para comenzar</p>
                     <Button
+                      variant="outline"
                       onClick={handleCreateResponsablesTeam}
                       className="flex items-center gap-2"
                       disabled={loading}
@@ -375,6 +407,7 @@ function CommunityDetailContent() {
                     <p className="text-gray-500 text-lg">No hay equipos de catequistas</p>
                     <p className="text-gray-400 text-sm">Crea el primer equipo de catequistas para comenzar</p>
                     <Button
+                      variant="outline"
                       onClick={handleCreateCatequistasTeam}
                       className="flex items-center gap-2"
                       disabled={loading}
@@ -422,6 +455,8 @@ function CommunityDetailContent() {
         stepLogs={stepLogs}
         parishPriestName={parishPriestName}
         mergedBrothers={mergedBrothers}
+        brothers={brothers}
+        printMode={printMode}
       />
 
       {/* Modal de edición */}

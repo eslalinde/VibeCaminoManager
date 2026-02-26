@@ -2,7 +2,7 @@
 import { Moon, Sun, User as UserIcon, LogOut } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { DropdownMenu } from "radix-ui";
 import { routes } from "@/lib/routes";
 import { createClient } from "@/utils/supabase/client";
 import { WindowControls } from "@/components/electron/WindowControls";
@@ -24,7 +24,7 @@ function getInitials(email?: string) {
   );
 }
 
-export default function Header({ userEmail, userName, title }: HeaderProps) {
+export default function Header({ userEmail, userName, title: _title }: HeaderProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);

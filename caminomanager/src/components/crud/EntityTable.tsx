@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BaseEntity } from '@/types/database';
 import { Pencil, Trash2 } from 'lucide-react';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
@@ -82,8 +83,8 @@ export function EntityTable<T extends BaseEntity>({
   };
 
   return (
-    <div className="overflow-hidden">
-      <Table className="w-full">
+    <div className="overflow-x-auto">
+      <Table>
         <TableHeader>
           <TableRow>
             {columns.map(column => (
@@ -103,7 +104,7 @@ export function EntityTable<T extends BaseEntity>({
                 </div>
               </TableHead>
             ))}
-            <TableHead className="whitespace-nowrap">Acciones</TableHead>
+            <TableHead className="whitespace-nowrap text-center w-[80px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -136,36 +137,46 @@ export function EntityTable<T extends BaseEntity>({
                     }
                   </TableCell>
                 ))}
-                <TableCell className="whitespace-nowrap">
-                  <div className="flex gap-1.5 items-center">
-                    <Button
-                      size="sm"
-                      className="shrink-0"
-                      onClick={(e: React.MouseEvent) => {
-                        e.stopPropagation();
-                        if (onRowClick) { onRowClick(item); } else { onEdit(item); }
-                      }}
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                      Editar
-                    </Button>
-                    {!hideDeleteInTable && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="shrink-0 text-destructive border-destructive/50 hover:bg-destructive/10"
-                        onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          if (item.id) {
-                            setDeleteTarget({ id: item.id, label: getItemLabel(item) });
-                          }
-                        }}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        Eliminar
-                      </Button>
-                    )}
-                  </div>
+                <TableCell>
+                  <TooltipProvider>
+                    <div className="flex gap-0.5 items-center justify-center">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={(e: React.MouseEvent) => {
+                              e.stopPropagation();
+                              if (onRowClick) { onRowClick(item); } else { onEdit(item); }
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Editar</TooltipContent>
+                      </Tooltip>
+                      {!hideDeleteInTable && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation();
+                                if (item.id) {
+                                  setDeleteTarget({ id: item.id, label: getItemLabel(item) });
+                                }
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Eliminar</TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
+                  </TooltipProvider>
                 </TableCell>
               </TableRow>
             ))

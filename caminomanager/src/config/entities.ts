@@ -1,5 +1,5 @@
 import React from 'react';
-import { EntityConfig, FormField } from '@/types/database';
+import { EntityConfig } from '@/types/database';
 import { Country, State, City, CityZone, Diocese, Parish, StepWay, TeamType, Person, Community, CommunityStepLog, ParishCatechesis } from '@/types/database';
 import { CARISMA_OPTIONS } from '@/config/carisma';
 import { CarismaBadge } from '@/components/ui/carisma-badge';

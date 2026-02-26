@@ -60,7 +60,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
   const previousValues = useRef<Record<string, any>>({});
 
   // Hooks para opciones dependientes
-  const { options: countryOptions, loading: countryLoading, error: countryError } = useCountryOptions();
+  const { options: countryOptions } = useCountryOptions();
   const { options: stateOptions } = useStateOptions(formData.country_id);
   
   // Determinar si el formulario tiene campos de país y departamento
@@ -117,17 +117,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
         
         initialData[field.name] = value;
         previousValues.current[field.name] = value;
-        
-        // Debug logging for person fields
-        if (field.name === 'person_type_id' || field.name === 'gender_id') {
-          console.log(`🔍 Person field ${field.name}:`, {
-            rawValue,
-            processedValue: value,
-            fieldType: field.type,
-            hasOptions: field.options && field.options.length > 0,
-            options: field.options
-          });
-        }
       });
       
       setFormData(initialData);
@@ -142,24 +131,30 @@ export function DynamicEntityModal<T extends BaseEntity>({
   }, [open, initial, fields]);
 
   // Re-sincronizar spouse_id cuando se carguen las opciones de personas
+  const initialSpouseId = (initial as Record<string, unknown>)?.spouse_id;
+
   useEffect(() => {
     if (!isInitialized.current || !open || peopleLoading) return;
-    
-    // Si las opciones de personas se cargaron y tenemos un spouse_id, asegurar que esté sincronizado
-    if (peopleOptions && peopleOptions.length > 0 && (initial as any)?.spouse_id) {
+
+    if (
+      peopleOptions &&
+      peopleOptions.length > 0 &&
+      initialSpouseId
+    ) {
       const currentSpouseValue = formData.spouse_id;
-      const expectedSpouseValue = String((initial as any).spouse_id);
-      
+      const expectedSpouseValue = String(initialSpouseId);
+
       if (currentSpouseValue !== expectedSpouseValue) {
-        console.log('🔄 Re-syncing spouse_id after options loaded:', {
-          currentSpouseValue,
-          expectedSpouseValue,
-          peopleOptions: peopleOptions.length
-        });
         setFormData(prev => ({ ...prev, spouse_id: expectedSpouseValue }));
       }
     }
-  }, [peopleOptions, peopleLoading, (initial as any)?.spouse_id, formData.spouse_id, isInitialized.current, open]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- formData is intentionally omitted to avoid infinite loops
+  }, [
+    peopleOptions,
+    peopleLoading,
+    initialSpouseId,
+    open,
+  ]);
 
   // Limpiar campos dependientes cuando cambia el padre (solo después de la inicialización)
   useEffect(() => {
@@ -262,10 +257,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
       return;
     }
 
-    // Log para debugging
-    console.log('Submitting form data:', formData);
-    console.log('Fields configuration:', fields);
-
     // Preparar datos con tipos correctos
     const preparedData = { ...formData };
     fields.forEach(field => {
@@ -282,8 +273,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
         preparedData[field.name] = isEmpty ? null : val;
       }
     });
-
-    console.log('Prepared data:', preparedData);
 
     try {
       await onSave(preparedData as Omit<T, "id" | "created_at" | "updated_at">);
@@ -337,7 +326,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
     // Buscar el campo en la configuración para obtener sus opciones
     const fieldConfig = fields.find(f => f.name === fieldName);
     if (fieldConfig && fieldConfig.options && fieldConfig.options.length > 0) {
-      console.log(`✅ Field ${fieldName} using config options:`, fieldConfig.options);
       return fieldConfig.options;
     }
     
@@ -365,7 +353,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
       case "location_city_id":
         return locationCityOptions && locationCityOptions.length > 0 ? locationCityOptions : [];
       default:
-        console.log(`❌ Field ${fieldName} has no options`);
         return fieldName.includes("_id") ? [] : undefined;
     }
   };
@@ -390,16 +377,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
           {fields.map((field) => {
             const fieldOptions = getFieldOptions(field.name);
             
-            // Debug logging for person fields
-            if (field.name === 'person_type_id' || field.name === 'gender_id') {
-              console.log(`🎯 Rendering person field ${field.name}:`, {
-                formDataValue: formData[field.name],
-                fieldOptions: fieldOptions,
-                hasOptions: fieldOptions && fieldOptions.length > 0,
-                configOptions: field.options
-              });
-            }
-
             // Solo mostrar zone_id si la ciudad seleccionada tiene zonas
             if (field.name === 'zone_id') {
               if (!zoneOptions || zoneOptions.length === 0) {

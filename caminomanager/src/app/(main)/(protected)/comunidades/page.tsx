@@ -8,7 +8,7 @@ import { routes } from '@/lib/routes';
 
 export default function CommunitiesPage() {
   const router = useRouter();
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [refreshTrigger] = useState(0);
 
   const handleRowClick = (community: any) => {
     router.push(routes.comunidad(community.id));

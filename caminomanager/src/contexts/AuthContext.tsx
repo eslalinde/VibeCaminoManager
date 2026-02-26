@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
 import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -27,68 +27,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
   const pathname = usePathname();
 
   useEffect(() => {
     const supabase = createClient();
-    let cancelled = false;
+    let active = true;
 
-    async function init() {
+    async function fetchProfile(userId: string) {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (cancelled) return;
-
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', currentUser.id)
-            .single();
-          if (!cancelled) setProfile(profileData);
-        }
-      } catch (error) {
-        console.error('Failed to initialize auth:', error);
-        if (!cancelled) {
-          setUser(null);
-          setProfile(null);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+        const { data } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', userId)
+          .single();
+        if (active) setProfile(data);
+      } catch {
+        // profile fetch is non-critical
       }
     }
 
-    init();
-
+    // Use onAuthStateChange as the single source of truth.
+    // It fires INITIAL_SESSION when the client finishes restoring
+    // the session from storage, avoiding getSession() lock issues.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        if (!active) return;
+
         const currentUser = session?.user ?? null;
         setUser(currentUser);
+        setLoading(false);
 
         if (currentUser) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', currentUser.id)
-            .single();
-          setProfile(profileData);
+          fetchProfile(currentUser.id);
         } else {
           setProfile(null);
         }
 
         if (event === 'SIGNED_OUT') {
-          router.replace('/login');
+          routerRef.current.replace('/login');
         }
       }
     );
 
+    // Safety net: if onAuthStateChange never fires, force loading off
+    const timeout = setTimeout(() => {
+      if (active) setLoading(false);
+    }, 3000);
+
     return () => {
-      cancelled = true;
+      active = false;
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, [router]);
+  }, []);
 
   // Redirect to login if unauthenticated and on a protected route
   useEffect(() => {

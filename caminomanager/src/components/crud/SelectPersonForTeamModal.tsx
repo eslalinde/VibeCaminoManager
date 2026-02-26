@@ -35,41 +35,40 @@ export function SelectPersonForTeamModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) {
-      fetchAvailablePeople();
-      setSearchTerm('');
-      setSelectedPersonId(null);
+    if (!open) return;
+
+    async function fetchAvailablePeople() {
+      setLoading(true);
       setError(null);
-    }
-  }, [open, JSON.stringify(excludePersonIds)]);
+      try {
+        const supabase = createClient();
 
-  const fetchAvailablePeople = async () => {
-    setLoading(true);
+        const { data: peopleData, error: peopleError } = await supabase
+          .from('people')
+          .select('*')
+          .order('person_name', { ascending: true });
+
+        if (peopleError) throw peopleError;
+
+        const excludeSet = new Set(excludePersonIds);
+        const availablePeople = (peopleData || []).filter(
+          (person) => !excludeSet.has(person.id!)
+        );
+
+        setPeople(availablePeople);
+      } catch (err: any) {
+        console.error('Error fetching available people:', err);
+        setError(err.message || 'Error al cargar las personas disponibles');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAvailablePeople();
+    setSearchTerm('');
+    setSelectedPersonId(null);
     setError(null);
-    try {
-      const supabase = createClient();
-
-      const { data: peopleData, error: peopleError } = await supabase
-        .from('people')
-        .select('*')
-        .order('person_name', { ascending: true });
-
-      if (peopleError) throw peopleError;
-
-      // Filter out people already in the team
-      const excludeSet = new Set(excludePersonIds);
-      const availablePeople = (peopleData || []).filter(
-        (person) => !excludeSet.has(person.id!)
-      );
-
-      setPeople(availablePeople);
-    } catch (err: any) {
-      console.error('Error fetching available people:', err);
-      setError(err.message || 'Error al cargar las personas disponibles');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [open, excludePersonIds]);
 
   const filteredPeople = people.filter((person) =>
     normalizeText(person.person_name).includes(normalizeText(searchTerm))
