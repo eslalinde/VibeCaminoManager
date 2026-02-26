@@ -8,7 +8,16 @@ import { EntityModal } from './EntityModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
 import { useCrud } from '@/hooks/useCrud';
 import { BaseEntity, FormField, EntityConfig } from '@/types/database';
-import { Search, X, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, X, Plus } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 interface EntityPageProps<T extends BaseEntity> {
   config: EntityConfig<T>;
@@ -175,6 +184,7 @@ export function EntityPage<T extends BaseEntity>({
           {extraActions}
           {!hideDefaultAddButton && (
             <Button
+              variant="outline"
               onClick={handleAddNew}
             >
               <Plus className="w-4 h-4" />
@@ -200,58 +210,60 @@ export function EntityPage<T extends BaseEntity>({
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-3">
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-muted-foreground">
           Página {page} de {totalPages || 1}
           {count > 0 && ` — ${count} registros`}
         </span>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1}
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Anterior
-          </Button>
+        <Pagination className="mx-0 w-auto">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page <= 1}
+                className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
+              />
+            </PaginationItem>
 
-          {/* Page numbers */}
-          {totalPages > 1 && (() => {
-            const pages: (number | string)[] = [];
-            if (totalPages <= 5) {
-              for (let i = 1; i <= totalPages; i++) pages.push(i);
-            } else {
-              pages.push(1);
-              if (page > 3) pages.push('...');
-              for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
-                pages.push(i);
+            {totalPages > 1 && (() => {
+              const pages: (number | string)[] = [];
+              if (totalPages <= 5) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+              } else {
+                pages.push(1);
+                if (page > 3) pages.push('start-ellipsis');
+                for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) {
+                  pages.push(i);
+                }
+                if (page < totalPages - 2) pages.push('end-ellipsis');
+                pages.push(totalPages);
               }
-              if (page < totalPages - 2) pages.push('...');
-              pages.push(totalPages);
-            }
-            return pages.map((p, idx) =>
-              typeof p === 'string' ? (
-                <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">...</span>
-              ) : (
-                <Button
-                  key={p}
-                  variant={p === page ? "default" : "outline"}
-                  onClick={() => setPage(p)}
-                >
-                  {p}
-                </Button>
-              )
-            );
-          })()}
+              return pages.map((p) =>
+                typeof p === 'string' ? (
+                  <PaginationItem key={p}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={p}>
+                    <PaginationLink
+                      isActive={p === page}
+                      onClick={() => setPage(p)}
+                    >
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              );
+            })()}
 
-          <Button
-            variant="outline"
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page === totalPages}
-          >
-            Siguiente
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
+                disabled={page >= totalPages}
+                className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
 
       {/* Modal */}

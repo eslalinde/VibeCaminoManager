@@ -243,6 +243,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <Button
+                    variant="outline"
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />

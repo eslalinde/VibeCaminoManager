@@ -327,6 +327,7 @@ function CommunityDetailContent() {
                     <p className="text-gray-500 text-lg">No hay equipo de responsables</p>
                     <p className="text-gray-400 text-sm">Crea el equipo de responsables para comenzar</p>
                     <Button
+                      variant="outline"
                       onClick={handleCreateResponsablesTeam}
                       className="flex items-center gap-2"
                       disabled={loading}
@@ -375,6 +376,7 @@ function CommunityDetailContent() {
                     <p className="text-gray-500 text-lg">No hay equipos de catequistas</p>
                     <p className="text-gray-400 text-sm">Crea el primer equipo de catequistas para comenzar</p>
                     <Button
+                      variant="outline"
                       onClick={handleCreateCatequistasTeam}
                       className="flex items-center gap-2"
                       disabled={loading}
