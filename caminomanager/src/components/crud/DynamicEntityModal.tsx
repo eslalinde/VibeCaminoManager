@@ -117,17 +117,6 @@ export function DynamicEntityModal<T extends BaseEntity>({
         
         initialData[field.name] = value;
         previousValues.current[field.name] = value;
-        
-        // Debug logging for person fields
-        if (field.name === 'person_type_id' || field.name === 'gender_id') {
-          console.log(`🔍 Person field ${field.name}:`, {
-            rawValue,
-            processedValue: value,
-            fieldType: field.type,
-            hasOptions: field.options && field.options.length > 0,
-            options: field.options
-          });
-        }
       });
       
       setFormData(initialData);
@@ -142,24 +131,30 @@ export function DynamicEntityModal<T extends BaseEntity>({
   }, [open, initial, fields]);
 
   // Re-sincronizar spouse_id cuando se carguen las opciones de personas
+  const initialSpouseId = (initial as Record<string, unknown>)?.spouse_id;
+
   useEffect(() => {
     if (!isInitialized.current || !open || peopleLoading) return;
-    
-    // Si las opciones de personas se cargaron y tenemos un spouse_id, asegurar que esté sincronizado
-    if (peopleOptions && peopleOptions.length > 0 && (initial as any)?.spouse_id) {
+
+    if (
+      peopleOptions &&
+      peopleOptions.length > 0 &&
+      initialSpouseId
+    ) {
       const currentSpouseValue = formData.spouse_id;
-      const expectedSpouseValue = String((initial as any).spouse_id);
-      
+      const expectedSpouseValue = String(initialSpouseId);
+
       if (currentSpouseValue !== expectedSpouseValue) {
-        console.log('🔄 Re-syncing spouse_id after options loaded:', {
-          currentSpouseValue,
-          expectedSpouseValue,
-          peopleOptions: peopleOptions.length
-        });
         setFormData(prev => ({ ...prev, spouse_id: expectedSpouseValue }));
       }
     }
-  }, [peopleOptions, peopleLoading, (initial as any)?.spouse_id, formData.spouse_id, isInitialized.current, open]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- formData is intentionally omitted to avoid infinite loops
+  }, [
+    peopleOptions,
+    peopleLoading,
+    initialSpouseId,
+    open,
+  ]);
 
   // Limpiar campos dependientes cuando cambia el padre (solo después de la inicialización)
   useEffect(() => {

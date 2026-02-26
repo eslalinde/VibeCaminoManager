@@ -36,55 +36,52 @@ export function SelectPriestModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) {
-      fetchAvailablePeople();
-      setSearchTerm('');
-      setSelectedPersonId(null);
-      setSelectedRole(false);
+    if (!open) return;
+
+    async function fetchAvailablePeople() {
+      setLoading(true);
       setError(null);
-    }
-  }, [open, parishId]);
+      try {
+        const supabase = createClient();
 
-  const fetchAvailablePeople = async () => {
-    setLoading(true);
+        const { data: priestsData, error: priestsError } = await supabase
+          .from('priests')
+          .select('person_id')
+          .eq('parish_id', parishId);
+
+        if (priestsError) throw priestsError;
+
+        const assignedPersonIds = new Set(
+          (priestsData || []).map((p) => p.person_id)
+        );
+
+        const { data: peopleData, error: peopleError } = await supabase
+          .from('people')
+          .select('*')
+          .eq('person_type_id', 3)
+          .order('person_name', { ascending: true });
+
+        if (peopleError) throw peopleError;
+
+        const availablePeople = (peopleData || []).filter(
+          (person) => !assignedPersonIds.has(person.id!)
+        );
+
+        setPeople(availablePeople);
+      } catch (err: any) {
+        console.error('Error fetching available people:', err);
+        setError(err.message || 'Error al cargar las personas disponibles');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAvailablePeople();
+    setSearchTerm('');
+    setSelectedPersonId(null);
+    setSelectedRole(false);
     setError(null);
-    try {
-      const supabase = createClient();
-
-      // Get person IDs already assigned as priests to this parish
-      const { data: priestsData, error: priestsError } = await supabase
-        .from('priests')
-        .select('person_id')
-        .eq('parish_id', parishId);
-
-      if (priestsError) throw priestsError;
-
-      const assignedPersonIds = new Set(
-        (priestsData || []).map((p) => p.person_id)
-      );
-
-      // Get all people with person_type_id = 3 (Presbítero)
-      const { data: peopleData, error: peopleError } = await supabase
-        .from('people')
-        .select('*')
-        .eq('person_type_id', 3)
-        .order('person_name', { ascending: true });
-
-      if (peopleError) throw peopleError;
-
-      // Filter out people already assigned to this parish
-      const availablePeople = (peopleData || []).filter(
-        (person) => !assignedPersonIds.has(person.id!)
-      );
-
-      setPeople(availablePeople);
-    } catch (err: any) {
-      console.error('Error fetching available people:', err);
-      setError(err.message || 'Error al cargar las personas disponibles');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [open, parishId]);
 
   const filteredPeople = people.filter((person) =>
     normalizeText(person.person_name).includes(normalizeText(searchTerm))
