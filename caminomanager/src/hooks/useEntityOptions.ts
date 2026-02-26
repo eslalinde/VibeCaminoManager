@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
-import { BaseEntity } from '@/types/database';
 import { queryKeys } from '@/lib/queryKeys';
 
 interface UseEntityOptionsOptions {
@@ -12,7 +11,7 @@ interface UseEntityOptionsOptions {
   orderBy?: { field: string; asc: boolean };
 }
 
-export function useEntityOptions<T extends BaseEntity>({
+export function useEntityOptions({
   tableName,
   valueField = 'id',
   labelField = 'name',

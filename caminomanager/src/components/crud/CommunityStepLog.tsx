@@ -51,6 +51,7 @@ export function CommunityStepLog({ communityId, communityNumber }: CommunityStep
     if (communityId) {
       fetchData({ filters: { community_id: communityId } });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData is intentionally unstable (depends on filters state); only re-run when communityId changes
   }, [communityId]);
 
   const handleAddEntry = async () => {

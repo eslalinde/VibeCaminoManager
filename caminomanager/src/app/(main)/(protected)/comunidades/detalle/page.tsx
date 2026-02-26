@@ -16,7 +16,14 @@ import { SelectBrotherForTeamModal } from '@/components/crud/SelectBrotherForTea
 import { Button } from '@/components/ui/button';
 import { MergeCommunityModal } from '@/components/crud/MergeCommunityModal';
 import { ConfirmDeleteDialog } from '@/components/crud/ConfirmDeleteDialog';
-import { ArrowLeft, Merge, Plus, Printer, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Merge, Plus, Printer, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { PrintMode } from '@/components/crud/CommunityPrintView';
 import { toast } from 'sonner';
 import { createClient } from '@/utils/supabase/client';
 import { Community } from '@/types/database';
@@ -33,9 +40,16 @@ function CommunityDetailContent() {
   const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [printMode, setPrintMode] = useState<PrintMode>('todo');
+
+  const handlePrint = (mode: PrintMode) => {
+    setPrintMode(mode);
+    setTimeout(() => window.print(), 0);
+  };
 
   const {
     community,
+    brothers,
     mergedBrothers,
     teams,
     teamMembers,
@@ -268,14 +282,26 @@ function CommunityDetailContent() {
               <ArrowLeft className="h-4 w-4" />
               Regresar a Comunidades
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.print()}
-              className="flex items-center gap-2"
-            >
-              <Printer className="h-4 w-4" />
-              Imprimir Ficha
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Printer className="h-4 w-4" />
+                  Imprimir
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => handlePrint('ficha')}>
+                  Ficha completa
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePrint('hermanos')}>
+                  Lista de hermanos
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePrint('todo')}>
+                  Todo
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {community?.parish_id && (
               <Button
                 variant="outline"
@@ -429,6 +455,8 @@ function CommunityDetailContent() {
         stepLogs={stepLogs}
         parishPriestName={parishPriestName}
         mergedBrothers={mergedBrothers}
+        brothers={brothers}
+        printMode={printMode}
       />
 
       {/* Modal de edición */}

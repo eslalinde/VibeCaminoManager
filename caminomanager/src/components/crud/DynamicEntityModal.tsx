@@ -142,14 +142,19 @@ export function DynamicEntityModal<T extends BaseEntity>({
   }, [open, initial, fields]);
 
   // Re-sincronizar spouse_id cuando se carguen las opciones de personas
+  const initialSpouseId = (initial as Record<string, unknown>)?.spouse_id;
+
   useEffect(() => {
     if (!isInitialized.current || !open || peopleLoading) return;
-    
-    // Si las opciones de personas se cargaron y tenemos un spouse_id, asegurar que esté sincronizado
-    if (peopleOptions && peopleOptions.length > 0 && (initial as any)?.spouse_id) {
-      const currentSpouseValue = formData.spouse_id;
-      const expectedSpouseValue = String((initial as any).spouse_id);
-      
+
+    if (
+      peopleOptions &&
+      peopleOptions.length > 0 &&
+      initialSpouseId
+    ) {
+      const currentSpouseValue = form.getValues("spouse_id");
+      const expectedSpouseValue = String(initialSpouseId);
+
       if (currentSpouseValue !== expectedSpouseValue) {
         console.log('🔄 Re-syncing spouse_id after options loaded:', {
           currentSpouseValue,
@@ -159,7 +164,13 @@ export function DynamicEntityModal<T extends BaseEntity>({
         setFormData(prev => ({ ...prev, spouse_id: expectedSpouseValue }));
       }
     }
-  }, [peopleOptions, peopleLoading, (initial as any)?.spouse_id, formData.spouse_id, isInitialized.current, open]);
+  }, [
+    peopleOptions,
+    peopleLoading,
+    initialSpouseId,
+    open,
+    form,
+  ]);
 
   // Limpiar campos dependientes cuando cambia el padre (solo después de la inicialización)
   useEffect(() => {

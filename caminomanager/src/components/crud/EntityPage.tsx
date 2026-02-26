@@ -7,7 +7,7 @@ import { EntityTable } from './EntityTable';
 import { EntityModal } from './EntityModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
 import { useCrud } from '@/hooks/useCrud';
-import { BaseEntity, FormField, EntityConfig } from '@/types/database';
+import { BaseEntity, EntityConfig } from '@/types/database';
 import { Search, X, Plus } from 'lucide-react';
 import {
   Pagination,
@@ -131,7 +131,7 @@ export function EntityPage<T extends BaseEntity>({
           alias: foreignKeyConfig.alias
         } : undefined,
         // Solo usar renderValue si no hay foreignKey configurado
-        render: (!foreignKeyConfig && config.renderValue) ? (value: any, item: T) => {
+        render: (!foreignKeyConfig && config.renderValue) ? (value: any, _item: T) => {
           return config.renderValue!(field.name, value);
         } : undefined
       };
