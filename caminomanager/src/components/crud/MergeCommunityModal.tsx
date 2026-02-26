@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/utils/supabase/client';
+import { toast } from 'sonner';
 
 interface CommunityOption {
   id: number;
@@ -142,9 +143,9 @@ export function MergeCommunityModal({
 
       const result = data as { success: boolean; brothers_moved: number; members_moved: number; removed_community_number: string };
 
-      alert(
-        `Fusión exitosa. Se movieron ${result.brothers_moved} hermano(s) y ${result.members_moved} miembro(s) de equipo de la Comunidad ${result.removed_community_number}.`
-      );
+      toast.success('Fusión exitosa', {
+        description: `Se movieron ${result.brothers_moved} hermano(s) y ${result.members_moved} miembro(s) de equipo de la Comunidad ${result.removed_community_number}.`,
+      });
 
       resetAndClose();
       await onSuccess();

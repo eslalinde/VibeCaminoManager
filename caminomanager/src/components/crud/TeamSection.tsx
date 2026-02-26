@@ -13,6 +13,7 @@ import {
 import { Team, Belongs, Parish } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserMinus, Crown, UserPlus, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
 import { getCarismaLabel } from '@/config/carisma';
 import { CarismaBadge } from '@/components/ui/carisma-badge';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
@@ -158,10 +159,11 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
         }
       }
 
+      toast.success('Miembro eliminado del equipo');
       if (onDelete) onDelete();
     } catch (error) {
       console.error('Error deleting team member:', error);
-      alert('Error al eliminar el miembro del equipo. Por favor, intenta de nuevo.');
+      toast.error('Error al eliminar el miembro del equipo');
     } finally {
       setDeletingId(null);
       setMemberToDelete(null);
@@ -184,10 +186,11 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
         if (error) throw error;
       }
 
+      toast.success('Responsabilidad removida');
       if (onDelete) onDelete();
     } catch (error) {
       console.error('Error removing responsible:', error);
-      alert('Error al quitar la responsabilidad. Por favor, intenta de nuevo.');
+      toast.error('Error al quitar la responsabilidad');
     } finally {
       setRemovingResponsibleId(null);
       setMemberToRemoveResponsible(null);
@@ -231,10 +234,11 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
         if (error) throw error;
       }
 
+      toast.success('Responsabilidad asignada');
       if (onDelete) onDelete();
     } catch (error) {
       console.error('Error assigning responsible:', error);
-      alert('Error al asignar la responsabilidad. Por favor, intenta de nuevo.');
+      toast.error('Error al asignar la responsabilidad');
     } finally {
       setAssigningResponsibleId(null);
       setMemberToAssignResponsible(null);
@@ -283,13 +287,14 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
         throw new Error('No se pudo eliminar el equipo. Es posible que no tengas permisos.');
       }
 
+      toast.success('Equipo eliminado correctamente');
       // Refresh the community data
       if (onDelete) {
         onDelete();
       }
     } catch (error) {
       console.error('Error deleting team:', error);
-      alert('Error al eliminar el equipo. Por favor, intenta de nuevo.');
+      toast.error('Error al eliminar el equipo');
     } finally {
       setDeletingTeam(false);
     }

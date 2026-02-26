@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BaseEntity } from '@/types/database';
 import { Pencil, Trash2 } from 'lucide-react';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
@@ -83,7 +84,7 @@ export function EntityTable<T extends BaseEntity>({
 
   return (
     <div className="overflow-x-auto">
-      <Table className="table-fixed w-full">
+      <Table>
         <TableHeader>
           <TableRow>
             {columns.map(column => (
