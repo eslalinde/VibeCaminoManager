@@ -5,6 +5,7 @@ import React from "react";
 import { QueryProvider } from "./QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UpdateNotification } from "@/components/electron/UpdateNotification";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,6 +46,7 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <UpdateNotification />
+            <Toaster richColors position="top-right" />
           </AuthProvider>
         </QueryProvider>
       </body>

@@ -10,6 +10,7 @@ import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { communityStepLogConfig } from '@/config/entities';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { createClient } from '@/utils/supabase/client';
+import { toast } from 'sonner';
 
 interface CommunityStepLogCompactProps {
   communityId: number;
@@ -95,6 +96,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
           .eq('id', communityId);
       }
 
+      toast.success('Registro agregado a la bitácora');
       setIsAddModalOpen(false);
       onStepLogAdded?.();
     } catch (error) {
@@ -141,12 +143,13 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
         throw new Error('No se pudo eliminar el registro. Es posible que no tengas permisos.');
       }
 
+      toast.success('Registro eliminado de la bitácora');
       setIsDeleteDialogOpen(false);
       setDeletingId(null);
       onStepLogDeleted?.();
     } catch (error) {
       console.error('Error deleting step log entry:', error);
-      alert('Error al eliminar el registro. Por favor, intenta de nuevo.');
+      toast.error('Error al eliminar el registro');
     } finally {
       setIsDeleting(false);
     }
