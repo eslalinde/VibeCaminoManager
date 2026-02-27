@@ -141,6 +141,20 @@ export interface CommunityStepLog extends BaseEntity {
   step_way?: StepWay;
 }
 
+// Audit log
+export interface AuditLog extends BaseEntity {
+  user_id: string;
+  table_name: string;
+  record_id: number;
+  operation: 'INSERT' | 'UPDATE' | 'DELETE';
+  community_id: number | null;
+  old_values: Record<string, any> | null;
+  new_values: Record<string, any> | null;
+  changed_columns: string[] | null;
+  // Joined from profiles
+  user_profile?: { full_name: string | null };
+}
+
 // Tipos para operaciones CRUD
 export interface CrudOperation<T> {
   create: (data: Omit<T, 'id' | 'created_at' | 'updated_at'>) => Promise<T>;

@@ -17,7 +17,10 @@
       "Bash(xargs grep:*)",
       "Bash(wc:*)",
       "Bash(npm audit:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(xargs head:*)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__execute_sql"
     ]
   },
   "enabledMcpjsonServers": [
