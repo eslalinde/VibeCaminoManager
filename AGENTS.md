@@ -144,8 +144,7 @@ npm run electron:build    # Production Electron installer (Windows)
 ## CI/CD
 
 - **ci.yml**: Lint + type-check on PRs
-- **deploy-integration.yml**: Deploy to integration SWA
-- **deploy-production.yml**: Deploy to production SWA
+- **deploy.yml**: Deploy to Azure SWA (PR preview environments + production on main)
 - **electron-release.yml**: Build and publish Electron releases
 - **supabase-migrations.yml**: Apply migrations to Supabase
 - **security.yml**: CodeQL security scanning
