@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { BaseEntity, FormField as FormFieldType } from "@/types/database";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
 import { needsLocationFields } from "@/config/carisma";
 import { buildZodSchema, buildDefaultValues, prepareFormData } from "@/lib/form-schema";
@@ -87,8 +88,8 @@ export function DynamicEntityModal<T extends BaseEntity>({
 
   // Hooks para opciones dependientes
   const { options: countryOptions } = useCountryOptions();
-  const { options: stateOptions } = useStateOptions(formData.country_id);
-  
+  const { options: stateOptions } = useStateOptions(toNum(countryId));
+
   // Determinar si el formulario tiene campos de país y departamento
   const hasCountryField = fields.some((f) => f.name === "country_id");
   const hasStateField = fields.some((f) => f.name === "state_id");
@@ -132,29 +133,14 @@ export function DynamicEntityModal<T extends BaseEntity>({
   // Initialize/reset form when modal opens
   useEffect(() => {
     if (open) {
-      const initialData: Record<string, any> = {};
-      fields.forEach((field) => {
-        const rawValue = initial?.[field.name as keyof T];
-        let value: any = rawValue;
-        
-        // Handle different field types properly
-        if (field.type === 'checkbox') {
-          value = rawValue === true;
-        } else if (field.type === 'select') {
-          // For select fields, convert to string or empty string
-          value = rawValue !== null && rawValue !== undefined ? String(rawValue) : "";
-        } else {
-          // For other fields, use the raw value or empty string
-          value = rawValue || "";
-        }
-        
-        initialData[field.name] = value;
-        previousValues.current[field.name] = value;
-      });
-      
-      setFormData(initialData);
-      setErrors({});
-      setFormKey(prev => prev + 1); // Force re-render
+      const defaults = buildDefaultValues(fields, initial as Record<string, unknown> | null);
+      form.reset(defaults);
+
+      // Initialize refs with current values
+      prevCountryId.current = (defaults.country_id as string) || "";
+      prevStateId.current = (defaults.state_id as string) || "";
+      prevCityId.current = (defaults.city_id as string) || "";
+      prevLocationCountryId.current = (defaults.location_country_id as string) || "";
       isInitialized.current = true;
     } else {
       isInitialized.current = false;
@@ -167,25 +153,16 @@ export function DynamicEntityModal<T extends BaseEntity>({
   useEffect(() => {
     if (!isInitialized.current || !open || peopleLoading) return;
 
-    if (
-      peopleOptions &&
-      peopleOptions.length > 0 &&
-      initialSpouseId
-    ) {
-      const currentSpouseValue = formData.spouse_id;
+    if (peopleOptions && peopleOptions.length > 0 && initialSpouseId) {
+      const currentSpouseValue = form.getValues("spouse_id") as string;
       const expectedSpouseValue = String(initialSpouseId);
 
       if (currentSpouseValue !== expectedSpouseValue) {
-        setFormData(prev => ({ ...prev, spouse_id: expectedSpouseValue }));
+        form.setValue("spouse_id", expectedSpouseValue);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- formData is intentionally omitted to avoid infinite loops
-  }, [
-    peopleOptions,
-    peopleLoading,
-    initialSpouseId,
-    open,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [peopleOptions, peopleLoading, initialSpouseId, open]);
 
   // Limpiar campos dependientes cuando cambia el padre (solo después de la inicialización)
   useEffect(() => {
@@ -235,28 +212,14 @@ export function DynamicEntityModal<T extends BaseEntity>({
     }
   }, [locationCountryId, fields, form]);
 
-    // Preparar datos con tipos correctos
-    const preparedData = { ...formData };
-    fields.forEach(field => {
-      const val = preparedData[field.name];
-      const isEmpty = val === '' || val === null || val === undefined;
+  // Side effects: person_type_id changes
+  useEffect(() => {
+    if (!isInitialized.current) return;
 
-      if (field.type === 'checkbox') {
-        preparedData[field.name] = val === true;
-      } else if (field.name.includes('_id')) {
-        preparedData[field.name] = isEmpty ? null : parseInt(val, 10);
-      } else if (field.type === 'number') {
-        preparedData[field.name] = isEmpty ? null : Number(val);
-      } else if (field.type === 'date') {
-        preparedData[field.name] = isEmpty ? null : val;
-      }
-    });
-
-    try {
-      await onSave(preparedData as Omit<T, "id" | "created_at" | "updated_at">);
-    } catch (error: any) {
-      console.error("Error saving entity:", error);
-      alert(error?.message || 'Error al guardar. Por favor, intenta de nuevo.');
+    const numValue = personTypeId ? Number(personTypeId) : null;
+    const isMarried = numValue === 1;
+    if (!isMarried && fields.some((f) => f.name === "spouse_id")) {
+      form.setValue("spouse_id", "");
     }
     if (
       !needsLocationFields(numValue, isItinerante) &&
@@ -360,14 +323,27 @@ export function DynamicEntityModal<T extends BaseEntity>({
         </button>
         <h2 className="text-xl font-bold mb-5 pr-8">{title}</h2>
 
-        <FormRoot key={formKey} onSubmit={handleSubmit}>
-          {fields.map((field) => {
-            const fieldOptions = getFieldOptions(field.name);
-            
-            // Solo mostrar zone_id si la ciudad seleccionada tiene zonas
-            if (field.name === 'zone_id') {
-              if (!zoneOptions || zoneOptions.length === 0) {
-                return null;
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {fields.map((field) => {
+              const fieldOptions = getFieldOptions(field.name);
+
+              // Solo mostrar zone_id si la ciudad seleccionada tiene zonas
+              if (field.name === "zone_id") {
+                if (!zoneOptions || zoneOptions.length === 0) {
+                  return null;
+                }
+              }
+
+              // Solo mostrar ubicación si el tipo requiere ubicación o es itinerante
+              if (
+                field.name === "location_country_id" ||
+                field.name === "location_city_id"
+              ) {
+                const numType = personTypeId ? Number(personTypeId) : null;
+                if (!needsLocationFields(numType, isItinerante)) {
+                  return null;
+                }
               }
 
               // Lógica condicional para mostrar/ocultar el campo cónyuge
@@ -387,21 +363,17 @@ export function DynamicEntityModal<T extends BaseEntity>({
                     control={form.control}
                     name={field.name}
                     render={({ field: rhfField }) => (
-                      <FormItem>
-                        <label className="flex items-center gap-2 cursor-pointer py-2">
-                          <input
-                            type="checkbox"
+                      <FormItem className="flex flex-row items-center gap-3 space-y-0 rounded-md border p-3">
+                        <FormControl>
+                          <Checkbox
                             checked={rhfField.value === true}
-                            onChange={(e) =>
-                              rhfField.onChange(e.target.checked)
-                            }
+                            onCheckedChange={rhfField.onChange}
                             disabled={loading}
-                            className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
                           />
-                          <span className="text-sm font-medium">
-                            {field.label}
-                          </span>
-                        </label>
+                        </FormControl>
+                        <FormLabel className="cursor-pointer font-medium">
+                          {field.label}
+                        </FormLabel>
                         <FormMessage />
                       </FormItem>
                     )}
