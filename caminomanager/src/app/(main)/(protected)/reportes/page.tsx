@@ -27,7 +27,7 @@ const reportTypes = [
     color: "bg-orange-500",
   },
   {
-    title: "Líderes de Comunidades",
+    title: "Responsables de Comunidades",
     description: "Reporte dinámico de comunidades con catequistas, presbíteros, itinerantes, seminaristas y monjas",
     href: routes.reporteLideres,
     icon: Crown,

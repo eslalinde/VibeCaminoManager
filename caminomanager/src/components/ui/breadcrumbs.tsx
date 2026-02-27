@@ -22,7 +22,7 @@ const routeLabels: Record<string, string> = {
   "/reportes/equipos-catequistas": "Equipos de Catequistas",
   "/reportes/presbiteros": "Presbíteros",
   "/reportes/estado-pasos": "Estado de Comunidades",
-  "/reportes/lideres-comunidades": "Líderes de Comunidades",
+  "/reportes/lideres-comunidades": "Responsables de Comunidades",
   "/cuenta": "Mi Cuenta",
   "/admin": "Administración",
 };
