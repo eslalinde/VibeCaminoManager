@@ -9,7 +9,7 @@ import { personConfig } from '@/config/entities';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Plus, UserPlus, Users2, Pencil } from 'lucide-react';
+import { Plus, UserPlus, Users2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Person } from '@/types/database';
 import Link from 'next/link';

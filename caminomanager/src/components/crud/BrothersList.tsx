@@ -12,9 +12,9 @@ import { DynamicEntityModal } from './DynamicEntityModal';
 import { MarriageModal } from './MarriageModal';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 import { personConfig } from '@/config/entities';
-import { CARISMA_BADGE_COLORS, CARISMA_GROUP_ORDER } from '@/config/carisma';
+import { CARISMA_GROUP_ORDER } from '@/config/carisma';
 import { CarismaBadge } from '@/components/ui/carisma-badge';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { DropdownMenu } from 'radix-ui';
 
 interface BrothersListProps {
   brothers: MergedBrother[];

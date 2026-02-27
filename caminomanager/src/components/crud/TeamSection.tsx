@@ -42,7 +42,7 @@ interface MergedMember {
   belongsIds: number[];
 }
 
-export function TeamSection({ team, members, parishes, loading, teamNumber, communityId, onDelete, onAddMember, onEditMember }: TeamSectionProps) {
+export function TeamSection({ team, members, parishes, loading, teamNumber, communityId: _communityId, onDelete, onAddMember, onEditMember }: TeamSectionProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [removingResponsibleId, setRemovingResponsibleId] = useState<string | null>(null);
   const [assigningResponsibleId, setAssigningResponsibleId] = useState<string | null>(null);

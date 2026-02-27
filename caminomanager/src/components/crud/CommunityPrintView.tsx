@@ -1,6 +1,8 @@
-import { Community, Team, Belongs, Parish, CommunityStepLog } from '@/types/database';
+import { Community, Team, Belongs, Parish, CommunityStepLog, Brother } from '@/types/database';
 import { MergedBrother } from '@/hooks/useCommunityData';
-import { getCarismaLabel } from '@/config/carisma';
+import { getCarismaLabel, CARISMA_GROUP_ORDER } from '@/config/carisma';
+
+export type PrintMode = 'ficha' | 'hermanos' | 'todo';
 
 interface CommunityPrintViewProps {
   community: Community | null;
@@ -10,6 +12,134 @@ interface CommunityPrintViewProps {
   stepLogs: CommunityStepLog[];
   parishPriestName: string | null;
   mergedBrothers: MergedBrother[];
+  brothers: Brother[];
+  printMode?: PrintMode;
+}
+
+interface BrotherListRow {
+  name: string;
+  mobile: string;
+  role?: string;
+}
+
+interface BrotherGroup {
+  label: string;
+  labelPlural: string;
+  rows: BrotherListRow[];
+}
+
+/** Build the "Responsables" section from team members (team_type_id=4) */
+function buildResponsablesSection(
+  teams: Team[],
+  teamMembers: Record<number, Belongs[]>
+): { rows: BrotherListRow[]; personIds: Set<number> } {
+  const personIds = new Set<number>();
+  const responsables: { member: Belongs; isResp: boolean }[] = [];
+
+  for (const team of teams) {
+    const members = team.id ? teamMembers[team.id] || [] : [];
+    for (const m of members) {
+      if (m.person) {
+        responsables.push({ member: m, isResp: m.is_responsible_for_the_team });
+      }
+    }
+  }
+
+  // Sort: responsables first, then corresponsables; within each group by name
+  responsables.sort((a, b) => {
+    if (a.isResp !== b.isResp) return a.isResp ? -1 : 1;
+    return (a.member.person?.person_name || '').localeCompare(
+      b.member.person?.person_name || '', 'es', { sensitivity: 'base' }
+    );
+  });
+
+  // Within responsables, pair husband+wife together (responsible first, then spouse)
+  const ordered: { member: Belongs; isResp: boolean }[] = [];
+  const processed = new Set<number>();
+
+  for (const entry of responsables) {
+    const pId = entry.member.person_id;
+    if (processed.has(pId)) continue;
+    processed.add(pId);
+    ordered.push(entry);
+
+    // Check if this person's spouse is also in the list
+    const spouseId = entry.member.person?.spouse_id;
+    if (spouseId) {
+      const spouseEntry = responsables.find(
+        (r) => r.member.person_id === spouseId && !processed.has(r.member.person_id)
+      );
+      if (spouseEntry) {
+        processed.add(spouseEntry.member.person_id);
+        ordered.push(spouseEntry);
+      }
+    }
+  }
+
+  const rows: BrotherListRow[] = ordered.map((entry) => {
+    const person = entry.member.person!;
+    personIds.add(person.id!);
+    return {
+      name: (entry.isResp ? '[R] ' : '') + person.person_name,
+      mobile: person.mobile || '',
+      role: entry.isResp ? 'Resp.' : 'Corresp.',
+    };
+  });
+
+  return { rows, personIds };
+}
+
+/** Group remaining brothers by carisma, each person on a separate row */
+function buildBrotherGroups(
+  brothers: Brother[],
+  excludePersonIds: Set<number>
+): BrotherGroup[] {
+  const PLURAL_LABELS: Record<string, string> = {
+    'Casado': 'Matrimonios',
+    'Soltero': 'Solteros',
+    'Presbítero': 'Sacerdotes',
+    'Diácono': 'Diáconos',
+    'Seminarista': 'Seminaristas',
+    'Monja': 'Monjas',
+    'Viudo': 'Viudos',
+    '': 'Otros',
+  };
+
+  // Filter out excluded person IDs and those without a person
+  const remaining = brothers.filter(
+    (b) => b.person && b.person.id && !excludePersonIds.has(b.person.id)
+  );
+
+  // Group by carisma label
+  const groupMap = new Map<string, BrotherListRow[]>();
+
+  for (const brother of remaining) {
+    const person = brother.person!;
+    const carisma = getCarismaLabel(person.person_type_id);
+    if (!groupMap.has(carisma)) {
+      groupMap.set(carisma, []);
+    }
+    groupMap.get(carisma)!.push({
+      name: person.person_name,
+      mobile: person.mobile || '',
+    });
+  }
+
+  // Sort rows within each group alphabetically
+  for (const rows of groupMap.values()) {
+    rows.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+  }
+
+  // Sort groups by CARISMA_GROUP_ORDER
+  const sortedEntries = Array.from(groupMap.entries()).sort(
+    (a, b) => (CARISMA_GROUP_ORDER[a[0]] ?? 99) - (CARISMA_GROUP_ORDER[b[0]] ?? 99)
+  );
+
+  return sortedEntries.map(([carisma, rows]) => ({
+    label: carisma,
+    labelPlural: PLURAL_LABELS[carisma] || carisma || 'Otros',
+    rows,
+  }));
 }
 
 interface MergedTeamMember {
@@ -102,6 +232,8 @@ export function CommunityPrintView({
   stepLogs,
   parishPriestName,
   mergedBrothers,
+  brothers,
+  printMode = 'todo',
 }: CommunityPrintViewProps) {
   if (!community) return null;
 
@@ -110,6 +242,11 @@ export function CommunityPrintView({
     month: 'long',
     year: 'numeric',
   });
+
+  // --- Page 3: Lista de Hermanos data ---
+  const responsablesSection = buildResponsablesSection(teams.responsables, teamMembers);
+  const brotherGroups = buildBrotherGroups(brothers, responsablesSection.personIds);
+  const totalBrothers = brothers.filter((b) => b.person).length;
 
   // Current catechist team (responsible names)
   const cathechistTeam = community.cathechist_team as any;
@@ -123,7 +260,7 @@ export function CommunityPrintView({
 
   // Itinerant catechists from most recent step log
   const lastStepLog = stepLogs.length > 0 ? stepLogs[0] : null;
-  const itinerantCatechists = lastStepLog?.principal_catechist_name
+  const _itinerantCatechists = lastStepLog?.principal_catechist_name
     ? lastStepLog.principal_catechist_name
         .split(/[,;y]/)
         .map((n) => n.trim())
@@ -158,6 +295,7 @@ export function CommunityPrintView({
       {/* PÁGINA 1 — DASHBOARD DE LA COMUNIDAD                */}
       {/* ════════════════════════════════════════════════════ */}
 
+      {(printMode === 'ficha' || printMode === 'todo') && (<>
       {/* Header */}
       <header className="pv-header">
         <div className="pv-header-left">
@@ -436,6 +574,88 @@ export function CommunityPrintView({
           ComunidadCat &mdash; Documento generado el {todayFormatted}
         </div>
       </div>
+      </>)}
+
+      {/* ════════════════════════════════════════════════════ */}
+      {/* PÁGINA 3 — LISTA DE HERMANOS                        */}
+      {/* ════════════════════════════════════════════════════ */}
+
+      {(printMode === 'hermanos' || printMode === 'todo') && (
+      <div className="pv-bl">
+        {/* Header */}
+        <div className="pv-bl-header">
+          <h2 className="pv-bl-title">Lista de Hermanos</h2>
+          <span className="pv-bl-community">
+            Comunidad {community.number} &mdash; {community.parish?.name || ''}
+          </span>
+        </div>
+
+        {/* Tabla unificada de hermanos */}
+        <table className="pv-bl-table">
+          <thead>
+            <tr>
+              <th className="pv-bl-th pv-bl-th--num">#</th>
+              <th className="pv-bl-th">Nombre</th>
+              <th className="pv-bl-th">Celular</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(() => {
+              let counter = 0;
+              const sections: React.ReactNode[] = [];
+
+              if (responsablesSection.rows.length > 0) {
+                sections.push(
+                  <tr key="heading-responsables">
+                    <td colSpan={3} className="pv-bl-group-cell">Responsables ({responsablesSection.rows.length})</td>
+                  </tr>
+                );
+                responsablesSection.rows.forEach((row, i) => {
+                  counter++;
+                  sections.push(
+                    <tr key={`resp-${i}`} className="pv-bl-row">
+                      <td className="pv-bl-td pv-bl-td--num">{counter}</td>
+                      <td className="pv-bl-td pv-bl-td--name">{row.name}</td>
+                      <td className="pv-bl-td pv-bl-td--phone">{row.mobile}</td>
+                    </tr>
+                  );
+                });
+              }
+
+              brotherGroups.forEach((group) => {
+                sections.push(
+                  <tr key={`heading-${group.label}`}>
+                    <td colSpan={3} className="pv-bl-group-cell">{group.labelPlural} ({group.rows.length})</td>
+                  </tr>
+                );
+                group.rows.forEach((row, i) => {
+                  counter++;
+                  sections.push(
+                    <tr key={`${group.label}-${i}`} className="pv-bl-row">
+                      <td className="pv-bl-td pv-bl-td--num">{counter}</td>
+                      <td className="pv-bl-td pv-bl-td--name">{row.name}</td>
+                      <td className="pv-bl-td pv-bl-td--phone">{row.mobile}</td>
+                    </tr>
+                  );
+                });
+              });
+
+              return sections;
+            })()}
+          </tbody>
+        </table>
+
+        {/* Total */}
+        <div className="pv-bl-total">
+          Total: {totalBrothers} hermano{totalBrothers !== 1 ? 's' : ''}
+        </div>
+
+        {/* Footer */}
+        <div className="pv-footer">
+          ComunidadCat &mdash; Documento generado el {todayFormatted}
+        </div>
+      </div>
+      )}
     </div>
   );
 }

@@ -35,41 +35,40 @@ export function SelectParishModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) {
-      fetchAvailableParishes();
-      setSearchTerm('');
-      setSelectedParishId(null);
+    if (!open) return;
+
+    async function fetchAvailableParishes() {
+      setLoading(true);
       setError(null);
-    }
-  }, [open, JSON.stringify(excludeParishIds)]);
+      try {
+        const supabase = createClient();
 
-  const fetchAvailableParishes = async () => {
-    setLoading(true);
+        const { data: parishData, error: parishError } = await supabase
+          .from('parishes')
+          .select('*, diocese:dioceses(name)')
+          .order('name', { ascending: true });
+
+        if (parishError) throw parishError;
+
+        const excludeSet = new Set(excludeParishIds);
+        const availableParishes = (parishData || []).filter(
+          (parish) => !excludeSet.has(parish.id!)
+        );
+
+        setParishes(availableParishes);
+      } catch (err: any) {
+        console.error('Error fetching available parishes:', err);
+        setError(err.message || 'Error al cargar las parroquias disponibles');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAvailableParishes();
+    setSearchTerm('');
+    setSelectedParishId(null);
     setError(null);
-    try {
-      const supabase = createClient();
-
-      const { data: parishData, error: parishError } = await supabase
-        .from('parishes')
-        .select('*, diocese:dioceses(name)')
-        .order('name', { ascending: true });
-
-      if (parishError) throw parishError;
-
-      // Filter out parishes already linked
-      const excludeSet = new Set(excludeParishIds);
-      const availableParishes = (parishData || []).filter(
-        (parish) => !excludeSet.has(parish.id!)
-      );
-
-      setParishes(availableParishes);
-    } catch (err: any) {
-      console.error('Error fetching available parishes:', err);
-      setError(err.message || 'Error al cargar las parroquias disponibles');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [open, excludeParishIds]);
 
   const filteredParishes = parishes.filter((parish) =>
     normalizeText(parish.name).includes(normalizeText(searchTerm))

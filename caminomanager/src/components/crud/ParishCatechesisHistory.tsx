@@ -42,6 +42,7 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
         filters: { parish_id: parishId }
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchData is intentionally unstable (depends on filters state); only re-run when parishId changes
   }, [parishId]);
 
   const formatDate = (dateString?: string) => {

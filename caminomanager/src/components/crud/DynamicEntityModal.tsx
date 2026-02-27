@@ -87,8 +87,8 @@ export function DynamicEntityModal<T extends BaseEntity>({
 
   // Hooks para opciones dependientes
   const { options: countryOptions } = useCountryOptions();
-  const { options: stateOptions } = useStateOptions(toNum(countryId));
-
+  const { options: stateOptions } = useStateOptions(formData.country_id);
+  
   // Determinar si el formulario tiene campos de país y departamento
   const hasCountryField = fields.some((f) => f.name === "country_id");
   const hasStateField = fields.some((f) => f.name === "state_id");
@@ -132,17 +132,29 @@ export function DynamicEntityModal<T extends BaseEntity>({
   // Initialize/reset form when modal opens
   useEffect(() => {
     if (open) {
-      const defaults = buildDefaultValues(
-        fields,
-        initial as Record<string, unknown> | null
-      );
-      form.reset(defaults);
-      // Initialize previous value refs
-      prevCountryId.current = (defaults.country_id as string) || "";
-      prevStateId.current = (defaults.state_id as string) || "";
-      prevCityId.current = (defaults.city_id as string) || "";
-      prevLocationCountryId.current =
-        (defaults.location_country_id as string) || "";
+      const initialData: Record<string, any> = {};
+      fields.forEach((field) => {
+        const rawValue = initial?.[field.name as keyof T];
+        let value: any = rawValue;
+        
+        // Handle different field types properly
+        if (field.type === 'checkbox') {
+          value = rawValue === true;
+        } else if (field.type === 'select') {
+          // For select fields, convert to string or empty string
+          value = rawValue !== null && rawValue !== undefined ? String(rawValue) : "";
+        } else {
+          // For other fields, use the raw value or empty string
+          value = rawValue || "";
+        }
+        
+        initialData[field.name] = value;
+        previousValues.current[field.name] = value;
+      });
+      
+      setFormData(initialData);
+      setErrors({});
+      setFormKey(prev => prev + 1); // Force re-render
       isInitialized.current = true;
     } else {
       isInitialized.current = false;
@@ -150,30 +162,32 @@ export function DynamicEntityModal<T extends BaseEntity>({
   }, [open, initial, fields, form]);
 
   // Re-sincronizar spouse_id cuando se carguen las opciones de personas
+  const initialSpouseId = (initial as Record<string, unknown>)?.spouse_id;
+
   useEffect(() => {
     if (!isInitialized.current || !open || peopleLoading) return;
 
     if (
       peopleOptions &&
       peopleOptions.length > 0 &&
-      (initial as any)?.spouse_id
+      initialSpouseId
     ) {
-      const currentSpouseValue = form.getValues("spouse_id");
-      const expectedSpouseValue = String((initial as any).spouse_id);
+      const currentSpouseValue = formData.spouse_id;
+      const expectedSpouseValue = String(initialSpouseId);
 
       if (currentSpouseValue !== expectedSpouseValue) {
-        form.setValue("spouse_id", expectedSpouseValue);
+        setFormData(prev => ({ ...prev, spouse_id: expectedSpouseValue }));
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- formData is intentionally omitted to avoid infinite loops
   }, [
     peopleOptions,
     peopleLoading,
-    (initial as any)?.spouse_id,
+    initialSpouseId,
     open,
-    form,
   ]);
 
-  // Cascading: clear dependents when parent changes (only after init)
+  // Limpiar campos dependientes cuando cambia el padre (solo después de la inicialización)
   useEffect(() => {
     if (!isInitialized.current) return;
 
@@ -221,14 +235,28 @@ export function DynamicEntityModal<T extends BaseEntity>({
     }
   }, [locationCountryId, fields, form]);
 
-  // Side effects: person_type_id changes
-  useEffect(() => {
-    if (!isInitialized.current) return;
+    // Preparar datos con tipos correctos
+    const preparedData = { ...formData };
+    fields.forEach(field => {
+      const val = preparedData[field.name];
+      const isEmpty = val === '' || val === null || val === undefined;
 
-    const numValue = personTypeId ? Number(personTypeId) : null;
-    const isMarried = numValue === 1;
-    if (!isMarried && fields.some((f) => f.name === "spouse_id")) {
-      form.setValue("spouse_id", "");
+      if (field.type === 'checkbox') {
+        preparedData[field.name] = val === true;
+      } else if (field.name.includes('_id')) {
+        preparedData[field.name] = isEmpty ? null : parseInt(val, 10);
+      } else if (field.type === 'number') {
+        preparedData[field.name] = isEmpty ? null : Number(val);
+      } else if (field.type === 'date') {
+        preparedData[field.name] = isEmpty ? null : val;
+      }
+    });
+
+    try {
+      await onSave(preparedData as Omit<T, "id" | "created_at" | "updated_at">);
+    } catch (error: any) {
+      console.error("Error saving entity:", error);
+      alert(error?.message || 'Error al guardar. Por favor, intenta de nuevo.');
     }
     if (
       !needsLocationFields(numValue, isItinerante) &&
@@ -332,27 +360,14 @@ export function DynamicEntityModal<T extends BaseEntity>({
         </button>
         <h2 className="text-xl font-bold mb-5 pr-8">{title}</h2>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {fields.map((field) => {
-              const fieldOptions = getFieldOptions(field.name);
-
-              // Solo mostrar zone_id si la ciudad seleccionada tiene zonas
-              if (field.name === "zone_id") {
-                if (!zoneOptions || zoneOptions.length === 0) {
-                  return null;
-                }
-              }
-
-              // Solo mostrar ubicación si el tipo requiere ubicación o es itinerante
-              if (
-                field.name === "location_country_id" ||
-                field.name === "location_city_id"
-              ) {
-                const numType = personTypeId ? Number(personTypeId) : null;
-                if (!needsLocationFields(numType, isItinerante)) {
-                  return null;
-                }
+        <FormRoot key={formKey} onSubmit={handleSubmit}>
+          {fields.map((field) => {
+            const fieldOptions = getFieldOptions(field.name);
+            
+            // Solo mostrar zone_id si la ciudad seleccionada tiene zonas
+            if (field.name === 'zone_id') {
+              if (!zoneOptions || zoneOptions.length === 0) {
+                return null;
               }
 
               // Lógica condicional para mostrar/ocultar el campo cónyuge

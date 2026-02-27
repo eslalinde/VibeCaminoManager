@@ -6,6 +6,7 @@ import { QueryProvider } from "./QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UpdateNotification } from "@/components/electron/UpdateNotification";
 import { Toaster } from "@/components/ui/sonner";
+import { ApplicationInsightsProvider } from "@/components/ApplicationInsightsProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,13 +43,15 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${roboto.variable} antialiased`}>
-        <QueryProvider>
-          <AuthProvider>
-            {children}
-            <UpdateNotification />
-            <Toaster richColors position="top-right" />
-          </AuthProvider>
-        </QueryProvider>
+        <ApplicationInsightsProvider>
+          <QueryProvider>
+            <AuthProvider>
+              {children}
+              <UpdateNotification />
+              <Toaster richColors position="top-right" />
+            </AuthProvider>
+          </QueryProvider>
+        </ApplicationInsightsProvider>
       </body>
     </html>
   );

@@ -137,7 +137,7 @@ const columns = [
 ];
 
 const reportConfig: DynamicReportConfig<CommunityLeaderRow> = {
-  title: "Líderes de Comunidades",
+  title: "Responsables de Comunidades",
   description:
     "Reporte de comunidades con sus catequistas, presbíteros, itinerantes, seminaristas y monjas",
   columns,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { EntityConfig, FormField } from '@/types/database';
+import { EntityConfig } from '@/types/database';
 import { Country, State, City, CityZone, Diocese, Parish, StepWay, TeamType, Person, Community, CommunityStepLog, ParishCatechesis } from '@/types/database';
 import { CARISMA_OPTIONS } from '@/config/carisma';
 import { CarismaBadge } from '@/components/ui/carisma-badge';
@@ -214,7 +214,8 @@ export const parishConfig: EntityConfig<Parish> = {
       type: 'text',
       required: true,
       maxLength: 256,
-      placeholder: 'Ingrese el nombre de la parroquia'
+      placeholder: 'Ingrese el nombre de la parroquia',
+      columnWidth: '220px'
     },
     {
       name: 'diocese_id',
@@ -222,7 +223,8 @@ export const parishConfig: EntityConfig<Parish> = {
       type: 'select',
       required: false,
       options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione una diócesis (opcional)'
+      placeholder: 'Seleccione una diócesis (opcional)',
+      columnWidth: '180px'
     },
     {
       name: 'address',
@@ -238,7 +240,8 @@ export const parishConfig: EntityConfig<Parish> = {
       type: 'text',
       required: false,
       maxLength: 50,
-      placeholder: 'Ingrese el número de teléfono'
+      placeholder: 'Ingrese el número de teléfono',
+      columnWidth: '120px'
     },
     {
       name: 'email',
@@ -246,7 +249,8 @@ export const parishConfig: EntityConfig<Parish> = {
       type: 'email',
       required: false,
       maxLength: 256,
-      placeholder: 'Ingrese el email'
+      placeholder: 'Ingrese el email',
+      columnWidth: '180px'
     },
     {
       name: 'city_id',
@@ -254,7 +258,8 @@ export const parishConfig: EntityConfig<Parish> = {
       type: 'select',
       required: true,
       options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione una ciudad'
+      placeholder: 'Seleccione una ciudad',
+      columnWidth: '100px'
     },
     {
       name: 'zone_id',
@@ -262,7 +267,8 @@ export const parishConfig: EntityConfig<Parish> = {
       type: 'select',
       required: false,
       options: [], // Se llenará dinámicamente
-      placeholder: 'Seleccione una zona (opcional)'
+      placeholder: 'Seleccione una zona (opcional)',
+      columnWidth: '80px'
     }
   ],
   searchFields: ['name'],
