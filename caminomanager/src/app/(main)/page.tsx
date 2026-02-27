@@ -8,9 +8,10 @@ import {
   Users2,
   BarChart3,
   Globe,
-  Cross,
-  Shield,
-  Route,
+  Landmark,
+  Footprints,
+  UsersRound,
+  ChevronRight,
 } from "lucide-react";
 import { routes } from "@/lib/routes";
 
@@ -49,22 +50,30 @@ const secondaryAccess = [
   {
     title: "Diócesis",
     href: routes.diocesis,
-    icon: Cross,
+    icon: Landmark,
+    color: "text-rose-600",
+    bg: "bg-rose-50",
   },
   {
     title: "Etapas del Camino",
     href: routes.etapas,
-    icon: Route,
+    icon: Footprints,
+    color: "text-teal-600",
+    bg: "bg-teal-50",
   },
   {
     title: "Equipo Nacional",
     href: routes.equipoNacional,
-    icon: Shield,
+    icon: UsersRound,
+    color: "text-indigo-600",
+    bg: "bg-indigo-50",
   },
   {
     title: "Países",
     href: routes.paises,
     icon: Globe,
+    color: "text-sky-600",
+    bg: "bg-sky-50",
   },
 ];
 
@@ -119,11 +128,18 @@ export default function Home() {
             const Icon = item.icon;
             return (
               <Link key={item.href} href={item.href}>
-                <Card className="p-4 hover:shadow-md transition-all cursor-pointer text-center border hover:border-amber-200">
-                  <Icon className="w-6 h-6 mx-auto mb-2 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700">
-                    {item.title}
-                  </span>
+                <Card className="p-4 hover:shadow-md transition-all cursor-pointer border hover:border-amber-200 group">
+                  <div className="flex flex-col items-center gap-2">
+                    <div
+                      className={`p-2.5 rounded-lg ${item.bg} transition-colors`}
+                    >
+                      <Icon className={`w-5 h-5 ${item.color}`} />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 text-center">
+                      {item.title}
+                    </span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-amber-400 transition-colors mx-auto mt-2" />
                 </Card>
               </Link>
             );

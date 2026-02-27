@@ -1,21 +1,42 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
 
+const loginSchema = z.object({
+  email: z.string().min(1, "El correo es requerido").email("Email inválido"),
+  password: z.string().min(1, "La contraseña es requerida"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+
 function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const searchParams = useSearchParams();
 
-  // Verificar si el usuario ya está autenticado (usando getUser para validar
-  // el token con el servidor y evitar loops si la sesión expiró)
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  // Verificar si el usuario ya está autenticado
   useEffect(() => {
     async function checkAuth() {
       try {
@@ -43,17 +64,16 @@ function LoginForm() {
     }
   }, [searchParams]);
 
-  async function handleSubmit(formData: FormData) {
-    setLoading(true);
+  async function onSubmit(values: LoginFormValues) {
     setError(null);
 
     try {
-      const email = formData.get('email') as string;
-      const password = formData.get('password') as string;
       const redirectTo = searchParams.get('redirectTo') || '/';
-
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
 
       if (authError) {
         if (authError.message.includes('Invalid login credentials')) {
@@ -69,8 +89,6 @@ function LoginForm() {
       router.replace(redirectTo);
     } catch {
       setError('Error al iniciar sesión. Intenta de nuevo.');
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -106,40 +124,61 @@ function LoginForm() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">Iniciar sesión</h2>
 
-          <form action={handleSubmit} className="space-y-5">
-            <div>
-              <label htmlFor="email" className="block mb-1.5 text-sm font-medium text-gray-700">
-                Correo electrónico
-              </label>
-              <Input
-                id="email"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <FormField
+                control={form.control}
                 name="email"
-                type="email"
-                required
-                placeholder="tucorreo@ejemplo.com"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Correo electrónico
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="tucorreo@ejemplo.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div>
-              <label htmlFor="password" className="block mb-1.5 text-sm font-medium text-gray-700">
-                Contraseña
-              </label>
-              <Input
-                id="password"
+              <FormField
+                control={form.control}
                 name="password"
-                type="password"
-                required
-                placeholder="••••••••"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Contraseña
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            {error && (
-              <div className="text-red-600 text-sm bg-red-50 border border-red-200 p-3 rounded-lg">
-                {error}
-              </div>
-            )}
-            <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? "Ingresando..." : "Ingresar"}
-            </Button>
-          </form>
+              {error && (
+                <div className="text-red-600 text-sm bg-red-50 border border-red-200 p-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Ingresando..." : "Ingresar"}
+              </Button>
+            </form>
+          </Form>
 
           <div className="mt-6 pt-6 border-t border-gray-100 text-center text-sm text-gray-500">
             ¿No tienes una cuenta?{" "}

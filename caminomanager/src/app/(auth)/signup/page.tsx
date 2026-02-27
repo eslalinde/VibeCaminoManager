@@ -1,21 +1,54 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import Image from "next/image";
+
+const signupSchema = z
+  .object({
+    full_name: z.string().min(1, "El nombre es requerido"),
+    email: z.string().min(1, "El correo es requerido").email("Email inválido"),
+    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+    confirmPassword: z.string().min(1, "Confirma tu contraseña"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
+type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Verificar si el usuario ya está autenticado (usando getUser para validar
-  // el token con el servidor y evitar loops si la sesión expiró)
+  const form = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      full_name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  // Verificar si el usuario ya está autenticado
   useEffect(() => {
     async function checkAuth() {
       const supabase = createClient();
@@ -30,46 +63,19 @@ export default function SignupPage() {
     checkAuth();
   }, [router]);
 
-  async function handleSubmit(formData: FormData) {
-    setLoading(true);
+  async function onSubmit(values: SignupFormValues) {
     setError(null);
     setSuccess(null);
 
     try {
-      const email = formData.get('email') as string;
-      const password = formData.get('password') as string;
-      const confirmPassword = formData.get('confirmPassword') as string;
-      const full_name = formData.get('full_name') as string;
-
-      if (!email || !password || !confirmPassword || !full_name) {
-        setError('Todos los campos son requeridos');
-        setLoading(false);
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError('Las contraseñas no coinciden');
-        setLoading(false);
-        return;
-      }
-      if (password.length < 6) {
-        setError('La contraseña debe tener al menos 6 caracteres');
-        setLoading(false);
-        return;
-      }
-      if (!email.includes('@')) {
-        setError('El email no es válido');
-        setLoading(false);
-        return;
-      }
-
       const supabase = createClient();
       const siteUrl = window.location.origin;
 
       const { data, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
+        email: values.email,
+        password: values.password,
         options: {
-          data: { full_name },
+          data: { full_name: values.full_name },
           emailRedirectTo: `${siteUrl}/auth/confirm`,
         },
       });
@@ -82,7 +88,6 @@ export default function SignupPage() {
         } else {
           setError(authError.message);
         }
-        setLoading(false);
         return;
       }
 
@@ -98,8 +103,6 @@ export default function SignupPage() {
       console.error('Error en signup:', err);
       setError('Error interno. Intenta nuevamente.');
     }
-
-    setLoading(false);
   }
 
   // Loading mientras verificamos autenticación
@@ -134,85 +137,118 @@ export default function SignupPage() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">Crear cuenta</h2>
 
-          <form action={handleSubmit} className="space-y-5">
-            <div>
-              <label htmlFor="full_name" className="block mb-1.5 text-sm font-medium text-gray-700">
-                Nombre completo
-              </label>
-              <Input
-                id="full_name"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <FormField
+                control={form.control}
                 name="full_name"
-                type="text"
-                required
-                placeholder="Tu nombre completo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Nombre completo
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Tu nombre completo"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div>
-              <label htmlFor="email" className="block mb-1.5 text-sm font-medium text-gray-700">
-                Correo electrónico
-              </label>
-              <Input
-                id="email"
+              <FormField
+                control={form.control}
                 name="email"
-                type="email"
-                required
-                placeholder="tucorreo@ejemplo.com"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Correo electrónico
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="tucorreo@ejemplo.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div>
-              <label htmlFor="password" className="block mb-1.5 text-sm font-medium text-gray-700">
-                Contraseña
-              </label>
-              <Input
-                id="password"
+              <FormField
+                control={form.control}
                 name="password"
-                type="password"
-                required
-                placeholder="••••••••"
-                minLength={6}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Contraseña
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Mínimo 6 caracteres
+                    </p>
+                  </FormItem>
+                )}
               />
-              <p className="text-xs text-gray-400 mt-1">
-                Mínimo 6 caracteres
-              </p>
-            </div>
-            <div>
-              <label htmlFor="confirmPassword" className="block mb-1.5 text-sm font-medium text-gray-700">
-                Confirmar contraseña
-              </label>
-              <Input
-                id="confirmPassword"
+              <FormField
+                control={form.control}
                 name="confirmPassword"
-                type="password"
-                required
-                placeholder="••••••••"
-                minLength={6}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Confirmar contraseña
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {error && (
-              <div className="text-red-600 text-sm bg-red-50 border border-red-200 p-3 rounded-lg">
-                {error}
-              </div>
-            )}
+              {error && (
+                <div className="text-red-600 text-sm bg-red-50 border border-red-200 p-3 rounded-lg">
+                  {error}
+                </div>
+              )}
 
-            {success && (
-              <div className="text-green-700 text-sm bg-green-50 border border-green-200 p-4 rounded-lg">
-                <p>{success}</p>
-                <Link
-                  href="/login"
-                  className="block mt-2 text-amber-600 hover:text-amber-700 font-medium"
+              {success && (
+                <div className="text-green-700 text-sm bg-green-50 border border-green-200 p-4 rounded-lg">
+                  <p>{success}</p>
+                  <Link
+                    href="/login"
+                    className="block mt-2 text-amber-600 hover:text-amber-700 font-medium"
+                  >
+                    Ir a iniciar sesión
+                  </Link>
+                </div>
+              )}
+
+              {!success && (
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                  disabled={form.formState.isSubmitting}
                 >
-                  Ir a iniciar sesión
-                </Link>
-              </div>
-            )}
-
-            {!success && (
-              <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                {loading ? "Creando cuenta..." : "Crear cuenta"}
-              </Button>
-            )}
-          </form>
+                  {form.formState.isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
+                </Button>
+              )}
+            </form>
+          </Form>
 
           <div className="mt-6 pt-6 border-t border-gray-100 text-center text-sm text-gray-500">
             ¿Ya tienes una cuenta?{" "}
