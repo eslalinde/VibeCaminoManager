@@ -45,6 +45,13 @@ export const queryKeys = {
     type: (reportType: string) => ['report', reportType] as const,
   },
 
+  // Audit
+  audit: {
+    all: ['audit'] as const,
+    community: (communityId: number, filters?: Record<string, unknown>) =>
+      ['audit', 'community', communityId, filters] as const,
+  },
+
   // Admin
   admin: {
     all: ['admin'] as const,

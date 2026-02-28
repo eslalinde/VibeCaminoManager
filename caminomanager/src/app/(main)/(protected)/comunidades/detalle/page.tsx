@@ -16,6 +16,7 @@ import { SelectBrotherForTeamModal } from '@/components/crud/SelectBrotherForTea
 import { Button } from '@/components/ui/button';
 import { MergeCommunityModal } from '@/components/crud/MergeCommunityModal';
 import { ConfirmDeleteDialog } from '@/components/crud/ConfirmDeleteDialog';
+import { AuditLogSheet } from '@/components/crud/AuditLogSheet';
 import { ArrowLeft, ChevronDown, Merge, Plus, Printer, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -312,6 +313,7 @@ function CommunityDetailContent() {
                 Fusionar
               </Button>
             )}
+            <AuditLogSheet communityId={communityId} />
             <Button
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(true)}
