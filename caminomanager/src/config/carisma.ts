@@ -4,13 +4,13 @@ export interface CarismaOption {
 }
 
 export const CARISMA_OPTIONS: CarismaOption[] = [
-  { value: 1, label: 'Casado' },
-  { value: 2, label: 'Soltero' },
+  { value: 1, label: 'Matrimonio' },
+  { value: 2, label: 'Soltero/a' },
   { value: 3, label: 'Presbítero' },
   { value: 4, label: 'Seminarista' },
   { value: 5, label: 'Diácono' },
   { value: 6, label: 'Monja' },
-  { value: 7, label: 'Viudo' },
+  { value: 7, label: 'Viudo/a' },
 ];
 
 /** Person types that cannot be married (should not be merged with spouse) */
@@ -38,19 +38,19 @@ export const CARISMA_BADGE_COLORS: Record<string, { bg: string; text: string }> 
   'Seminarista': { bg: 'bg-blue-100', text: 'text-blue-800' },
   'Diácono': { bg: 'bg-orange-100', text: 'text-orange-800' },
   'Monja': { bg: 'bg-indigo-100', text: 'text-indigo-800' },
-  'Viudo': { bg: 'bg-slate-100', text: 'text-slate-800' },
-  'Soltero': { bg: 'bg-gray-100', text: 'text-gray-800' },
-  'Casado': { bg: 'bg-pink-100', text: 'text-pink-800' },
+  'Viudo/a': { bg: 'bg-slate-100', text: 'text-slate-800' },
+  'Soltero/a': { bg: 'bg-gray-100', text: 'text-gray-800' },
+  'Matrimonio': { bg: 'bg-pink-100', text: 'text-pink-800' },
 };
 
 /** Order for grouping brothers by carisma in BrothersList (lower = first) */
 export const CARISMA_GROUP_ORDER: Record<string, number> = {
-  'Casado': 0,
+  'Matrimonio': 0,
   'Presbítero': 1,
   'Diácono': 2,
   'Seminarista': 3,
   'Monja': 4,
-  'Viudo': 5,
-  'Soltero': 6,
+  'Viudo/a': 5,
+  'Soltero/a': 6,
   '': 7,
 };

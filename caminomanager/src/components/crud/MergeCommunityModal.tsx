@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { friendlyError } from '@/lib/supabaseErrors';
 import {
   Form,
   FormField,
@@ -176,7 +177,7 @@ export function MergeCommunityModal({
       await onSuccess();
     } catch (err: any) {
       console.error('Error merging communities:', err);
-      setError(err.message || 'Error al fusionar las comunidades');
+      setError(friendlyError(err, 'Error al fusionar las comunidades'));
     } finally {
       setLoading(false);
     }

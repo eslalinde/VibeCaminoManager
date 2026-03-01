@@ -7,6 +7,7 @@ import { Belongs, Person } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserPlus, Plus, ChevronDown, ChevronRight, Heart, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { friendlyError } from '@/lib/supabaseErrors';
 import { SelectBrotherModal } from './SelectBrotherModal';
 import { DynamicEntityModal } from './DynamicEntityModal';
 import { MarriageModal } from './MarriageModal';
@@ -164,7 +165,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
       if (onAdd) onAdd();
     } catch (error: any) {
       console.error('Error adding marriage to community:', error);
-      toast.error(error.message || 'El matrimonio fue creado pero hubo un error al agregarlo a la comunidad.');
+      toast.error(friendlyError(error, 'El matrimonio fue creado pero hubo un error al agregarlo a la comunidad.'));
     }
   };
 
@@ -199,7 +200,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
       }
     } catch (error: any) {
       console.error('Error creating new brother:', error);
-      toast.error(error.message || 'Error al crear el hermano');
+      toast.error(friendlyError(error, 'Error al crear el hermano'));
       throw error;
     } finally {
       setIsSaving(false);
@@ -331,7 +332,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
                             <TableCell className="font-medium pl-8">
                               {brother.name}
                               {brother.isItinerante && (
-                                <CarismaBadge carisma="Itinerante" size="sm" showLabel={false} className="ml-2" />
+                                <CarismaBadge carisma="Itinerante" size="sm" className="ml-2" />
                               )}
                               {brother.isMarriage && (
                                 <span className="ml-2 text-xs bg-pink-100 text-pink-800 px-2 py-1 rounded">

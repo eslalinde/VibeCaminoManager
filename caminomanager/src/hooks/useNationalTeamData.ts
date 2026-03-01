@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Team, Belongs, Community } from '@/types/database';
+import { friendlyError } from '@/lib/supabaseErrors';
 
 export interface NationalTeamData {
   team: Team | null;
@@ -63,7 +64,7 @@ export function useNationalTeamData(): NationalTeamData {
       setCommunities(communitiesData || []);
     } catch (err: any) {
       console.error('Error fetching national team data:', JSON.stringify(err));
-      setError(err?.message || (typeof err === 'string' ? err : 'Error desconocido'));
+      setError(friendlyError(err, 'Error desconocido'));
     } finally {
       setLoading(false);
     }

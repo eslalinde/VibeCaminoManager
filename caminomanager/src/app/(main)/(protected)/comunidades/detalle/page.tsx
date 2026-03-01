@@ -18,6 +18,7 @@ import { MergeCommunityModal } from '@/components/crud/MergeCommunityModal';
 import { ConfirmDeleteDialog } from '@/components/crud/ConfirmDeleteDialog';
 import { AuditLogSheet } from '@/components/crud/AuditLogSheet';
 import { ArrowLeft, ChevronDown, Merge, Plus, Printer, Trash2 } from 'lucide-react';
+import { friendlyError } from '@/lib/supabaseErrors';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -233,7 +234,7 @@ function CommunityDetailContent() {
       router.push(routes.comunidades);
     } catch (err: any) {
       console.error('Error deleting community:', err);
-      toast.error(err.message || 'Error al eliminar la comunidad');
+      toast.error(friendlyError(err, 'Error al eliminar la comunidad'));
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);

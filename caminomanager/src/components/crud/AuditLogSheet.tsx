@@ -24,6 +24,8 @@ import {
   getTableLabel,
   type AuditColor,
   type ChangeDetail,
+  type PersonNames,
+  type TeamNames,
 } from '@/lib/auditMessages';
 
 // ── Dot color mapping ──
@@ -39,12 +41,16 @@ const DOT_COLORS: Record<AuditColor, string> = {
 function AuditLogEntry({
   entry,
   isLast,
+  personNames,
+  teamNames,
 }: {
   entry: AuditLog;
   isLast: boolean;
+  personNames: PersonNames;
+  teamNames: TeamNames;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const formatted = formatAuditEntry(entry);
+  const formatted = formatAuditEntry(entry, personNames, teamNames);
   const hasDetails = formatted.details.length > 0;
 
   return (
@@ -133,11 +139,15 @@ function AuditLogTimeline({
   isLoading,
   hasMore,
   onLoadMore,
+  personNames,
+  teamNames,
 }: {
   entries: AuditLog[];
   isLoading: boolean;
   hasMore: boolean;
   onLoadMore: () => void;
+  personNames: PersonNames;
+  teamNames: TeamNames;
 }) {
   if (isLoading && entries.length === 0) {
     return (
@@ -171,6 +181,8 @@ function AuditLogTimeline({
           key={entry.id}
           entry={entry}
           isLast={index === entries.length - 1}
+          personNames={personNames}
+          teamNames={teamNames}
         />
       ))}
 
@@ -213,7 +225,7 @@ const TABLE_OPTIONS = [
 
 export function AuditLogSheet({ communityId }: { communityId: number }) {
   const [open, setOpen] = useState(false);
-  const { entries, isLoading, hasMore, filters, updateFilters, loadMore } =
+  const { entries, isLoading, hasMore, filters, updateFilters, loadMore, personNames, teamNames } =
     useAuditLog(communityId, open);
 
   const handleOperationChange = (value: string) => {
@@ -290,6 +302,8 @@ export function AuditLogSheet({ communityId }: { communityId: number }) {
             isLoading={isLoading}
             hasMore={hasMore}
             onLoadMore={loadMore}
+            personNames={personNames}
+            teamNames={teamNames}
           />
         </div>
       </SheetContent>

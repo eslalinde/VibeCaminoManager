@@ -17,6 +17,7 @@ import { Priest } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserPlus, Plus, Phone, Mail, User, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import { friendlyError } from '@/lib/supabaseErrors';
 import { SelectPriestModal } from './SelectPriestModal';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 
@@ -207,7 +208,7 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
       setEditingPriest(null);
     } catch (error: any) {
       console.error('Error saving priest:', error);
-      toast.error(error.message || 'Error al guardar el sacerdote');
+      toast.error(friendlyError(error, 'Error al guardar el sacerdote'));
     } finally {
       setIsSaving(false);
     }

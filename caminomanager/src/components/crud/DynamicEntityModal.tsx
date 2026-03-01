@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { friendlyError } from "@/lib/supabaseErrors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -303,7 +304,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
       );
     } catch (error: any) {
       console.error("Error saving entity:", error);
-      alert(error?.message || "Error al guardar. Por favor, intenta de nuevo.");
+      alert(friendlyError(error, "Error al guardar. Por favor, intenta de nuevo."));
     }
   };
 

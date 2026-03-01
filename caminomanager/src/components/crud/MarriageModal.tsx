@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { createClient } from "@/utils/supabase/client";
+import { friendlyError } from "@/lib/supabaseErrors";
 
 interface MarriageModalProps {
   open: boolean;
@@ -76,7 +77,7 @@ export function MarriageModal({ open, onClose, onSuccess }: MarriageModalProps) 
           phone: values.husband_phone || null,
           mobile: values.husband_mobile || null,
           email: values.husband_email || null,
-          person_type_id: 1, // Casado
+          person_type_id: 1, // Matrimonio
           gender_id: 1, // Masculino
         })
         .select()
@@ -92,7 +93,7 @@ export function MarriageModal({ open, onClose, onSuccess }: MarriageModalProps) 
           phone: values.wife_phone || null,
           mobile: values.wife_mobile || null,
           email: values.wife_email || null,
-          person_type_id: 1, // Casado
+          person_type_id: 1, // Matrimonio
           gender_id: 2, // Femenino
           spouse_id: husband.id,
         })
@@ -114,7 +115,7 @@ export function MarriageModal({ open, onClose, onSuccess }: MarriageModalProps) 
     } catch (error: any) {
       console.error("Error creating marriage:", error);
       form.setError("root", {
-        message: error.message || "Error al crear el matrimonio",
+        message: friendlyError(error, "Error al crear el matrimonio"),
       });
     }
   };

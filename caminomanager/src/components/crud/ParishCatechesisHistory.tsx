@@ -12,6 +12,7 @@ import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { parishCatechesisConfig } from '@/config/entities';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
+import { friendlyError } from '@/lib/supabaseErrors';
 
 interface ParishCatechesisHistoryProps {
   parishId: number;
@@ -138,7 +139,7 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
       await fetchData({ filters: { parish_id: parishId } });
     } catch (error) {
       console.error('Error deleting catechesis entry:', error);
-      toast.error('Error al eliminar el registro');
+      toast.error(friendlyError(error, 'Error al eliminar el registro'));
     } finally {
       setIsDeleting(false);
     }

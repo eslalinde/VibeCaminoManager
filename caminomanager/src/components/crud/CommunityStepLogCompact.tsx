@@ -11,6 +11,7 @@ import { communityStepLogConfig } from '@/config/entities';
 import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
+import { friendlyError } from '@/lib/supabaseErrors';
 
 interface CommunityStepLogCompactProps {
   communityId: number;
@@ -149,7 +150,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
       onStepLogDeleted?.();
     } catch (error) {
       console.error('Error deleting step log entry:', error);
-      toast.error('Error al eliminar el registro');
+      toast.error(friendlyError(error, 'Error al eliminar el registro'));
     } finally {
       setIsDeleting(false);
     }
