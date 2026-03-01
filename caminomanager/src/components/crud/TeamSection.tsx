@@ -452,7 +452,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
         onClose={() => setShowDeleteTeamDialog(false)}
         onConfirm={handleDeleteTeam}
         title="¿Eliminar equipo?"
-        description={`¿Estás seguro de que deseas eliminar el ${getTeamTitle()}? Se eliminarán todos los miembros del equipo.`}
+        itemName={getTeamTitle()}
+        description="¿Estás seguro de que deseas eliminar este equipo? Se eliminarán todos los miembros."
         preview={[
           `${mergedMembers.length} miembro(s) del equipo`,
           ...(parishes.length > 0 ? [`${parishes.length} parroquia(s) asignada(s)`] : []),
@@ -466,7 +467,8 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
         onClose={() => setMemberToDelete(null)}
         onConfirm={handleDeleteMember}
         title="¿Eliminar miembro del equipo?"
-        description={`¿Estás seguro de que deseas eliminar a ${memberToDelete?.name} de este equipo?`}
+        itemName={memberToDelete?.name}
+        description="¿Estás seguro de que deseas eliminar a este miembro del equipo?"
         loading={deletingId !== null}
       />
 

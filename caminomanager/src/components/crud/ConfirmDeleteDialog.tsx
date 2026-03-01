@@ -18,6 +18,8 @@ interface ConfirmDeleteDialogProps {
   onConfirm: () => void | Promise<void>;
   title: string;
   description: string;
+  /** Name of the item being deleted, shown prominently (e.g., "Juan Pérez", "Comunidad 5") */
+  itemName?: string;
   /** Optional details shown in a preview box (e.g., "3 hermanos, 2 equipos") */
   preview?: string[];
   loading?: boolean;
@@ -31,9 +33,10 @@ export function ConfirmDeleteDialog({
   onConfirm,
   title,
   description,
+  itemName,
   preview,
   loading = false,
-  confirmWord = 'ELIMINAR',
+  confirmWord = 'eliminar',
 }: ConfirmDeleteDialogProps) {
   const [confirmText, setConfirmText] = useState('');
 
@@ -44,7 +47,7 @@ export function ConfirmDeleteDialog({
     }
   }, [open]);
 
-  const isConfirmValid = confirmText === confirmWord;
+  const isConfirmValid = confirmText.toUpperCase() === confirmWord.toUpperCase();
 
   const handleConfirm = async () => {
     if (!isConfirmValid) return;
@@ -64,15 +67,27 @@ export function ConfirmDeleteDialog({
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            {/* Prominent item name */}
+            {itemName && (
+              <div className="px-4 py-3 bg-red-100 border-l-4 border-red-500 rounded-r-lg">
+                <p className="text-base font-bold text-red-900 break-words">
+                  {itemName}
+                </p>
+              </div>
+            )}
+
             {/* Preview of what will be affected */}
             {preview && preview.length > 0 && (
-              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                <p className="text-sm font-medium text-gray-700 mb-2">
-                  Se eliminará:
+              <div className="p-4 bg-red-50 border-2 border-red-300 rounded-lg">
+                <p className="text-sm font-semibold text-red-800 mb-2">
+                  Se eliminará permanentemente:
                 </p>
-                <ul className="space-y-1 text-sm text-gray-600">
+                <ul className="space-y-1.5 text-sm text-red-700 font-medium">
                   {preview.map((item, i) => (
-                    <li key={i}>• {item}</li>
+                    <li key={i} className="flex items-center gap-2">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                      {item}
+                    </li>
                   ))}
                 </ul>
               </div>

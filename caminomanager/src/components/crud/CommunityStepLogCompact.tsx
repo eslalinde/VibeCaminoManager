@@ -8,7 +8,7 @@ import { CommunityStepLog as CommunityStepLogType } from '@/types/database';
 import { FileText, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import { DynamicEntityModal } from '@/components/crud/DynamicEntityModal';
 import { communityStepLogConfig } from '@/config/entities';
-import { DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ConfirmDeleteDialog } from '@/components/crud/ConfirmDeleteDialog';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 import { friendlyError } from '@/lib/supabaseErrors';
@@ -28,8 +28,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [entryToDelete, setEntryToDelete] = useState<CommunityStepLogType | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const itemsPerPage = 4;
 
@@ -123,13 +122,12 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
     return fields;
   }, []);
 
-  const handleDeleteClick = (entryId: number) => {
-    setDeletingId(entryId);
-    setIsDeleteDialogOpen(true);
+  const handleDeleteClick = (entry: CommunityStepLogType) => {
+    setEntryToDelete(entry);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deletingId || isDeleting) return;
+    if (!entryToDelete?.id || isDeleting) return;
 
     setIsDeleting(true);
     try {
@@ -137,7 +135,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
       const { error, count } = await supabase
         .from('community_step_log')
         .delete({ count: 'exact' })
-        .eq('id', deletingId);
+        .eq('id', entryToDelete.id);
 
       if (error) throw error;
       if (count === 0) {
@@ -145,8 +143,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
       }
 
       toast.success('Registro eliminado de la bitácora');
-      setIsDeleteDialogOpen(false);
-      setDeletingId(null);
+      setEntryToDelete(null);
       onStepLogDeleted?.();
     } catch (error) {
       console.error('Error deleting step log entry:', error);
@@ -233,8 +230,8 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
                               variant="ghost"
                               size="sm"
                               className="opacity-0 group-hover/entry:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 -mt-1"
-                              onClick={() => handleDeleteClick(entry.id!)}
-                              disabled={deletingId === entry.id}
+                              onClick={() => handleDeleteClick(entry)}
+                              disabled={entryToDelete?.id === entry.id}
                               title="Eliminar evento"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -286,8 +283,8 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
                         variant="ghost"
                         size="sm"
                         className="opacity-0 group-hover/entry:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0 -mt-1"
-                        onClick={() => handleDeleteClick(entry.id!)}
-                        disabled={deletingId === entry.id}
+                        onClick={() => handleDeleteClick(entry)}
+                        disabled={entryToDelete?.id === entry.id}
                         title="Eliminar evento"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -345,40 +342,20 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
       />
 
       {/* Diálogo de confirmación para eliminar */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={(open) => {
-        if (!open) {
-          setIsDeleteDialogOpen(false);
-          setDeletingId(null);
-        }
-      }}>
-        <DialogContent>
-            <DialogHeader>
-              <DialogTitle>¿Eliminar evento de bitácora?</DialogTitle>
-              <DialogDescription>
-                ¿Estás seguro de que deseas eliminar este evento de la bitácora? Esta acción no se puede deshacer.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsDeleteDialogOpen(false);
-                  setDeletingId(null);
-                }}
-                disabled={isDeleting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDeleteConfirm}
-                disabled={isDeleting || !deletingId}
-              >
-                {isDeleting ? 'Eliminando...' : 'Eliminar'}
-              </Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={entryToDelete !== null}
+        onClose={() => setEntryToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        title="¿Eliminar evento de bitácora?"
+        itemName={entryToDelete?.step_way?.name || 'Evento de bitácora'}
+        description={`¿Estás seguro de que deseas eliminar este registro de la Comunidad ${communityNumber}?`}
+        preview={[
+          `Paso: ${entryToDelete?.step_way?.name || 'Sin paso'}`,
+          `Fecha: ${entryToDelete?.date_of_step ? new Date(entryToDelete.date_of_step).toLocaleDateString('es-CO') : 'No especificada'}`,
+          ...(entryToDelete?.notes ? [`Notas: ${entryToDelete.notes}`] : []),
+        ]}
+        loading={isDeleting}
+      />
     </Card>
   );
 }

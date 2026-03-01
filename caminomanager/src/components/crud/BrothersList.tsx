@@ -397,7 +397,8 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
       onClose={() => setBrotherToDelete(null)}
       onConfirm={handleDeleteConfirmed}
       title="¿Eliminar hermano de la comunidad?"
-      description={`¿Estás seguro de que deseas eliminar a ${brotherToDelete?.name} de esta comunidad?`}
+      itemName={brotherToDelete?.name}
+      description="¿Estás seguro de que deseas eliminar a este hermano de la comunidad?"
       loading={deletingId !== null}
     />
   </>
