@@ -11,6 +11,33 @@ export interface AuditFilters {
 
 const PAGE_SIZE = 20;
 
+// Tables where person_id is meaningful
+const PERSON_TABLES = new Set(['brothers', 'belongs']);
+
+function collectPersonIds(entries: AuditLog[]): number[] {
+  const ids = new Set<number>();
+  for (const entry of entries) {
+    if (!PERSON_TABLES.has(entry.table_name)) continue;
+    const newPid = entry.new_values?.person_id;
+    const oldPid = entry.old_values?.person_id;
+    if (typeof newPid === 'number') ids.add(newPid);
+    if (typeof oldPid === 'number') ids.add(oldPid);
+  }
+  return Array.from(ids);
+}
+
+function collectTeamIds(entries: AuditLog[]): number[] {
+  const ids = new Set<number>();
+  for (const entry of entries) {
+    if (entry.table_name !== 'belongs') continue;
+    const newTid = entry.new_values?.team_id;
+    const oldTid = entry.old_values?.team_id;
+    if (typeof newTid === 'number') ids.add(newTid);
+    if (typeof oldTid === 'number') ids.add(oldTid);
+  }
+  return Array.from(ids);
+}
+
 export function useAuditLog(communityId: number, enabled: boolean = true) {
   const supabase = useMemo(() => createClient(), []);
   const [filters, setFilters] = useState<AuditFilters>({});
@@ -44,10 +71,43 @@ export function useAuditLog(communityId: number, enabled: boolean = true) {
       const { data: rows, error, count } = await query;
       if (error) throw error;
 
-      return {
-        entries: (rows || []) as AuditLog[],
-        totalCount: count || 0,
-      };
+      const entries = (rows || []) as AuditLog[];
+
+      // Resolve person names referenced in audit entries
+      const personIds = collectPersonIds(entries);
+      let personNames: Record<number, string> = {};
+
+      if (personIds.length > 0) {
+        const { data: people } = await supabase
+          .from('people')
+          .select('id, person_name')
+          .in('id', personIds);
+
+        if (people) {
+          personNames = Object.fromEntries(
+            people.map((p: { id: number; person_name: string }) => [p.id, p.person_name])
+          );
+        }
+      }
+
+      // Resolve team names for belongs entries
+      const teamIds = collectTeamIds(entries);
+      let teamNames: Record<number, string> = {};
+
+      if (teamIds.length > 0) {
+        const { data: teams } = await supabase
+          .from('teams')
+          .select('id, name')
+          .in('id', teamIds);
+
+        if (teams) {
+          teamNames = Object.fromEntries(
+            teams.map((t: { id: number; name: string }) => [t.id, t.name])
+          );
+        }
+      }
+
+      return { entries, totalCount: count || 0, personNames, teamNames };
     },
     enabled: enabled && !!communityId,
     staleTime: 30_000,
@@ -55,6 +115,8 @@ export function useAuditLog(communityId: number, enabled: boolean = true) {
 
   const entries = data?.entries ?? [];
   const totalCount = data?.totalCount ?? 0;
+  const personNames = data?.personNames ?? {};
+  const teamNames = data?.teamNames ?? {};
   const hasMore = entries.length < totalCount;
 
   const loadMore = useCallback(() => {
@@ -75,5 +137,7 @@ export function useAuditLog(communityId: number, enabled: boolean = true) {
     filters,
     updateFilters,
     loadMore,
+    personNames,
+    teamNames,
   };
 }

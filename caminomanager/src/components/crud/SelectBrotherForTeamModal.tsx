@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { MergedBrother } from '@/hooks/useCommunityData';
 import { Belongs } from '@/types/database';
 import { normalizeText } from '@/lib/utils';
+import { friendlyError } from '@/lib/supabaseErrors';
 
 interface SelectBrotherForTeamModalProps {
   open: boolean;
@@ -71,7 +72,7 @@ export function SelectBrotherForTeamModal({
       setError(null);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Error al agregar al equipo');
+      setError(friendlyError(err, 'Error al agregar al equipo'));
     }
   };
 

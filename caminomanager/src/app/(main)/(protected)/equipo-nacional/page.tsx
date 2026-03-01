@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, UserPlus, Users2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Person } from '@/types/database';
+import { friendlyError } from '@/lib/supabaseErrors';
 import Link from 'next/link';
 import { routes } from '@/lib/routes';
 
@@ -66,7 +67,7 @@ export default function NationalTeamPage() {
         .single();
 
       if (personError) {
-        throw new Error(personError.message || JSON.stringify(personError));
+        throw new Error(friendlyError(personError));
       }
 
       // Add person to the team
@@ -78,7 +79,7 @@ export default function NationalTeamPage() {
       });
 
       if (belongsError) {
-        throw new Error(belongsError.message || JSON.stringify(belongsError));
+        throw new Error(friendlyError(belongsError));
       }
 
       await refreshTeam();
@@ -117,7 +118,7 @@ export default function NationalTeamPage() {
         .eq('id', editingPerson.id);
 
       if (updateError) {
-        throw new Error(updateError.message || JSON.stringify(updateError));
+        throw new Error(friendlyError(updateError));
       }
 
       await refreshTeam();

@@ -14,6 +14,7 @@ import { Team, Belongs, Parish } from '@/types/database';
 import { createClient } from '@/utils/supabase/client';
 import { Trash2, UserMinus, Crown, UserPlus, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import { friendlyError } from '@/lib/supabaseErrors';
 import { getCarismaLabel } from '@/config/carisma';
 import { CarismaBadge } from '@/components/ui/carisma-badge';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
@@ -95,7 +96,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
           merged.push({
             id: `marriage-${person.id}-${spouseMember.person_id}`,
             name: `${husband.person_name} y ${wife.person_name}`,
-            carisma: 'Casado',
+            carisma: 'Matrimonio',
             mobile: husband.mobile || wife.mobile || '',
             isResponsible: member.is_responsible_for_the_team || spouseMember.is_responsible_for_the_team,
             isMarriage: true,
@@ -163,7 +164,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       if (onDelete) onDelete();
     } catch (error) {
       console.error('Error deleting team member:', error);
-      toast.error('Error al eliminar el miembro del equipo');
+      toast.error(friendlyError(error, 'Error al eliminar el miembro del equipo'));
     } finally {
       setDeletingId(null);
       setMemberToDelete(null);
@@ -190,7 +191,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       if (onDelete) onDelete();
     } catch (error) {
       console.error('Error removing responsible:', error);
-      toast.error('Error al quitar la responsabilidad');
+      toast.error(friendlyError(error, 'Error al quitar la responsabilidad'));
     } finally {
       setRemovingResponsibleId(null);
       setMemberToRemoveResponsible(null);
@@ -238,7 +239,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
       if (onDelete) onDelete();
     } catch (error) {
       console.error('Error assigning responsible:', error);
-      toast.error('Error al asignar la responsabilidad');
+      toast.error(friendlyError(error, 'Error al asignar la responsabilidad'));
     } finally {
       setAssigningResponsibleId(null);
       setMemberToAssignResponsible(null);
@@ -371,7 +372,7 @@ export function TeamSection({ team, members, parishes, loading, teamNumber, comm
                               Responsable
                             </span>
                           )}
-                          {member.carisma && member.carisma !== 'Casado' && (
+                          {member.carisma && member.carisma !== 'Matrimonio' && (
                             <CarismaBadge carisma={member.carisma} className="ml-2" />
                           )}
                         </>

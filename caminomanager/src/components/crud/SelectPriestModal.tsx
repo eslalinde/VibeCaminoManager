@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { createClient } from '@/utils/supabase/client';
 import { Person } from '@/types/database';
 import { normalizeText } from '@/lib/utils';
+import { friendlyError } from '@/lib/supabaseErrors';
 
 interface SelectPriestModalProps {
   open: boolean;
@@ -70,7 +71,7 @@ export function SelectPriestModal({
         setPeople(availablePeople);
       } catch (err: any) {
         console.error('Error fetching available people:', err);
-        setError(err.message || 'Error al cargar las personas disponibles');
+        setError(friendlyError(err, 'Error al cargar las personas disponibles'));
       } finally {
         setLoading(false);
       }
@@ -97,7 +98,7 @@ export function SelectPriestModal({
       await onSelect(selectedPersonId, selectedRole);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Error al asignar el sacerdote');
+      setError(friendlyError(err, 'Error al asignar el sacerdote'));
     }
   };
 

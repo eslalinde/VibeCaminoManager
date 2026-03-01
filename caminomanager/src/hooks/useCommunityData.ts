@@ -302,7 +302,7 @@ export function useCommunityData(communityId: number): CommunityData & {
             merged.push({
               id: `marriage-${person.id}-${spouseBrother.person_id}`,
               name: `${husband.person_name} y ${wife.person_name}`,
-              carisma: 'Casado',
+              carisma: 'Matrimonio',
               celular: husband.mobile || wife.mobile || '',
               isMarriage: true,
               isPresbitero: false,

@@ -6,7 +6,7 @@ import {
   BookOpen,
   Sparkles,
   UserMinus,
-  Footprints,
+  Globe,
 } from "lucide-react";
 import { CARISMA_BADGE_COLORS } from "@/config/carisma";
 
@@ -14,23 +14,23 @@ import { CARISMA_BADGE_COLORS } from "@/config/carisma";
  * Maps each carisma label to a distinctive Lucide icon.
  *
  * - Presbítero  → Cross (clerical cross)
- * - Casado      → Users (couple)
- * - Soltero     → User (individual)
+ * - Matrimonio  → Users (couple)
+ * - Soltero/a   → User (individual)
  * - Seminarista → GraduationCap (studying)
  * - Diácono     → BookOpen (liturgy/word)
  * - Monja       → Sparkles (vida consagrada)
- * - Viudo       → UserMinus (pérdida de cónyuge)
- * - Itinerante  → Footprints (journeying)
+ * - Viudo/a     → UserMinus (pérdida de cónyuge)
+ * - Itinerante  → Globe (misionero itinerante)
  */
 const CARISMA_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "Presbítero": Cross,
-  "Casado": Users,
-  "Soltero": User,
+  "Matrimonio": Users,
+  "Soltero/a": User,
   "Seminarista": GraduationCap,
   "Diácono": BookOpen,
   "Monja": Sparkles,
-  "Viudo": UserMinus,
-  "Itinerante": Footprints,
+  "Viudo/a": UserMinus,
+  "Itinerante": Globe,
 };
 
 interface CarismaBadgeProps {

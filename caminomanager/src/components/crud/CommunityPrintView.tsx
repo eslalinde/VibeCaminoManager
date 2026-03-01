@@ -95,13 +95,13 @@ function buildBrotherGroups(
   excludePersonIds: Set<number>
 ): BrotherGroup[] {
   const PLURAL_LABELS: Record<string, string> = {
-    'Casado': 'Matrimonios',
-    'Soltero': 'Solteros',
+    'Matrimonio': 'Matrimonios',
+    'Soltero/a': 'Solteros/as',
     'Presbítero': 'Sacerdotes',
     'Diácono': 'Diáconos',
     'Seminarista': 'Seminaristas',
     'Monja': 'Monjas',
-    'Viudo': 'Viudos',
+    'Viudo/a': 'Viudos/as',
     '': 'Otros',
   };
 
@@ -172,7 +172,7 @@ function mergeTeamMembers(members: Belongs[]): MergedTeamMember[] {
         merged.push({
           id: `marriage-${person.id}-${spouseMember.person_id}`,
           name: `${husband.person_name} y ${wife.person_name}`,
-          carisma: 'Casado',
+          carisma: 'Matrimonio',
           mobile: husband.mobile || wife.mobile || '',
           isResponsible:
             member.is_responsible_for_the_team || spouseMember.is_responsible_for_the_team,
@@ -481,7 +481,7 @@ export function CommunityPrintView({
                               <span className="pv-badge-r">R</span>
                             )}
                             <span className="pv-member-name">{m.name}</span>
-                            {m.carisma && m.carisma !== 'Casado' && (
+                            {m.carisma && m.carisma !== 'Matrimonio' && (
                               <span className="pv-member-role">{m.carisma}</span>
                             )}
                             {m.mobile && m.carisma !== 'Seminarista' && (

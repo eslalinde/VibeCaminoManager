@@ -59,61 +59,83 @@ function getOperationColor(op: string): AuditColor {
   }
 }
 
+// ── Person name resolution ──
+
+export type PersonNames = Record<number, string>;
+export type TeamNames = Record<number, string>;
+
+function getPersonName(entry: AuditLog, personNames: PersonNames): string | null {
+  const pid = entry.new_values?.person_id ?? entry.old_values?.person_id;
+  if (typeof pid === 'number' && personNames[pid]) return personNames[pid];
+  return null;
+}
+
+function getTeamNameFromValues(entry: AuditLog): string | null {
+  const name = entry.new_values?.name ?? entry.old_values?.name;
+  return typeof name === 'string' ? name : null;
+}
+
+function getBelongsTeamName(entry: AuditLog, teamNames: TeamNames): string | null {
+  const tid = entry.new_values?.team_id ?? entry.old_values?.team_id;
+  if (typeof tid === 'number' && teamNames[tid]) return teamNames[tid];
+  return null;
+}
+
 // ── Message generation ──
 
-interface OperationMessage {
-  INSERT: string;
-  UPDATE: string;
-  DELETE: string;
-}
+function buildMessage(
+  entry: AuditLog,
+  personNames: PersonNames,
+  teamNames: TeamNames
+): string {
+  const { table_name, operation } = entry;
+  const person = getPersonName(entry, personNames);
+  const team = getTeamNameFromValues(entry);
+  const belongsTeam = getBelongsTeamName(entry, teamNames);
 
-const TABLE_MESSAGES: Record<string, OperationMessage> = {
-  communities: {
-    INSERT: 'Creo una comunidad',
-    UPDATE: 'Actualizo la comunidad',
-    DELETE: 'Elimino la comunidad',
-  },
-  teams: {
-    INSERT: 'Creo un equipo',
-    UPDATE: 'Actualizo un equipo',
-    DELETE: 'Elimino un equipo',
-  },
-  brothers: {
-    INSERT: 'Agrego un hermano a la comunidad',
-    UPDATE: 'Actualizo un hermano',
-    DELETE: 'Elimino un hermano de la comunidad',
-  },
-  belongs: {
-    INSERT: 'Agrego un miembro al equipo',
-    UPDATE: 'Actualizo un miembro del equipo',
-    DELETE: 'Elimino un miembro del equipo',
-  },
-  community_step_log: {
-    INSERT: 'Registro una entrada en la bitacora',
-    UPDATE: 'Actualizo una entrada de la bitacora',
-    DELETE: 'Elimino una entrada de la bitacora',
-  },
-};
+  // Helper: "al equipo «Nombre»" or "al equipo"
+  const teamSuffix = belongsTeam ? ` al equipo "${belongsTeam}"` : ' al equipo';
 
-function getBaseMessage(table: string, op: string): string {
-  const msgs = TABLE_MESSAGES[table];
-  if (msgs && op in msgs) return msgs[op as keyof OperationMessage];
-  return `${op} en ${getTableLabel(table)}`;
-}
-
-// Special-case: belongs UPDATE where is_responsible_for_the_team changed
-function getBelongsUpdateMessage(entry: AuditLog): string | null {
+  // Special-case: belongs UPDATE where is_responsible_for_the_team changed
   if (
-    entry.table_name === 'belongs' &&
-    entry.operation === 'UPDATE' &&
+    table_name === 'belongs' &&
+    operation === 'UPDATE' &&
     entry.changed_columns?.includes('is_responsible_for_the_team')
   ) {
     const isNowResponsible = entry.new_values?.is_responsible_for_the_team;
-    return isNowResponsible
-      ? 'Asigno responsable del equipo'
-      : 'Removio responsable del equipo';
+    const verb = isNowResponsible ? 'Asigno como responsable' : 'Removio como responsable';
+    return person ? `${verb} a ${person}${belongsTeam ? ` en "${belongsTeam}"` : ''}` : `${verb} del equipo`;
   }
-  return null;
+
+  switch (table_name) {
+    case 'communities':
+      if (operation === 'INSERT') return 'Creo una comunidad';
+      if (operation === 'UPDATE') return 'Actualizo la comunidad';
+      if (operation === 'DELETE') return 'Elimino la comunidad';
+      break;
+    case 'teams':
+      if (operation === 'INSERT') return team ? `Creo el equipo "${team}"` : 'Creo un equipo';
+      if (operation === 'UPDATE') return team ? `Actualizo el equipo "${team}"` : 'Actualizo un equipo';
+      if (operation === 'DELETE') return team ? `Elimino el equipo "${team}"` : 'Elimino un equipo';
+      break;
+    case 'brothers':
+      if (operation === 'INSERT') return person ? `Agrego a ${person} a la comunidad` : 'Agrego un hermano a la comunidad';
+      if (operation === 'UPDATE') return person ? `Actualizo a ${person}` : 'Actualizo un hermano';
+      if (operation === 'DELETE') return person ? `Elimino a ${person} de la comunidad` : 'Elimino un hermano de la comunidad';
+      break;
+    case 'belongs':
+      if (operation === 'INSERT') return person ? `Agrego a ${person}${teamSuffix}` : `Agrego un miembro${teamSuffix}`;
+      if (operation === 'UPDATE') return person ? `Actualizo a ${person} en${belongsTeam ? ` "${belongsTeam}"` : ' el equipo'}` : 'Actualizo un miembro del equipo';
+      if (operation === 'DELETE') return person ? `Elimino a ${person} de${belongsTeam ? ` "${belongsTeam}"` : 'l equipo'}` : 'Elimino un miembro del equipo';
+      break;
+    case 'community_step_log':
+      if (operation === 'INSERT') return 'Registro una entrada en la bitacora';
+      if (operation === 'UPDATE') return 'Actualizo una entrada de la bitacora';
+      if (operation === 'DELETE') return 'Elimino una entrada de la bitacora';
+      break;
+  }
+
+  return `${operation} en ${getTableLabel(table_name)}`;
 }
 
 // ── Change detail formatting ──
@@ -171,10 +193,13 @@ export interface FormattedAuditEntry {
   relativeTime: string;
 }
 
-export function formatAuditEntry(entry: AuditLog): FormattedAuditEntry {
+export function formatAuditEntry(
+  entry: AuditLog,
+  personNames: PersonNames = {},
+  teamNames: TeamNames = {}
+): FormattedAuditEntry {
   const actorName = entry.user_profile?.full_name || 'Usuario desconocido';
-  const specialMessage = getBelongsUpdateMessage(entry);
-  const message = specialMessage || getBaseMessage(entry.table_name, entry.operation);
+  const message = buildMessage(entry, personNames, teamNames);
   const details = getChangeDetails(entry);
   const color = getOperationColor(entry.operation);
   const time = relativeTime(entry.created_at || new Date().toISOString());

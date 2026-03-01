@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { createClient } from '@/utils/supabase/client';
 import { Person } from '@/types/database';
 import { normalizeText } from '@/lib/utils';
+import { friendlyError } from '@/lib/supabaseErrors';
 
 interface SelectBrotherModalProps {
   open: boolean;
@@ -76,7 +77,7 @@ export function SelectBrotherModal({
       setPeople(availablePeople);
     } catch (err: any) {
       console.error('Error fetching available people:', err);
-      setError(err.message || 'Error al cargar las personas disponibles');
+      setError(friendlyError(err, 'Error al cargar las personas disponibles'));
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,7 @@ export function SelectBrotherModal({
       await onSelect(selectedPersonId);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Error al agregar el hermano');
+      setError(friendlyError(err, 'Error al agregar el hermano'));
     }
   };
 

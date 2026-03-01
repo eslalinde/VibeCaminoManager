@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/utils/supabase/client';
 import { QueryParams, BaseEntity } from '@/types/database';
 import { queryKeys } from '@/lib/queryKeys';
+import { friendlyError } from '@/lib/supabaseErrors';
 import { toast } from 'sonner';
 
 /** Strip accents from a string (e.g. "Medellín" → "Medellin") */
@@ -305,7 +306,7 @@ export function useCrud<T extends BaseEntity>({
       toast.success('Registro creado correctamente');
     },
     onError: (err: any, _variables, context) => {
-      const message = handleSupabaseError(err);
+      const message = friendlyError(err);
       setError(message);
       toast.error(message);
       if (context?.previousData) {
@@ -345,7 +346,7 @@ export function useCrud<T extends BaseEntity>({
       toast.success('Registro actualizado correctamente');
     },
     onError: (err: any, _variables, context) => {
-      const message = handleSupabaseError(err);
+      const message = friendlyError(err);
       setError(message);
       toast.error(message);
       if (context?.previousData) {
@@ -382,7 +383,7 @@ export function useCrud<T extends BaseEntity>({
       toast.success('Registro eliminado correctamente');
     },
     onError: (err: any, _variables, context) => {
-      const message = handleSupabaseError(err);
+      const message = friendlyError(err);
       setError(message);
       toast.error(message);
       if (context?.previousData) {
@@ -439,52 +440,3 @@ export function useCrud<T extends BaseEntity>({
   };
 }
 
-// Función helper para manejar errores específicos de Supabase
-function handleSupabaseError(error: any): string {
-  if (error.code === '23505') {
-    // Unique constraint violation
-    const constraintName = error.constraint || '';
-    const detail = error.detail || '';
-    
-    // Handle specific constraint violations based on constraint names
-    if (constraintName.includes('countries_name_unique')) {
-      return 'Ya existe un país con ese nombre.';
-    } else if (constraintName.includes('states_name_country_unique')) {
-      return 'Ya existe un departamento con ese nombre en el país seleccionado.';
-    } else if (constraintName.includes('cities_name_country_state_unique')) {
-      return 'Ya existe una ciudad con ese nombre en el país y departamento seleccionados.';
-    } else if (constraintName.includes('city_zones_name_city_unique')) {
-      return 'Ya existe una zona con ese nombre en la ciudad seleccionada.';
-    } else if (constraintName.includes('dioceses_name_key')) {
-      return 'Ya existe una diócesis con ese nombre.';
-    } else if (constraintName.includes('parishes_name_city_unique')) {
-      return 'Ya existe una parroquia con ese nombre en la ciudad seleccionada.';
-    } else if (constraintName.includes('team_types_name_unique')) {
-      return 'Ya existe un tipo de equipo con ese nombre.';
-    } else if (constraintName.includes('step_ways_name_unique')) {
-      return 'Ya existe una etapa con ese nombre.';
-    } else if (constraintName.includes('communities_number_parish_unique')) {
-      return 'Ya existe una comunidad con ese número en la parroquia seleccionada.';
-    } else if (detail.includes('name') && detail.includes('country_id') && detail.includes('state_id')) {
-      return 'Ya existe una ciudad con ese nombre en el país y departamento seleccionados.';
-    } else if (detail.includes('name') && detail.includes('country_id')) {
-      return 'Ya existe un departamento con ese nombre en el país seleccionado.';
-    } else if (detail.includes('name')) {
-      return 'Ya existe un registro con ese nombre.';
-    } else {
-      return 'Ya existe un registro con esos datos.';
-    }
-  } else if (error.code === '23503') {
-    return 'No se puede eliminar este registro porque está siendo usado por otros datos.';
-  } else if (error.code === '23514') {
-    return 'Los datos no cumplen con las restricciones de validación.';
-  } else if (error.code === '42P01') {
-    return 'La tabla no existe.';
-  } else if (error.code === '42501') {
-    return 'No tienes permisos para realizar esta operación.';
-  } else if (error.code === '409') {
-    return 'Conflicto: Los datos enviados ya existen o violan alguna restricción.';
-  } else {
-    return error.message || 'Error inesperado. Por favor, inténtalo de nuevo.';
-  }
-} 

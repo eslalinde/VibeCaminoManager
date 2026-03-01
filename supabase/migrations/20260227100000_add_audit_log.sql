@@ -35,14 +35,9 @@ CREATE POLICY "audit_log_select" ON public.audit_log
   FOR SELECT
   USING (public.is_admin() OR user_id = auth.uid());
 
--- Insert is done by the trigger (SECURITY DEFINER), but we also allow
--- authenticated users so the trigger can write on their behalf
-CREATE POLICY "audit_log_insert" ON public.audit_log
-  FOR INSERT
-  WITH CHECK (true);
-
--- Logs are immutable: no UPDATE or DELETE allowed
--- (no policies = denied by default with RLS enabled)
+-- No INSERT/UPDATE/DELETE policies needed:
+-- - INSERT: the trigger is SECURITY DEFINER and bypasses RLS
+-- - UPDATE/DELETE: logs are immutable (no policy = denied by default)
 
 -- 4. Generic audit trigger function
 CREATE OR REPLACE FUNCTION public.audit_log_trigger()

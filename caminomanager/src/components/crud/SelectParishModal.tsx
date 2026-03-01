@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { createClient } from '@/utils/supabase/client';
 import { Parish } from '@/types/database';
 import { normalizeText } from '@/lib/utils';
+import { friendlyError } from '@/lib/supabaseErrors';
 
 interface SelectParishModalProps {
   open: boolean;
@@ -58,7 +59,7 @@ export function SelectParishModal({
         setParishes(availableParishes);
       } catch (err: any) {
         console.error('Error fetching available parishes:', err);
-        setError(err.message || 'Error al cargar las parroquias disponibles');
+        setError(friendlyError(err, 'Error al cargar las parroquias disponibles'));
       } finally {
         setLoading(false);
       }
@@ -84,7 +85,7 @@ export function SelectParishModal({
       await onSelect(selectedParishId);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Error al agregar la parroquia');
+      setError(friendlyError(err, 'Error al agregar la parroquia'));
     }
   };
 

@@ -25,6 +25,8 @@
   },
   "enabledMcpjsonServers": [
     "shadcn",
-    "supabase"
-  ]
+    "supabase",
+    "next-devtools"
+  ],
+  "enableAllProjectMcpServers": true
 }

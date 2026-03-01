@@ -367,11 +367,11 @@ INSERT INTO public.people (id, person_name, phone, mobile, email, person_type_id
   (198, 'Mario Viudo', '6041000198', '3001000198', 'mario.viudo@email.com', 7, 1, NULL),
   (199, 'Camila Viuda', '6041000199', '3001000199', 'camila.viuda@email.com', 7, 2, NULL),
   (200, 'Jorge Viudo', '6041000200', '3001000200', 'jorge.viudo@email.com', 7, 1, NULL),
-  -- Itinerantes (is_itinerante = true)
-  (201, 'Francisco Mejía', '6041000201', '3001000201', 'francisco.mejia@email.com', NULL, 1, NULL),
-  (202, 'Gloria Echavarría', '6041000202', '3001000202', 'gloria.echavarria@email.com', NULL, 2, NULL),
-  (203, 'Hernando Velásquez', '6041000203', '3001000203', 'hernando.velasquez@email.com', NULL, 1, NULL),
-  (204, 'Amparo Londoño', '6041000204', '3001000204', 'amparo.londono@email.com', NULL, 2, NULL);
+  -- Itinerantes (is_itinerante = true) — matrimonios itinerantes
+  (201, 'Francisco Mejía', '6041000201', '3001000201', 'francisco.mejia@email.com', 1, 1, 202),
+  (202, 'Gloria Echavarría', '6041000202', '3001000202', 'gloria.echavarria@email.com', 1, 2, 201),
+  (203, 'Hernando Velásquez', '6041000203', '3001000203', 'hernando.velasquez@email.com', 1, 1, 204),
+  (204, 'Amparo Londoño', '6041000204', '3001000204', 'amparo.londono@email.com', 1, 2, 203);
 
 -- Mark itinerantes
 UPDATE public.people SET is_itinerante = true WHERE id IN (61, 201, 202, 203, 204);
