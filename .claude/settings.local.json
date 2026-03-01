@@ -20,9 +20,11 @@
       "Bash(npm ls:*)",
       "Bash(xargs head:*)",
       "mcp__supabase__apply_migration",
-      "mcp__supabase__execute_sql"
+      "mcp__supabase__execute_sql",
+      "Bash(xargs:*)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "shadcn",
     "supabase"

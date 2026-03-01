@@ -352,7 +352,8 @@ export function PriestsList({ priests, loading, parishId, onRefresh }: PriestsLi
         onClose={() => setPriestToDelete(null)}
         onConfirm={handleDeleteConfirmed}
         title="¿Remover sacerdote?"
-        description={`¿Estas seguro de que deseas remover a ${priestToDelete?.person?.person_name || 'este sacerdote'} de esta parroquia?`}
+        itemName={priestToDelete?.person?.person_name || 'este sacerdote'}
+        description="¿Estás seguro de que deseas remover a este sacerdote de la parroquia?"
         loading={deletingId !== null}
       />
 

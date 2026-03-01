@@ -190,7 +190,8 @@ export function EntityTable<T extends BaseEntity>({
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteConfirmed}
         title="¿Eliminar registro?"
-        description={`¿Estás seguro de que deseas eliminar "${deleteTarget?.label}"? Esta acción no se puede deshacer.`}
+        itemName={deleteTarget?.label}
+        description="¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer."
       />
     </div>
   );

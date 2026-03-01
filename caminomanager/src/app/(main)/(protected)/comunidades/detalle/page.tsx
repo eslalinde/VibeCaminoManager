@@ -487,7 +487,8 @@ function CommunityDetailContent() {
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleDeleteCommunity}
         title="¿Eliminar comunidad?"
-        description={`¿Estás seguro de que deseas eliminar la Comunidad ${community?.number || ''}? Se eliminarán todos los datos asociados.`}
+        itemName={`Comunidad ${community?.number || ''}`}
+        description="¿Estás seguro de que deseas eliminar esta comunidad? Se eliminarán todos los datos asociados."
         preview={[
           `${mergedBrothers.length} hermano(s)`,
           `${teams.responsables.length + teams.catequistas.length} equipo(s)`,
