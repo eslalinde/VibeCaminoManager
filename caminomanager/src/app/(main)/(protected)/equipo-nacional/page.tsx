@@ -270,6 +270,7 @@ export default function NationalTeamPage() {
       />
 
       <DynamicEntityModal
+        key={isCreatePersonOpen ? 'create-person-open' : 'create-person-closed'}
         open={isCreatePersonOpen}
         onClose={() => setIsCreatePersonOpen(false)}
         onSave={handleCreatePerson}
@@ -279,6 +280,7 @@ export default function NationalTeamPage() {
       />
 
       <DynamicEntityModal
+        key={editingPerson ? `edit-person-${editingPerson.id}` : 'no-edit-person'}
         open={editingPerson !== null}
         onClose={() => setEditingPerson(null)}
         onSave={handleUpdatePerson}

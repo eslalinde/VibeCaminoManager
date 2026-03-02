@@ -244,6 +244,7 @@ function ParishDetailContent() {
 
       {/* Modal de edicion */}
       <DynamicEntityModal
+        key={`parish-edit-${parish?.id ?? 'none'}-${isEditModalOpen ? 'open' : 'closed'}`}
         open={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleSave}

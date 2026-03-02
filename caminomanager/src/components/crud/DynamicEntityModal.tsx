@@ -166,8 +166,10 @@ export function DynamicEntityModal<T extends BaseEntity>({
   }, [peopleOptions, peopleLoading, initialSpouseId, open]);
 
   // Limpiar campos dependientes cuando cambia el padre (solo después de la inicialización)
+  // Guard: solo ejecutar si el campo padre existe en el formulario
   useEffect(() => {
     if (!isInitialized.current) return;
+    if (!fields.some((f) => f.name === "country_id")) return;
 
     if (countryId !== prevCountryId.current) {
       if (fields.some((f) => f.name === "state_id")) {
@@ -182,6 +184,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
 
   useEffect(() => {
     if (!isInitialized.current) return;
+    if (!fields.some((f) => f.name === "state_id")) return;
 
     if (stateId !== prevStateId.current) {
       if (fields.some((f) => f.name === "city_id")) {
@@ -193,6 +196,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
 
   useEffect(() => {
     if (!isInitialized.current) return;
+    if (!fields.some((f) => f.name === "city_id")) return;
 
     if (cityId !== prevCityId.current) {
       if (fields.some((f) => f.name === "zone_id")) {
@@ -204,6 +208,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
 
   useEffect(() => {
     if (!isInitialized.current) return;
+    if (!fields.some((f) => f.name === "location_country_id")) return;
 
     if (locationCountryId !== prevLocationCountryId.current) {
       if (fields.some((f) => f.name === "location_city_id")) {
@@ -216,6 +221,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
   // Side effects: person_type_id changes
   useEffect(() => {
     if (!isInitialized.current) return;
+    if (!fields.some((f) => f.name === "person_type_id")) return;
 
     const numValue = personTypeId ? Number(personTypeId) : null;
     const isMarried = numValue === 1;
@@ -234,6 +240,7 @@ export function DynamicEntityModal<T extends BaseEntity>({
   // Side effects: is_itinerante changes
   useEffect(() => {
     if (!isInitialized.current) return;
+    if (!fields.some((f) => f.name === "is_itinerante")) return;
 
     const numType = personTypeId ? Number(personTypeId) : null;
     if (
@@ -408,38 +415,40 @@ export function DynamicEntityModal<T extends BaseEntity>({
                             rows={3}
                           />
                         ) : field.type === "select" ? (
-                          <Select
-                            value={
-                              rhfField.value !== null &&
-                              rhfField.value !== undefined
-                                ? String(rhfField.value)
-                                : ""
-                            }
-                            onValueChange={rhfField.onChange}
-                            disabled={loading}
-                          >
-                            <SelectTrigger>
-                              <SelectValue
-                                placeholder={
-                                  field.placeholder || "Seleccionar..."
-                                }
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {(
-                                fieldOptions ||
-                                field.options ||
-                                []
-                              ).map((option) => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={String(option.value)}
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          (() => {
+                            const opts = fieldOptions || field.options || [];
+                            const currentVal = rhfField.value !== null && rhfField.value !== undefined ? String(rhfField.value) : "";
+                            const selectedLabel = currentVal ? opts.find(o => String(o.value) === currentVal)?.label : null;
+                            return (
+                              <Select
+                                value={currentVal}
+                                onValueChange={rhfField.onChange}
+                                disabled={loading}
+                              >
+                                <SelectTrigger>
+                                  {selectedLabel ? (
+                                    <span className="truncate">{selectedLabel}</span>
+                                  ) : (
+                                    <SelectValue
+                                      placeholder={
+                                        field.placeholder || "Seleccionar..."
+                                      }
+                                    />
+                                  )}
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {opts.map((option) => (
+                                    <SelectItem
+                                      key={option.value}
+                                      value={String(option.value)}
+                                    >
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            );
+                          })()
                         ) : (
                           <Input
                             type={field.type}

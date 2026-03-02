@@ -371,6 +371,7 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
 
       {/* Modal para agregar nueva catequesis */}
       <DynamicEntityModal
+        key={isAddModalOpen ? 'add-catechesis-open' : 'add-catechesis-closed'}
         open={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddEntry}
@@ -382,6 +383,7 @@ export function ParishCatechesisHistory({ parishId, parishName }: ParishCateches
 
       {/* Modal para editar catequesis */}
       <DynamicEntityModal
+        key={editingEntry ? `edit-catechesis-${editingEntry.id}` : 'no-edit-catechesis'}
         open={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);

@@ -375,6 +375,7 @@ export function BrothersList({ brothers, loading, communityId, teamMembers, onDe
 
     {/* Modal para crear nuevo hermano */}
     <DynamicEntityModal
+      key={isCreateModalOpen ? 'create-brother-open' : 'create-brother-closed'}
       open={isCreateModalOpen}
       onClose={() => setIsCreateModalOpen(false)}
       onSave={handleCreateNewBrother}
