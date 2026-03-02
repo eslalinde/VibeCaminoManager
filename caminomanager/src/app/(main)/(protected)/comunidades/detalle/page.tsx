@@ -79,6 +79,18 @@ function CommunityDetailContent() {
     return names.join(' y ');
   }, [community?.cathechist_team]);
 
+  const communityEditInitial = useMemo(() => {
+    if (!community) return null;
+
+    return {
+      ...community,
+      // Keep FK values available even when the detail payload only has nested relations.
+      step_way_id: community.step_way_id ?? community.step_way?.id,
+      cathechist_team_id:
+        community.cathechist_team_id ?? community.cathechist_team?.id,
+    };
+  }, [community]);
+
   const handleEdit = () => {
     setIsEditModalOpen(true);
   };
@@ -86,12 +98,22 @@ function CommunityDetailContent() {
   const handleSave = async (data: Omit<Community, 'id' | 'created_at' | 'updated_at'>) => {
     if (!community?.id) return;
 
+    const safeData: Omit<Community, 'id' | 'created_at' | 'updated_at'> = {
+      ...data,
+      // Defensive fallback: avoid nulling these fields when select options fail to hydrate.
+      step_way_id: data.step_way_id ?? community.step_way_id ?? community.step_way?.id,
+      cathechist_team_id:
+        data.cathechist_team_id ??
+        community.cathechist_team_id ??
+        community.cathechist_team?.id,
+    };
+
     setIsSaving(true);
     try {
       const supabase = createClient();
       const { data: updatedRows, error: updateError } = await supabase
         .from('communities')
-        .update(data)
+        .update(safeData)
         .eq('id', community.id)
         .select();
 
@@ -464,10 +486,11 @@ function CommunityDetailContent() {
 
       {/* Modal de edición */}
       <DynamicEntityModal
+        key={`community-edit-${community?.id ?? 'none'}-${isEditModalOpen ? 'open' : 'closed'}`}
         open={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleSave}
-        initial={community}
+        initial={communityEditInitial}
         fields={communityConfig.fields}
         title="Editar Comunidad"
         loading={isSaving}

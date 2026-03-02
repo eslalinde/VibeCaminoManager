@@ -269,6 +269,7 @@ export function EntityPage<T extends BaseEntity>({
       {/* Modal */}
       {needsDynamicModal ? (
         <DynamicEntityModal
+          key={editing ? `edit-${editing.id}` : 'create'}
           open={modalOpen}
           onClose={handleCloseModal}
           onSave={handleSave}
@@ -279,6 +280,7 @@ export function EntityPage<T extends BaseEntity>({
         />
       ) : (
         <EntityModal
+          key={editing ? `edit-${editing.id}` : 'create'}
           open={modalOpen}
           onClose={handleCloseModal}
           onSave={handleSave}

@@ -21,7 +21,8 @@
       "Bash(xargs head:*)",
       "mcp__supabase__apply_migration",
       "mcp__supabase__execute_sql",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(find:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
@@ -29,6 +30,5 @@
     "shadcn",
     "supabase",
     "next-devtools"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

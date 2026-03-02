@@ -101,22 +101,33 @@ export function EntityModal<T extends BaseEntity>({
                           rows={3}
                         />
                       ) : field.type === 'select' ? (
-                        <Select
-                          value={(rhfField.value as string) || ''}
-                          onValueChange={rhfField.onChange}
-                          disabled={loading}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={field.placeholder || "Seleccionar..."} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options?.map(option => (
-                              <SelectItem key={option.value} value={option.value.toString()}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        (() => {
+                          const opts = field.options || [];
+                          const currentVal = (rhfField.value as string) || '';
+                          const selectedLabel = currentVal ? opts.find(o => String(o.value) === currentVal)?.label : null;
+                          return (
+                            <Select
+                              value={currentVal}
+                              onValueChange={rhfField.onChange}
+                              disabled={loading}
+                            >
+                              <SelectTrigger>
+                                {selectedLabel ? (
+                                  <span className="truncate">{selectedLabel}</span>
+                                ) : (
+                                  <SelectValue placeholder={field.placeholder || "Seleccionar..."} />
+                                )}
+                              </SelectTrigger>
+                              <SelectContent>
+                                {opts.map(option => (
+                                  <SelectItem key={option.value} value={option.value.toString()}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          );
+                        })()
                       ) : (
                         <Input
                           type={field.type}

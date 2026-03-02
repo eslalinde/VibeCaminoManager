@@ -1,9 +1,15 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import path from 'path';
+import fs from 'fs';
 import serve from 'electron-serve';
 import { autoUpdater } from 'electron-updater';
 
 const isProd = app.isPackaged;
+
+const appPackageJson = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8')
+);
+const isStandalone: boolean = appPackageJson.standalone === true || appPackageJson.standalone === 'true';
 
 const loadURL = serve({ directory: path.join(__dirname, '..', 'out') });
 
@@ -54,8 +60,8 @@ app.whenReady().then(() => {
     }
   });
 
-  // Auto-updates (prod only)
-  if (isProd) {
+  // Auto-updates (prod only, disabled for standalone builds)
+  if (isProd && !isStandalone) {
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.checkForUpdatesAndNotify();

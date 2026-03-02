@@ -328,6 +328,7 @@ export function CommunityStepLogCompact({ communityId, communityNumber, stepLogs
 
       {/* Modal para agregar nuevo registro */}
       <DynamicEntityModal
+        key={isAddModalOpen ? 'add-step-log-open' : 'add-step-log-closed'}
         open={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddEntry}
