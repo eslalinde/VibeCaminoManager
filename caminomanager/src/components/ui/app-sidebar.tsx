@@ -110,17 +110,20 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
+                <div className="flex aspect-square size-8 items-center justify-center shrink-0">
                   <Image
                     src="/logo.png"
                     alt="ComunidadCat Logo"
-                    width={32}
-                    height={32}
-                    className="rounded-full"
+                    width={28}
+                    height={28}
+                    className="drop-shadow-sm w-7 h-7"
                   />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-bold">ComunidadCat</span>
+                  <span className="truncate font-[family-name:var(--font-montserrat)]" style={{ color: "#1B3A6F" }}>
+                    <span className="font-normal">Comunidad</span>
+                    <span className="font-semibold">Cat</span>
+                  </span>
                   <span className="truncate text-xs text-muted-foreground">
                     Gestión de Comunidades
                   </span>
