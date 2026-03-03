@@ -43,7 +43,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
 const ROLE_BADGE_CLASSES: Record<AppRole, string> = {
   viewer: "bg-gray-100 text-gray-700 border-gray-300",
   contributor: "bg-blue-100 text-blue-700 border-blue-300",
-  admin: "bg-amber-100 text-amber-700 border-amber-300",
+  admin: "bg-blue-100 text-[#1B3A6F] border-blue-300",
 };
 
 function formatDate(dateStr: string | null): string {
@@ -131,7 +131,7 @@ export default function AdminPage() {
   if (authLoading || !authorized) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B3A6F] mx-auto mb-4" />
       </div>
     );
   }
@@ -140,7 +140,7 @@ export default function AdminPage() {
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Shield className="w-7 h-7 text-amber-600" />
+        <Shield className="w-7 h-7 text-[#1B3A6F]" />
         <h1 className="text-2xl font-bold text-gray-800">
           Administración de Usuarios
         </h1>
@@ -150,7 +150,7 @@ export default function AdminPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Usuarios del sistema</CardTitle>
-            <Badge className="bg-amber-50 text-amber-700 border-amber-200">
+            <Badge className="bg-blue-50 text-[#1B3A6F] border-blue-200">
               {users.length} usuario{users.length !== 1 ? "s" : ""}
             </Badge>
           </div>
@@ -164,14 +164,14 @@ export default function AdminPage() {
               placeholder="Buscar por nombre, email o usuario..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           {/* Loading state */}
           {loading && (
             <div className="flex items-center justify-center py-12">
-              <RefreshCw className="w-8 h-8 animate-spin text-amber-600" />
+              <RefreshCw className="w-8 h-8 animate-spin text-[#1B3A6F]" />
               <span className="ml-3 text-gray-600">Cargando usuarios...</span>
             </div>
           )}

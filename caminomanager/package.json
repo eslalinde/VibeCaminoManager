@@ -23,18 +23,18 @@
     "electron:build:dir": "npm run build && tsc -p electron/tsconfig.json && electron-builder --win --dir"
   },
   "dependencies": {
-    "@babel/runtime": "^7.27.6",
+    "@babel/runtime": "^7.28.6",
     "@hookform/resolvers": "^5.2.2",
     "@microsoft/applicationinsights-web": "^3.3.11",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.95.3",
-    "@tanstack/react-query": "^5.59.13",
+    "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "electron-serve": "^3.0.1",
-    "electron-updater": "^6.8.3",
-    "lucide-react": "^0.511.0",
+    "electron-updater": "^6.7.3",
+    "lucide-react": "^0.576.0",
     "next": "^15.5.12",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
@@ -42,7 +42,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.71.2",
     "sonner": "^2.0.7",
-    "tailwind-merge": "^3.3.0",
+    "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
