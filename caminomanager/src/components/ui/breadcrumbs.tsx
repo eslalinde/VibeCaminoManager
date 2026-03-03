@@ -60,7 +60,7 @@ export function Breadcrumbs() {
     <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-gray-500">
       <Link
         href={routes.home}
-        className="flex items-center gap-1 hover:text-amber-700 transition-colors"
+        className="flex items-center gap-1 hover:text-[#1B3A6F] transition-colors"
       >
         <Home className="w-4 h-4" />
         <span className="hidden sm:inline">Inicio</span>
@@ -77,7 +77,7 @@ export function Breadcrumbs() {
             ) : (
               <Link
                 href={crumb.href}
-                className="hover:text-amber-700 transition-colors"
+                className="hover:text-[#1B3A6F] transition-colors"
               >
                 {crumb.label}
               </Link>

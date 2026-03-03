@@ -116,7 +116,7 @@ export default function AccountPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B3A6F] mx-auto mb-4"></div>
           <p className="text-gray-600">Cargando perfil...</p>
         </div>
       </div>
@@ -130,11 +130,11 @@ export default function AccountPage() {
         
         {/* Mostrar rol del usuario */}
         {role && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm font-medium text-amber-800">Tu rol actual:</p>
-            <p className="text-lg text-amber-900">{roleLabels[role]}</p>
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm font-medium text-[#1B3A6F]">Tu rol actual:</p>
+            <p className="text-lg text-[#15305C]">{roleLabels[role]}</p>
             {role === 'viewer' && (
-              <p className="text-xs text-amber-700 mt-1">
+              <p className="text-xs text-blue-700 mt-1">
                 Solo puedes ver los datos. Contacta a un administrador para obtener permisos de edición.
               </p>
             )}

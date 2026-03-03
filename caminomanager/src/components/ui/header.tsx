@@ -59,7 +59,7 @@ export default function Header({ userEmail, userName, title: _title }: HeaderPro
 
   return (
     <header
-      className="bg-white dark:bg-gray-900 shadow-sm border-b border-amber-100 h-16 flex items-center px-4 justify-between"
+      className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 h-16 flex items-center px-4 justify-between"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       <div className="flex items-center gap-3">
@@ -68,7 +68,7 @@ export default function Header({ userEmail, userName, title: _title }: HeaderPro
         <DropdownMenu.Root open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenu.Trigger asChild>
             <button
-              className="flex items-center gap-2 rounded-full px-1 py-1 cursor-pointer focus:outline-none hover:bg-amber-50 dark:hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-2 rounded-full px-1 py-1 cursor-pointer focus:outline-none hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors"
               aria-label="Abrir menú de usuario"
             >
               {userName && (
@@ -76,8 +76,8 @@ export default function Header({ userEmail, userName, title: _title }: HeaderPro
                   {userName}
                 </span>
               )}
-              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-gray-700 flex items-center justify-center border-2 border-amber-300 dark:border-gray-600">
-                <span className="text-amber-800 dark:text-gray-200 font-bold text-lg">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 dark:border-gray-600" style={{ backgroundColor: "#E8EDF5", borderColor: "#A3B4D2" }}>
+                <span className="font-bold text-lg" style={{ color: "#1B3A6F" }}>
                   {getInitials(userEmail)}
                 </span>
               </div>
@@ -88,7 +88,7 @@ export default function Header({ userEmail, userName, title: _title }: HeaderPro
             <DropdownMenu.Item asChild>
               <Link
                 href={routes.cuenta}
-                className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer hover:bg-amber-50 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-800"
                 onClick={() => setMenuOpen(false)}
               >
                 <UserIcon className="w-4 h-4" />
@@ -98,7 +98,7 @@ export default function Header({ userEmail, userName, title: _title }: HeaderPro
             <DropdownMenu.Separator className="my-2 h-px bg-gray-200 dark:bg-gray-700" />
             <DropdownMenu.Item asChild>
               <button
-                className="flex items-center gap-2 w-full px-2 py-2 rounded-md cursor-pointer hover:bg-amber-50 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 w-full px-2 py-2 rounded-md cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-800"
                 onClick={() => {
                   toggleDarkMode();
                   setMenuOpen(false);
@@ -115,7 +115,7 @@ export default function Header({ userEmail, userName, title: _title }: HeaderPro
                     type="checkbox"
                     checked={darkMode}
                     readOnly
-                    className="accent-amber-600"
+                    className="accent-blue-800"
                   />
                 </span>
               </button>

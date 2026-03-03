@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, Roboto } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Roboto, Montserrat } from "next/font/google";
 import "./globals.css";
 import React from "react";
 import { QueryProvider } from "./QueryProvider";
@@ -30,6 +30,12 @@ const roboto = Roboto({
   weight: ["300", "400", "500"],
 });
 
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["400", "600"],
+});
+
 export const metadata: Metadata = {
   title: "ComunidadCat",
   description: "Sistema de gestión para comunidades neocatecumenales",
@@ -42,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${roboto.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${roboto.variable} ${montserrat.variable} antialiased`}>
         <ApplicationInsightsProvider>
           <QueryProvider>
             <AuthProvider>
