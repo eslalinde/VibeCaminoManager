@@ -56,7 +56,7 @@ jobs:
       - name: Build Electron installer (Cloud)
         run: >
           npx electron-builder --win --publish never
-          --config.artifactName "ComunidadCat-Cloud-${version}-Setup.${ext}"
+          --config.artifactName 'ComunidadCat-Cloud-${version}-Setup.${ext}'
 
       - name: Move Cloud artifacts
         shell: pwsh
@@ -82,7 +82,7 @@ jobs:
       - name: Build Electron installer (Standalone)
         run: >
           npx electron-builder --win --publish never
-          --config.artifactName "ComunidadCat-Standalone-${version}-Setup.${ext}"
+          --config.artifactName 'ComunidadCat-Standalone-${version}-Setup.${ext}'
           --config.extraMetadata.standalone=true
 
       # ── Phase 3: Assemble Standalone ZIP ──────────────────────────────
