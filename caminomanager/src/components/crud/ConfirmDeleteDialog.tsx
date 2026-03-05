@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -40,12 +40,13 @@ export function ConfirmDeleteDialog({
 }: ConfirmDeleteDialogProps) {
   const [confirmText, setConfirmText] = useState('');
 
-  // Reset text when dialog opens/closes
-  useEffect(() => {
-    if (!open) {
+  // Reset text when dialog closes
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
       setConfirmText('');
+      onClose();
     }
-  }, [open]);
+  };
 
   const isConfirmValid = confirmText.toUpperCase() === confirmWord.toUpperCase();
 
@@ -55,7 +56,7 @@ export function ConfirmDeleteDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-red-600">

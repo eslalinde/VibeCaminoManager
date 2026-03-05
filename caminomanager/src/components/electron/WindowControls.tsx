@@ -9,6 +9,7 @@ export function WindowControls() {
 
   useEffect(() => {
     if (!window.electronAPI) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- detecting electron environment requires effect
     setIsElectron(true);
 
     window.electronAPI.windowIsMaximized().then(setIsMaximized);
