@@ -27,9 +27,13 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 function LoginForm() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(
+    searchParams.get('error') === 'email_confirmation_failed'
+      ? 'Error al confirmar el email. Por favor, intenta registrarte de nuevo o contacta soporte.'
+      : null
+  );
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -56,13 +60,6 @@ function LoginForm() {
     checkAuth();
   }, [router, searchParams]);
 
-  // Mostrar error de confirmación de email si existe
-  useEffect(() => {
-    const errorParam = searchParams.get('error');
-    if (errorParam === 'email_confirmation_failed') {
-      setError('Error al confirmar el email. Por favor, intenta registrarte de nuevo o contacta soporte.');
-    }
-  }, [searchParams]);
 
   async function onSubmit(values: LoginFormValues) {
     setError(null);
