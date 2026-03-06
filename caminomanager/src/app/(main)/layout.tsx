@@ -40,7 +40,7 @@ export default function MainLayout({
       />
       <SidebarInset>
         <header
-          className="flex h-16 shrink-0 items-center gap-2 border-b px-4 print-hidden"
+          className="sticky top-0 z-50 bg-background flex h-16 shrink-0 items-center gap-2 border-b px-4 print-hidden"
           style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
         >
           <div className="flex items-center gap-2" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
