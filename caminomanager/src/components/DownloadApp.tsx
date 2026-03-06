@@ -35,7 +35,9 @@ export function DownloadApp() {
   const hasUpdate = latestVersion !== null && compareVersions(latestVersion, CURRENT_VERSION) > 0;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- detecting electron environment requires effect
     setIsElectron(!!window.electronAPI);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading sessionStorage requires effect
     setDismissed(sessionStorage.getItem('download-app-dismissed') === '1');
   }, []);
 
