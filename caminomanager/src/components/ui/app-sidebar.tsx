@@ -39,6 +39,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { DownloadApp } from "@/components/DownloadApp";
 
 interface NavItem {
   label: string;
@@ -185,6 +186,7 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter>
+        <DownloadApp />
         <NavUser userName={userName} userEmail={userEmail} />
       </SidebarFooter>
 
