@@ -67,7 +67,7 @@
     "@types/pg": "^8.21.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^4.1.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "electron": "^42.3.3",
     "electron-builder": "^26.15.3",
     "eslint": "^9.0.0",
@@ -79,6 +79,6 @@
     "tsx": "^4.22.4",
     "tw-animate-css": "^1.3.0",
     "typescript": "^5",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.11"
   }
 }
